@@ -9,7 +9,7 @@ from usr_func import *
 
 PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Config/OpArea.csv"
 PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Config/Munkholmen.csv"
-NEIGHBOUR_DISTANCE = 500
+NEIGHBOUR_DISTANCE = 150
 DEPTH = [0, 2, 5]
 
 polygon = pd.read_csv(PATH_OPERATION_AREA).to_numpy()
@@ -57,7 +57,7 @@ for i in range(len(depth_layer)):
     ind_depth = np.where(sinmod.dataset_interpolated.iloc[:, 2] == depth_layer[i])[0]
     plt.figure()
     plt.scatter(sinmod.dataset_interpolated.iloc[ind_depth, 1], sinmod.dataset_interpolated.iloc[ind_depth, 0],
-                c=sinmod.dataset_interpolated.iloc[ind_depth, 3], cmap="Paired", vmin=0, vmax=30)
+                c=sinmod.dataset_interpolated.iloc[ind_depth, 3], cmap="Paired", vmin=25, vmax=35)
     plt.colorbar()
     plt.title("depth_{:01d}".format(i))
 plt.show()

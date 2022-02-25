@@ -8,7 +8,7 @@ PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE
 PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Config/Munkholmen.csv"
 DISTANCE_LATERAL = 150
 DISTANCE_VERTICAL = .5
-DISTANCE_TOLERANCE = 50
+DISTANCE_TOLERANCE = 5000
 DISTANCE_NEIGHBOUR = 200
 DEPTH = [0, 2, 4]
 GOAL_SAMPLE_RATE = .05
@@ -28,6 +28,7 @@ rrtConfig = RRTConfig(polygon_within=polygon, polygon_without=munkholmen, depth=
                       distance_tolerance=DISTANCE_TOLERANCE)
 
 rrtstar = RRTStar(rrtConfig)
+rrtstar.get_shortest_path()
 rrtstar.plot_tree()
 
 
