@@ -38,7 +38,7 @@ class HexgonalGrid2D:
         self.grid_x = np.arange(0, self.box_vertical_range, self.vertical_distance)
         self.grid_y = np.arange(0, self.box_lateral_range, self.lateral_distance)
         self.grid_xy = []
-        self.grid_wgs = 
+        self.grid_wgs =
         for i in range(len(self.grid_y)):
             for j in range(len(self.grid_x)):
                 if isEven(j):
