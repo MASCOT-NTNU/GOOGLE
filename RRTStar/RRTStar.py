@@ -56,7 +56,6 @@ class RRTStar:
 
         self.get_bigger_box()
         self.expand_trees()
-        self.get_shortest_path()
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
@@ -143,6 +142,7 @@ class RRTStar:
             return False
 
     def iscollided(self, node):
+        #TODO: check collision detection
         point = Point(node.location.lat, node.location.lon)
         line = LineString([(node.parent.location.lon, node.parent.location.lat),
                            (node.location.lon, node.location.lat)])
@@ -164,7 +164,17 @@ class RRTStar:
             pointer_node = node
 
         self.path.append([self.starting_node.location.lat, self.starting_node.location.lon])
-        pass
+
+        dist = 0
+        if len(self.path) > 2:
+            path = np.array(self.path)
+            lat_prev, lon_prev = path[0, :]
+            for i in range(len(path)):
+                lat_now, lon_now = path[i, :]
+                dist_x, dist_y = latlon2xy(lat_now, lon_now, lat_prev, lon_prev)
+                dist += np.sqrt(dist_x ** 2 + dist_y ** 2)
+                lat_prev, lon_prev = lat_now, lon_now
+        print("Distance travelled: ", dist, "m")
 
     def plot_tree(self):
 
