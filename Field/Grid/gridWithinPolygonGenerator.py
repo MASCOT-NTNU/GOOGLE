@@ -5,6 +5,11 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-02-23
 """
 
+'''
+Drawback of this algorithm is when the field gets larger, it will produce overlapping nodes, or nodes that 
+are closely located with each other, see also the updated version using HexagonalGrid2D.py
+'''
+
 
 import matplotlib.path as mplPath  # used to determine whether a point is inside the grid or not
 from GOOGLE.Field.Grid.gridNode import gridNode
@@ -49,7 +54,7 @@ class GridGenerator:
                                               [lat_min, lon_max],
                                               [lat_max, lon_max],
                                               [lat_max, lon_min]])
-        self.rectangular_boundary_path = mplPath.Path(self.rectangular_boundary)
+        # self.rectangular_boundary_path = mplPath.Path(self.rectangular_boundary)
 
     def traverseField(self):
         lat_new, lon_new = self.getNewLocations(self.loc_start)
