@@ -34,8 +34,22 @@ class GridGenerator:
         self.angle_neighbour = deg2rad(np.arange(no_children) * 360 / no_children)  # angles for polygon
         self.loc_start = [self.polygon[0, 0], self.polygon[0, 1]]
         self.polygon_path = mplPath.Path(self.polygon)
+
+        # TODO: think of a better way of building grid
+        self.get_rectangular_boundary()
+        self.polygon_path = self.rectangular_boundary_path
+
         self.traverseField()
         self.getCoordinates()
+
+    def get_rectangular_boundary(self):
+        lat_min, lon_min = map(np.amin, [self.polygon[:, 0], self.polygon[:, 1]])
+        lat_max, lon_max = map(np.amax, [self.polygon[:, 0], self.polygon[:, 1]])
+        self.rectangular_boundary = np.array([[lat_min, lon_min],
+                                              [lat_min, lon_max],
+                                              [lat_max, lon_max],
+                                              [lat_max, lon_min]])
+        self.rectangular_boundary_path = mplPath.Path(self.rectangular_boundary)
 
     def traverseField(self):
         lat_new, lon_new = self.getNewLocations(self.loc_start)
