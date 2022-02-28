@@ -8,11 +8,11 @@ PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE
 PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Config/Munkholmen.csv"
 DISTANCE_LATERAL = 150
 DISTANCE_VERTICAL = .5
-DISTANCE_TOLERANCE = 5000
+DISTANCE_TOLERANCE = 500
 DISTANCE_NEIGHBOUR = 200
 DEPTH = [0, 2, 4]
 GOAL_SAMPLE_RATE = .05
-MAXNUM = 1000
+MAXNUM = 500
 
 polygon = pd.read_csv(PATH_OPERATION_AREA).to_numpy()
 munkholmen = pd.read_csv(PATH_MUNKHOLMEN).to_numpy()
