@@ -59,7 +59,9 @@ class RRTStar:
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
+        self.counter = 0
         for i in range(self.config.maximum_num):
+            print("Iteration: ", i)
             if np.random.rand() <= self.config.goal_sample_rate:
                 new_location = self.config.ending_location
             else:
@@ -75,7 +77,7 @@ class RRTStar:
             if self.isarrived(next_node):
                 self.ending_node.parent = next_node
                 self.nodes.append(self.ending_node)
-                break
+                # break
             else:
                 self.nodes.append(next_node)
             pass
@@ -144,8 +146,8 @@ class RRTStar:
     def iscollided(self, node):
         #TODO: check collision detection
         point = Point(node.location.lat, node.location.lon)
-        line = LineString([(node.parent.location.lon, node.parent.location.lat),
-                           (node.location.lon, node.location.lat)])
+        line = LineString([(node.parent.location.lat, node.parent.location.lon),
+                           (node.location.lat, node.location.lon)])
         collision = False
         if self.config.polygon_without_path.contains(point) or self.config.polygon_without_path.intersects(line):
             collision = True
@@ -155,15 +157,20 @@ class RRTStar:
         return self.config.polygon_within_path.contains_point(location)
 
     def get_shortest_path(self):
+        print("here comes the path finding")
         self.path.append([self.ending_node.location.lat, self.ending_node.location.lon])
         pointer_node = self.ending_node
+        counter = 0
         while pointer_node.parent is not None:
-
+            print("counter: ", counter)
+            counter += 1
             node = pointer_node.parent
             self.path.append([node.location.lat, node.location.lon])
             pointer_node = node
 
         self.path.append([self.starting_node.location.lat, self.starting_node.location.lon])
+
+        print("Finished path reorganising")
 
         dist = 0
         if len(self.path) > 2:
@@ -178,6 +185,7 @@ class RRTStar:
 
     def plot_tree(self):
 
+        plt.figure(figsize=(8, 8))
         plt.clf()
         plt.plot(self.config.polygon_without[:, 1], self.config.polygon_without[:, 0], 'k-', linewidth=4)
         plt.plot(self.config.polygon_within[:, 1], self.config.polygon_within[:, 0], 'k-', linewidth=4)
