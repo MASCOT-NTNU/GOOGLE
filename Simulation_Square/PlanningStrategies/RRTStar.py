@@ -1,33 +1,37 @@
+"""
+This script creates the strategies using RRT*
+Author: Yaolin Ge
+Contact: yaolin.ge@ntnu.no
+Date: 2022-03-07
+"""
+
+
+from usr_func import *
+from GOOGLE.Simulation_Square.Tree.TreeNode import TreeNode
+from GOOGLE.Simulation_Square.Config.Config import *
+from GOOGLE.Simulation_Square.Tree.Location import *
 
 
 class RRTStar:
 
-    obstacles = np.array(OBSTACLES)
-    polygon_obstacles = []
-
-    def __init__(self, config=None):
+    def __init__(self, knowledge=None):
+        self.knowledge = knowledge
+        self.obstacles = np.array(OBSTACLES)
+        self.polygon_obstacles = []
         self.nodes = []
-        self.config = config
         self.path = []
-        self.starting_node = TreeNode(self.config.starting_location, None, 0,
-                                      self.config.GPKernel.mu_prior_vector, self.config.GPKernel.Sigma_prior)
-        self.ending_node = TreeNode(self.config.ending_location, None, 0)
-        self.starting_node.EIBV = 0
-        self.setF(self.starting_node)
-        self.setF(self.ending_node)
-        self.counter_fig = 0
-        pass
+        self.starting_node = TreeNode(self.knowledge.starting_location, None, 0, self.knowledge)
+        self.ending_node = TreeNode(self.knowledge.ending_location, None, 0)
 
-    def setF(self, node):
-        node.F = self.config.GPKernel.getIndF(node.location.x, node.location.y)
+        self.counter_fig = 0
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
         t1 = time.time()
         for i in range(MAXNUM):
             # print("Iteration: ", i)
-            if np.random.rand() <= self.config.goal_sample_rate:
-                new_location = self.config.ending_location
+            if np.random.rand() <= self.knowledge.goal_sample_rate:
+                new_location = self.knowledge.ending_location
             else:
                 new_location = self.get_new_location()
 
@@ -87,12 +91,12 @@ class RRTStar:
 
     def get_next_node(self, node, location):
         node_temp = TreeNode(location)
-        if RRTStar.get_distance_between_nodes(node, node_temp) <= self.config.step:
+        if RRTStar.get_distance_between_nodes(node, node_temp) <= self.knowledge.step:
             return TreeNode(location, node)
         else:
             angle = np.math.atan2(location.y - node.location.y, location.x - node.location.x)
-            x = node.location.x + self.config.step * np.cos(angle)
-            y = node.location.y + self.config.step * np.sin(angle)
+            x = node.location.x + self.knowledge.step * np.cos(angle)
+            y = node.location.y + self.knowledge.step * np.sin(angle)
             location_next = Location(x, y)
         return TreeNode(location_next, node)
 
@@ -107,18 +111,20 @@ class RRTStar:
         ind_neighbour_nodes = self.get_neighbour_nodes(node_current)
 
         for i in range(len(ind_neighbour_nodes)):
-            if self.get_cost_between_nodes(self.nodes[ind_neighbour_nodes[i]], node_current) < \
+            node_neighbour = self.nodes[ind_neighbour_nodes[i]]
+            if self.get_cost_between_nodes(node_neighbour, node_current) < \
                     self.get_cost_between_nodes(node_nearest, node_current):
-                node_nearest = self.nodes[ind_neighbour_nodes[i]]
+                node_nearest = node_neighbour
 
             node_current.parent = node_nearest
             node_current.cost = self.get_cost_between_nodes(node_nearest, node_current)
 
         for i in range(len(ind_neighbour_nodes)):
-            cost_current_neighbour = self.get_cost_between_nodes(node_current, self.nodes[ind_neighbour_nodes[i]])
-            if cost_current_neighbour < self.nodes[ind_neighbour_nodes[i]].cost:
-                self.nodes[ind_neighbour_nodes[i]].cost = cost_current_neighbour
-                self.nodes[ind_neighbour_nodes[i]].parent = node_current
+            node_neighbour = self.nodes[ind_neighbour_nodes[i]]
+            cost_current_neighbour = self.get_cost_between_nodes(node_current, node_neighbour)
+            if cost_current_neighbour < node_neighbour.cost:
+                node_neighbour.cost = cost_current_neighbour
+                node_neighbour.parent = node_current
         return node_current, node_nearest
 
     def get_neighbour_nodes(self, node_current):
@@ -127,15 +133,16 @@ class RRTStar:
             if self.isIntersect(self.nodes[i], node_current):
                 distance_between_nodes.append(np.inf)
             else:
-                distance_between_nodes.append(RRTStar.get_distance_between_nodes(self.nodes[i], node_current))
+                distance_between_nodes.append(self.get_distance_between_nodes(self.nodes[i], node_current))
         ind_neighbours = np.where(np.array(distance_between_nodes) <= RADIUS_NEIGHBOUR)[0]
         return ind_neighbours
 
     def get_cost_between_nodes(self, node1, node2):
         cost = (node1.cost +
                 self.get_distance_between_nodes(node1, node2) +
-                self.get_reward_between_nodes(node1, node2) +
-                self.get_cost_according_to_budget(node1, node2))
+                self.get_cost_along_path(node1, node2))
+                # self.get_reward_between_nodes(node1, node2) +
+                # self.get_cost_according_to_budget(node1, node2))
                # RRTStar.get_cost_along_path(node1.location, node2.location)
         # print("Cost: ", cost)
         return cost
@@ -148,7 +155,7 @@ class RRTStar:
         return reward
 
     def get_eibv_for_node(self, node):
-        return self.config.GPKernel.eibv[node.F]
+        return self.knowledge.kernel.eibv[node.F]
 
     def get_cost_according_to_budget(self, node1, node2):
         N = 10
@@ -165,15 +172,15 @@ class RRTStar:
         return cost_total
 
     def get_cost_from_budget_field(self, location):
-        dist = np.sqrt((location.x - self.config.goal_location.x) ** 2 +
-                       (location.y - self.config.goal_location.y) ** 2)
+        dist = np.sqrt((location.x - self.knowledge.goal_location.x) ** 2 +
+                       (location.y - self.knowledge.goal_location.y) ** 2)
         return dist
 
     @staticmethod
-    def get_cost_along_path(location1, location2):
+    def get_cost_along_path(node1, node2):
         N = 10
-        x = np.linspace(location1.x, location2.x, N)
-        y = np.linspace(location1.y, location2.y, N)
+        x = np.linspace(node1.location.x, node2.location.x, N)
+        y = np.linspace(node1.location.y, node2.location.y, N)
         cost = []
         for i in range(N):
             cost.append(RRTStar.get_cost_from_field(Location(x[i], y[i])))
@@ -185,7 +192,9 @@ class RRTStar:
     @staticmethod
     def get_cost_from_field(location):
         # return 0
-        return 2**2 * np.exp(-((location.x - .5) ** 2 + (location.y - .5) ** 2) / .09)
+        # return 2**2 * np.exp(-((location.x - .5) ** 2 + (location.y - .5) ** 2) / .09)
+        return (1 - np.exp(-((location.x - .25) ** 2 + (location.y - .75) ** 2) / .09) +
+                2 ** 2 * np.exp(-((location.x - .25) ** 2 + (location.y - .25) ** 2) / .09))
 
 
     def isarrived(self, node):
@@ -249,8 +258,8 @@ class RRTStar:
 
         path = np.array(self.path)
         plt.plot(path[:, 0], path[:, 1], "-r")
-        plt.plot(self.config.starting_location.x, self.config.starting_location.y, 'k*', ms=10)
-        plt.plot(self.config.ending_location.x, self.config.ending_location.y, 'g*')
+        plt.plot(self.knowledge.starting_location.x, self.knowledge.starting_location.y, 'k*', ms=10)
+        plt.plot(self.knowledge.ending_location.x, self.knowledge.ending_location.y, 'g*')
         plt.grid()
         plt.title("rrt_star")
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))

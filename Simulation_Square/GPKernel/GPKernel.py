@@ -1,19 +1,21 @@
+"""
+This script builds the kernel for simulation
+Author: Yaolin Ge
+Contact: yaolin.ge@ntnu.no
+Date: 2022-03-07
+"""
+
+
 from usr_func import *
+from GOOGLE.Simulation_Square.Config.Config import *
 
 
 class GPKernel:
 
     def __init__(self):
-        pass
-        # self.getEIBVField()
-        # self.getVRField()
-        # self.getGradientField()
-        # self.getTotalCost()
-
-    def setup(self):
         self.getGrid()
         self.getMean()
-        self.getCov()
+        self.getSigma()
         self.getGroundTruth()
 
         self.mu_cond = self.mu_prior_vector
@@ -26,7 +28,7 @@ class GPKernel:
         self.x_vector = self.x_matrix.reshape(-1, 1)
         self.y_vector = self.y_matrix.reshape(-1, 1)
         self.grid_vector = np.hstack((self.x_vector, self.y_vector))
-        pass
+        print("Grid is built successfully!")
 
     def setCoef(self):
         self.sigma = SIGMA
@@ -34,6 +36,7 @@ class GPKernel:
         self.tau = NUGGET
         self.R = np.diagflat(self.tau ** 2)
         self.threshold = THRESHOLD
+        print("Coef is set successfully!")
 
     @staticmethod
     def getPrior(x, y):
@@ -46,9 +49,8 @@ class GPKernel:
     def getMean(self):
         self.mu_prior_vector = vectorise(self.getPrior(self.x_vector, self.y_vector))
         self.mu_prior_matrix = self.getPrior(self.x_matrix, self.y_matrix)
-        # plotf_matrix(self.mu_prior_matrix, "Prior")
 
-    def getCov(self):
+    def getSigma(self):
         self.setCoef()
         DistanceMatrix = cdist(self.grid_vector, self.grid_vector)
         self.Sigma_prior = self.sigma ** 2 * (1 + self.eta * DistanceMatrix) * np.exp(-self.eta * DistanceMatrix)
@@ -57,10 +59,9 @@ class GPKernel:
         self.mu_truth = (self.mu_prior_vector.reshape(-1, 1) +
                          np.linalg.cholesky(self.Sigma_prior) @
                          np.random.randn(len(self.mu_prior_vector)).reshape(-1, 1))
-        # plotf_vector(self.grid_vector, self.mu_truth, "Truth")
 
-    def getIndF(self, x, y):
-        x, y = map(vectorise, [x, y])
+    def getIndF(self, location):
+        x, y = map(vectorise, [location.x, location.y])
         DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
         DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
         DM = DM_x ** 2 + DM_y ** 2
@@ -98,45 +99,35 @@ class GPKernel:
 
     def getEIBVField(self):
         self.eibv = []
-        t1 = time.time()
         for i in range(self.grid_vector.shape[0]):
             F = np.zeros([1, self.grid_vector.shape[0]])
             F[0, i] = True
             self.eibv.append(GPKernel.getEIBV(self.mu_cond, self.Sigma_cond, F, self.R, THRESHOLD))
         self.eibv = normalise(np.array(self.eibv))
-        # print("EIBV: ", self.eibv)
-        t2 = time.time()
-        print("EIBV field time consumed: ", t2 - t1)
-        # plotf_vector(self.grid_vector, self.eibv, "EIBV")
 
-    def getBudgetField(self, goal):
-        t1 = time.time()
-        self.budget_field = np.sqrt((self.grid_vector[:, 0] - goal.x) ** 2 +
-                                    (self.grid_vector[:, 1] - goal.y) ** 2)
-        t2 = time.time()
-        print("Budget field time consumed: ", t2 - t1)
-
-    def getVRField(self):
-        self.vr = np.zeros_like(self.x_matrix)
-        t1 = time.time()
-        for i in range(self.x_matrix.shape[0]):
-            for j in range(self.x_matrix.shape[1]):
-                ind_F = self.getIndF(self.x_matrix[i, j], self.y_matrix[i, j])
-                F = np.zeros([1, self.grid_vector.shape[0]])
-                F[0, ind_F] = True
-                self.vr[i, j] = GPKernel.getVarianceReduction(self.Sigma_prior, F, self.R)
-        self.vr = normalise(self.vr)
-        t2 = time.time()
-        print("Time consumed: ", t2 - t1)
-        # plotf_vector(self.grid_vector, self.vr, "VR")
-        plotf_matrix(self.vr, "VR")
-        pass
-
-    def getGradientField(self):
-        self.gradient_prior = normalise(self.getGradient(self.mu_prior_matrix))
-        plotf_matrix(self.gradient_prior, "Gradient Prior")
-        pass
-
-    def getTotalCost(self):
-        self.cost_total = normalise(self.vr + self.gradient_prior)
-        plotf_matrix(self.cost_total, "Cost total")
+    # def getBudgetField(self, goal):
+    #     t1 = time.time()
+    #     self.budget_field = np.sqrt((self.grid_vector[:, 0] - goal.x) ** 2 +
+    #                                 (self.grid_vector[:, 1] - goal.y) ** 2)
+    #     t2 = time.time()
+    #     print("Budget field time consumed: ", t2 - t1)
+    #
+    # def getVRField(self):
+    #     self.vr = np.zeros_like(self.x_matrix)
+    #     t1 = time.time()
+    #     for i in range(self.x_matrix.shape[0]):
+    #         for j in range(self.x_matrix.shape[1]):
+    #             ind_F = self.getIndF(self.x_matrix[i, j], self.y_matrix[i, j])
+    #             F = np.zeros([1, self.grid_vector.shape[0]])
+    #             F[0, ind_F] = True
+    #             self.vr[i, j] = GPKernel.getVarianceReduction(self.Sigma_prior, F, self.R)
+    #     self.vr = normalise(self.vr)
+    #     t2 = time.time()
+    #     print("Time consumed: ", t2 - t1)
+    #     # plotf_vector(self.grid_vector, self.vr, "VR")
+    #
+    # def getGradientField(self):
+    #     self.gradient_prior = normalise(self.getGradient(self.mu_prior_matrix))
+    #
+    # def getTotalCost(self):
+    #     self.cost_total = normalise(self.vr + self.gradient_prior)

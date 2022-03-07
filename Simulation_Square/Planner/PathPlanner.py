@@ -1,21 +1,34 @@
+"""
+This script produces the planned trajectory
+Author: Yaolin Ge
+Contact: yaolin.ge@ntnu.no
+Date: 2022-03-07
+"""
 
-class GOOGLE:
 
-    def __init__(self):
-        self.trajectory = []
+from GOOGLE.Simulation_Square.Plotting.plotting_func import *
+from GOOGLE.Simulation_Square.GPKernel.GPKernel import *
+from GOOGLE.Simulation_Square.Tree.Location import Location
+from GOOGLE.Simulation_Square.Config.Config import *
+
+
+
+
+class PathPlanner:
+
+    trajectory = []
+
+    def __init__(self, starting_location=None, target_location=None):
+        self.gp = GPKernel()
+        self.gp.getEIBVField()
+        self.starting_location = starting_location
+        self.target_location = target_location
         pass
 
-    def pathplanner(self):
-        self.gp = GPKernel()
-        self.gp.setup()
-        self.gp.getEIBVField()
+    def run(self):
 
-        starting_loc = Location(1., .0)
-        goal_loc = Location(.0, .0)
-        self.gp.getBudgetField(goal_loc)
-
-        ind_min_cost = np.argmin(self.gp.eibv)
-        ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
+        # ind_min_cost = np.argmin(self.gp.eibv)
+        # ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
         # ending_loc = Location(.0, 1.)
 
         # plotf_vector(self.gp.grid_vector, self.gp.mu_truth, "Truth")
