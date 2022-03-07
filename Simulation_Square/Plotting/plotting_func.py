@@ -1,4 +1,13 @@
+"""
+This script contains all the necessary plotting functions
+Author: Yaolin Ge
+Contact: yaolin.ge@ntnu.no
+Date: 2022-03-07
+"""
+
+
 from usr_func import *
+from GOOGLE.Simulation_Square.Config.Config import *
 
 
 def plotf_vector(grid, values, title, alpha=None, cmap="Paired"):
@@ -34,9 +43,12 @@ def plotf_budget_radar(centre, radius):
 
 
 def plotf_trajectory(trajectory):
-    trajectory = np.array(trajectory)
-    plt.plot(trajectory[:, 0], trajectory[:, 1], 'k.-')
-    plt.plot(trajectory[:, 0], trajectory[:, 1], 'k-')
+    path = []
+    for location in trajectory:
+        path.append([location.x, location.y])
+    path = np.array(path)
+    plt.plot(path[:, 0], path[:, 1], 'k.-')
+    plt.plot(path[:, 0], path[:, 1], 'k-')
 
 
 def plotf_matrix(values, title):
