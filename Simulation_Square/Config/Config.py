@@ -5,6 +5,9 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-03-07
 """
 
+# == random seed
+import numpy
+numpy.random.seed(0)
 
 # == GP kernel
 SIGMA = .15
@@ -14,10 +17,10 @@ THRESHOLD = .6
 # ==
 
 # == RRTStar
-MAXNUM = 300
+MAXITER = 600
 GOAL_SAMPLE_RATE = .01
-STEP = .15
-RADIUS_NEIGHBOUR = .2
+STEPSIZE = .1
+RADIUS_NEIGHBOUR = .12
 DISTANCE_TOLERANCE = .05
 # ==
 

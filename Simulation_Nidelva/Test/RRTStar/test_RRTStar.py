@@ -28,7 +28,7 @@ rrtConfig = RRTConfig(polygon_within=polygon, polygon_without=munkholmen, depth=
                       distance_tolerance=DISTANCE_TOLERANCE)
 
 rrtstar = RRTStar(rrtConfig)
-rrtstar.get_shortest_path()
+rrtstar.get_shortest_trajectory()
 rrtstar.plot_tree()
 
 

@@ -5,13 +5,18 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-03-07
 """
 
-
+from usr_func import *
 from GOOGLE.Simulation_Square.Plotting.plotting_func import *
 from GOOGLE.Simulation_Square.GPKernel.GPKernel import *
 from GOOGLE.Simulation_Square.Tree.Location import Location
 from GOOGLE.Simulation_Square.Config.Config import *
+from GOOGLE.Simulation_Square.Tree.Knowledge import Knowledge
+from GOOGLE.Simulation_Square.PlanningStrategies.RRTStar import RRTStar
 
-
+np.random.seed(0)
+BUDGET = 2.5
+NUM_STEPS = 50
+FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/rrt_star/"
 
 
 class PathPlanner:
@@ -23,13 +28,8 @@ class PathPlanner:
         self.gp.getEIBVField()
         self.starting_location = starting_location
         self.target_location = target_location
-        pass
 
     def run(self):
-
-        # ind_min_cost = np.argmin(self.gp.eibv)
-        # ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
-        # ending_loc = Location(.0, 1.)
 
         # plotf_vector(self.gp.grid_vector, self.gp.mu_truth, "Truth")
         # plt.show()
@@ -39,26 +39,34 @@ class PathPlanner:
 
         budget = BUDGET
         distance_travelled = 0
-        current_loc = [starting_loc.x, starting_loc.y]
-        self.trajectory.append([starting_loc.x, starting_loc.y])
+        current_loc = self.starting_location
+        end_loc = self.target_location
+        self.trajectory.append(current_loc)
 
-        print("Total budget: ", budget)
+
+        ind_min_cost = np.argmin(self.gp.eibv)
+        ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
 
         for i in range(NUM_STEPS):
             print("Step: ", i)
+            # print("Total budget: ", budget)
 
             # == path planning ==
-            rrtconfig = RRTConfig(starting_location=starting_loc, ending_location=ending_loc,
-                                  goal_sample_rate=GOAL_SAMPLE_RATE, step=STEP, GPKernel=self.gp,
-                                  budget=budget, goal_location=goal_loc)
-            self.rrt = RRTStar(rrtconfig)
-            self.rrt.expand_trees()
-            self.rrt.get_shortest_path()
-            path = self.rrt.path
+            t1 = time.time()
+            knowledge = Knowledge(starting_location=current_loc, ending_location=end_loc,
+                                  goal_location=self.target_location, goal_sample_rate=GOAL_SAMPLE_RATE,
+                                  step_size=STEPSIZE, budget=budget, kernel=self.gp, mu=self.gp.mu_cond,
+                                  Sigma=self.gp.Sigma_cond)
 
+            self.rrtstar = RRTStar(knowledge)
+            self.rrtstar.expand_trees()
+            self.rrtstar.get_shortest_trajectory()
+            path = self.rrtstar.trajectory
+            t2 = time.time()
+            print("Path planning takes: ", t2 - t1)
 
             # == plotting ==
-            fig = plt.figure(figsize=(20, 5))
+            fig = plt.figure(figsize=(25, 5))
             gs = GridSpec(nrows=1, ncols=4)
             ax = fig.add_subplot(gs[0])
             cmap = get_cmap("RdBu", 10)
@@ -73,43 +81,41 @@ class PathPlanner:
             plotf_trajectory(self.trajectory)
 
             ax = fig.add_subplot(gs[3])
-            self.rrt.plot_tree()
-            plotf_vector(self.gp.grid_vector, .6 * self.gp.eibv + .45 * self.gp.budget_field, "EIBV cost valley + Budget Radar", alpha=.1, cmap=cmap)
-            plotf_budget_radar([goal_loc.x, goal_loc.y], budget)
+            self.rrtstar.plot_tree()
+            plotf_vector(self.gp.grid_vector, self.gp.eibv, "EIBV cost valley ", alpha=.1, cmap=cmap)
+            # plotf_budget_radar([goal_loc.x, goal_loc.y], budget)
             # plt.show()
             plt.savefig(FIGPATH + "P_{:03d}.png".format(i))
             plt.close("all")
             # == end plotting ==
 
+            next_loc = Location(path[-2, 0], path[-2, 1])
+            discrepancy = np.sqrt((current_loc.x - self.target_location.x) ** 2 +
+                                  (current_loc.y - self.target_location.y) ** 2)
+            if discrepancy <= DISTANCE_TOLERANCE:
+                print("Arrived")
+                break
 
-            next_loc = path[-2, :]
             self.trajectory.append(next_loc)
-            distance_travelled = np.sqrt((current_loc[0] - next_loc[0]) ** 2 +
-                                         (current_loc[1] - next_loc[1]) ** 2)
+            distance_travelled += np.sqrt((current_loc.x - next_loc.x) ** 2 +
+                                          (current_loc.y - next_loc.y) ** 2)
             current_loc = next_loc
 
-            budget = budget - distance_travelled
+            budget = BUDGET - distance_travelled
             print("Budget left: ", budget)
+            print("Distance travelled: ", distance_travelled)
 
-            ind_F = self.gp.getIndF(next_loc[0], next_loc[1])
+            ind_F = self.gp.getIndF(current_loc)
             F = np.zeros([1, self.gp.grid_vector.shape[0]])
             F[0, ind_F] = True
             self.gp.mu_cond, self.gp.Sigma_cond = self.gp.GPupd(self.gp.mu_cond, self.gp.Sigma_cond, F,
                                                                 self.gp.R, F @ self.gp.mu_truth)
             self.gp.getEIBVField()
-            self.gp.getBudgetField(goal_loc)
-
-            starting_loc = Location(next_loc[0], next_loc[1])
-            node_start = TreeNode(starting_loc)
-            node_end = TreeNode(ending_loc)
-            if RRTStar.get_distance_between_nodes(node_start, node_end) < DISTANCE_TOLERANCE:
-                print("Arrived")
-
-            ind_min_cost = np.argmin(.6 * self.gp.eibv + .45 * self.gp.budget_field)
-            ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
-
-            #     starting_loc = Location(.0, 1.)
-            #     ending_loc = Location(1., 1.)
 
 
-        pass
+if __name__ == "__main__":
+    starting_loc = Location(.0, 1.)
+    target_loc = Location(1., .0)
+    p = PathPlanner(starting_location=starting_loc, target_location=target_loc)
+    p.run()
+

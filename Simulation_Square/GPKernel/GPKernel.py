@@ -45,6 +45,13 @@ class GPKernel:
                 # 1 - np.exp(- ((x - .5) ** 2 + (y - .0) ** 2) / .004) +
                 # 1 - np.exp(- ((x - .99) ** 2 + (y - .1) ** 2) / .1))
 
+    def getIndF(self, location):
+        x, y = map(vectorise, [location.x, location.y])
+        DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
+        DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
+        DM = DM_x ** 2 + DM_y ** 2
+        ind_F = np.argmin(DM, axis = 1)
+        return ind_F
 
     def getMean(self):
         self.mu_prior_vector = vectorise(self.getPrior(self.x_vector, self.y_vector))
@@ -59,14 +66,6 @@ class GPKernel:
         self.mu_truth = (self.mu_prior_vector.reshape(-1, 1) +
                          np.linalg.cholesky(self.Sigma_prior) @
                          np.random.randn(len(self.mu_prior_vector)).reshape(-1, 1))
-
-    def getIndF(self, location):
-        x, y = map(vectorise, [location.x, location.y])
-        DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
-        DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
-        DM = DM_x ** 2 + DM_y ** 2
-        ind_F = np.argmin(DM, axis = 1)
-        return ind_F
 
     @staticmethod
     def GPupd(mu, Sigma, F, R, measurement):
