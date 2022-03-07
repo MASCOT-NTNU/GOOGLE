@@ -1,12 +1,17 @@
+"""
+This script only contains the tree node
+Author: Yaolin Ge
+Contact: yaolin.ge@ntnu.no
+Date: 2022-03-07
+"""
+
+
 class TreeNode:
 
-    def __init__(self, location=None, parent=None, cost=None, mu=None, Sigma=None, F=None, EIBV=None):
+    def __init__(self, location=None, parent=None, cost=None, knowledge=None):
         self.location = location
         self.parent = parent
         self.cost = cost
-        self.mu = mu
-        self.Sigma = Sigma
-        self.F = F
-        self.EIBV = EIBV
-        pass
+        self.knowledge = knowledge
+
 

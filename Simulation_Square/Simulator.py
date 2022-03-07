@@ -13,10 +13,6 @@ NUM_STEPS = 50
 BUDGET = 7
 
 
-def normalise(x):
-    return (x - np.amin(x)) / (np.amax(x) - np.amin(x))
-
-
 if __name__ == "__main__":
     # starting_loc = Location(.0, .0)
     # ending_loc = Location(.0, 1.)
@@ -28,8 +24,11 @@ if __name__ == "__main__":
     # rrt.expand_trees()
     # rrt.get_shortest_path()
     # rrt.plot_tree()
-    g = GOOGLE()
-    g.pathplanner()
+    # g = GOOGLE()
+    # g.pathplanner()
+    x = np.arange(12)
+    print(normalise(x, .5, 1))
+
     pass
 
 
