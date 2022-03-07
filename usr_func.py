@@ -21,6 +21,7 @@ SCIENTIFIC COMPUTING
 '''
 import numpy as np
 from scipy.stats import mvn, norm
+from scipy.spatial.distance import cdist
 from skgstat import Variogram
 import pandas as pd
 
@@ -32,11 +33,17 @@ from scipy.interpolate import interpn
 from scipy.interpolate import NearestNDInterpolator
 
 '''
+GEOMETRY
+'''
+from shapely.geometry import Point, Polygon, LineString
+
+'''
 Plotting
 '''
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import FormatStrFormatter
-from matplotlib import cm
+from matplotlib.cm import get_cmap
 import matplotlib.path as mplPath  # used to determine whether a point is inside the grid or not
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams.update({'font.size': 20})
