@@ -140,17 +140,13 @@ class RRTStar:
         return ind_neighbours
 
     def get_cost_between_nodes(self, node1, node2):
-        if not self.knowledge.gohome:
-            cost = (node1.cost +
-                    self.get_distance_between_nodes(node1, node2) +
-                    self.get_cost_according_to_budget(node1, node2) +
-                    (10 * self.get_reward_between_nodes(node1, node2)))
-                    # self.get_cost_along_path(node1, node2))
-                   # RRTStar.get_cost_along_path(node1.location, node2.location)
-            # print("Cost: ", cost)
-        else:
-            cost = (node1.cost +
-                    self.get_distance_between_nodes(node1, node2))
+        cost = (node1.cost +
+                self.get_distance_between_nodes(node1, node2) +
+                self.get_cost_according_to_budget(node1, node2) +
+                (10 * self.get_reward_between_nodes(node1, node2)))
+                # self.get_cost_along_path(node1, node2))
+               # RRTStar.get_cost_along_path(node1.location, node2.location)
+        # print("Cost: ", cost)
         return cost
 
     def get_reward_between_nodes(self, node1, node2):

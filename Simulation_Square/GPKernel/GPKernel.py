@@ -26,9 +26,13 @@ class GPKernel:
         self.x = np.linspace(XLIM[0], XLIM[1], NX)
         self.y = np.linspace(YLIM[0], YLIM[1], NY)
         self.x_matrix, self.y_matrix = np.meshgrid(self.x, self.y)
-        self.x_vector = self.x_matrix.reshape(-1, 1)
-        self.y_vector = self.y_matrix.reshape(-1, 1)
-        self.grid_vector = np.hstack((self.x_vector, self.y_vector))
+        self.grid_vector = []
+        for i in range(self.x_matrix.shape[0]):
+            for j in range(self.x_matrix.shape[1]):
+                self.grid_vector.append([self.x_matrix[i, j], self.y_matrix[i, j]])
+        self.grid_vector = np.array(self.grid_vector)
+        self.x_vector = self.grid_vector[:, 0].reshape(-1, 1)
+        self.y_vector = self.grid_vector[:, 1].reshape(-1, 1)
         print("Grid is built successfully!")
 
     def setCoef(self):
@@ -85,18 +89,6 @@ class GPKernel:
                      mvn.mvnun(-np.inf, threshold, mu[i], Variance[i])[0] ** 2)
         return EIBV
 
-    @staticmethod
-    def getVarianceReduction(Sigma, F, R):
-        Reduction = Sigma @ F.T @ np.linalg.solve(F @ Sigma @ F.T + R, F @ Sigma)
-        vr = np.sum(np.diag(Reduction))
-        return vr
-
-    @staticmethod
-    def getGradient(field):
-        gradient_x, gradient_y = np.gradient(field)
-        gradient_norm = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
-        return gradient_norm
-
     def getEIBVField(self):
         self.eibv = []
         for i in range(self.grid_vector.shape[0]):
@@ -117,8 +109,8 @@ class GPKernel:
             self.budget_ellipse_b = np.sqrt(self.budget_ellipse_a ** 2 - self.budget_ellipse_c ** 2)
             print("a: ", self.budget_ellipse_a, "b: ", self.budget_ellipse_b, "c: ", self.budget_ellipse_c)
 
-            x_wgs = self.grid_vector[:, 0] - self.budget_middle_location.x
-            y_wgs = self.grid_vector[:, 1] - self.budget_middle_location.y
+            x_wgs = self.x_vector - self.budget_middle_location.x
+            y_wgs = self.y_vector - self.budget_middle_location.y
             self.penalty_budget = []
             for i in range(len(self.grid_vector)):
                 x_usr = (x_wgs[i] * np.cos(self.budget_ellipse_angle) +
@@ -135,9 +127,6 @@ class GPKernel:
             self.penalty_budget = np.ones_like(self.grid_vector[:, 0]) * np.inf
             ind_end_loc = self.getIndF(end_loc)
             self.penalty_budget[ind_end_loc] = 0
-            print(self.penalty_budget)
-            print("ind_end_loc: ", ind_end_loc)
-            print(self.penalty_budget[ind_end_loc])
 
         t2 = time.time()
         print("budget field consumed: ", t2 - t1)
@@ -155,23 +144,32 @@ class GPKernel:
         angle = np.math.atan2(delta_y, delta_x)
         return angle
 
-    #
-    # def getVRField(self):
-    #     self.vr = np.zeros_like(self.x_matrix)
-    #     t1 = time.time()
-    #     for i in range(self.x_matrix.shape[0]):
-    #         for j in range(self.x_matrix.shape[1]):
-    #             ind_F = self.getIndF(self.x_matrix[i, j], self.y_matrix[i, j])
-    #             F = np.zeros([1, self.grid_vector.shape[0]])
-    #             F[0, ind_F] = True
-    #             self.vr[i, j] = GPKernel.getVarianceReduction(self.Sigma_prior, F, self.R)
-    #     self.vr = normalise(self.vr)
-    #     t2 = time.time()
-    #     print("Time consumed: ", t2 - t1)
-    #     # plotf_vector(self.grid_vector, self.vr, "VR")
-    #
-    # def getGradientField(self):
-    #     self.gradient_prior = normalise(self.getGradient(self.mu_prior_matrix))
+    def getGradientField(self):
+        self.mu_cond_matrix = np.zeros_like(self.x_matrix)
+        for i in range(self.x_matrix.shape[0]):
+            for j in range(self.x_matrix.shape[1]):
+                self.mu_cond_matrix[i, j] = self.mu_cond[i*NY+j]
+        gradient_x, gradient_y = np.gradient(self.mu_cond_matrix)
+        self.gradient_matrix = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
+        self.gradient_vector = []
+        for i in range(self.gradient_matrix.shape[0]):
+            for j in range(self.gradient_matrix.shape[1]):
+                self.gradient_vector.append(self.gradient_matrix[i, j])
+        self.gradient_vector = np.array(self.gradient_vector)
 
-    # def getTotalCost(self):
-    #     self.cost_total = normalise(self.vr + self.gradient_prior)
+    def getVarianceReductionField(self):
+        self.vr = []
+        for i in range(len(self.grid_vector)):
+            ind_F = self.getIndF(Location(self.grid_vector[i, 0], self.grid_vector[i, 1]))
+            F = np.zeros([1, self.grid_vector.shape[0]])
+            F[0, ind_F] = True
+            self.vr.append(self.getVarianceReduction(self.Sigma_cond, F, self.R))
+        self.vr = 1 - normalise(self.vr)
+
+    @staticmethod
+    def getVarianceReduction(Sigma, F, R):
+        Reduction = Sigma @ F.T @ np.linalg.solve(F @ Sigma @ F.T + R, F @ Sigma)
+        vr = np.sum(np.diag(Reduction))
+        return vr
+
+
