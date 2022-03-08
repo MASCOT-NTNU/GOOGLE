@@ -9,7 +9,7 @@ Date: 2022-03-07
 class Knowledge:
 
     def __init__(self, starting_location=None, ending_location=None, goal_location=None, goal_sample_rate=None,
-                 step_size=None, budget=None, kernel=None, mu=None, Sigma=None, F=None, EIBV=None):
+                 step_size=None, budget=None, kernel=None, mu=None, Sigma=None, F=None, EIBV=None, gohome=False):
         self.starting_location = starting_location
         self.ending_location = ending_location
         self.goal_location = goal_location
@@ -23,5 +23,7 @@ class Knowledge:
         self.Sigma = Sigma
         self.F = F
         self.EIBV = EIBV
+
+        self.gohome = gohome
 
 

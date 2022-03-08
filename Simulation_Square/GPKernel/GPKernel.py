@@ -4,10 +4,11 @@ Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
 Date: 2022-03-07
 """
-
+import numpy as np
 
 from usr_func import *
 from GOOGLE.Simulation_Square.Config.Config import *
+from GOOGLE.Simulation_Square.Tree.Location import Location
 
 
 class GPKernel:
@@ -104,12 +105,56 @@ class GPKernel:
             self.eibv.append(GPKernel.getEIBV(self.mu_cond, self.Sigma_cond, F, self.R, THRESHOLD))
         self.eibv = normalise(np.array(self.eibv))
 
-    # def getBudgetField(self, goal):
-    #     t1 = time.time()
-    #     self.budget_field = np.sqrt((self.grid_vector[:, 0] - goal.x) ** 2 +
-    #                                 (self.grid_vector[:, 1] - goal.y) ** 2)
-    #     t2 = time.time()
-    #     print("Budget field time consumed: ", t2 - t1)
+    def getBudgetField(self, start_loc, end_loc, budget):
+        t1 = time.time()
+        if budget >= BUDGET_MARGIN:
+            self.budget_middle_location = self.get_middle_location(start_loc, end_loc)
+            self.budget_ellipse_angle = self.get_angle_between_locations(start_loc, end_loc)
+
+            self.budget_ellipse_a = budget / 2
+            self.budget_ellipse_c = np.sqrt((start_loc.x - end_loc.x) ** 2 +
+                                            (start_loc.y - end_loc.y) ** 2) / 2
+            self.budget_ellipse_b = np.sqrt(self.budget_ellipse_a ** 2 - self.budget_ellipse_c ** 2)
+            print("a: ", self.budget_ellipse_a, "b: ", self.budget_ellipse_b, "c: ", self.budget_ellipse_c)
+
+            x_wgs = self.grid_vector[:, 0] - self.budget_middle_location.x
+            y_wgs = self.grid_vector[:, 1] - self.budget_middle_location.y
+            self.penalty_budget = []
+            for i in range(len(self.grid_vector)):
+                x_usr = (x_wgs[i] * np.cos(self.budget_ellipse_angle) +
+                         y_wgs[i] * np.sin(self.budget_ellipse_angle))
+                y_usr = (- x_wgs[i] * np.sin(self.budget_ellipse_angle) +
+                         y_wgs[i] * np.cos(self.budget_ellipse_angle))
+
+                if (x_usr / self.budget_ellipse_a) ** 2 + (y_usr / self.budget_ellipse_b) ** 2 <= 1:
+                    self.penalty_budget.append(0)
+                else:
+                    self.penalty_budget.append(np.inf)
+            self.penalty_budget = np.array(self.penalty_budget)
+        else:
+            self.penalty_budget = np.ones_like(self.grid_vector[:, 0]) * np.inf
+            ind_end_loc = self.getIndF(end_loc)
+            self.penalty_budget[ind_end_loc] = 0
+            print(self.penalty_budget)
+            print("ind_end_loc: ", ind_end_loc)
+            print(self.penalty_budget[ind_end_loc])
+
+        t2 = time.time()
+        print("budget field consumed: ", t2 - t1)
+
+    @staticmethod
+    def get_middle_location(location1, location2):
+        x_middle = (location1.x + location2.x) / 2
+        y_middle = (location1.y + location2.y) / 2
+        return Location(x_middle, y_middle)
+
+    @staticmethod
+    def get_angle_between_locations(location1, location2):
+        delta_y = location2.y - location1.y
+        delta_x = location2.x - location1.x
+        angle = np.math.atan2(delta_y, delta_x)
+        return angle
+
     #
     # def getVRField(self):
     #     self.vr = np.zeros_like(self.x_matrix)
@@ -127,6 +172,6 @@ class GPKernel:
     #
     # def getGradientField(self):
     #     self.gradient_prior = normalise(self.getGradient(self.mu_prior_matrix))
-    #
+
     # def getTotalCost(self):
     #     self.cost_total = normalise(self.vr + self.gradient_prior)
