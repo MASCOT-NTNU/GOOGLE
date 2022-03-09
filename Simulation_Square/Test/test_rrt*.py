@@ -22,7 +22,7 @@ class PathPlanner:
 
     def __init__(self, starting_location=None, ending_location=None):
         self.gp = GPKernel()
-        self.gp.getEIBVField()
+        self.gp.get_eibv_field()
         self.starting_location = starting_location
         self.ending_location = ending_location
         self.knowledge = Knowledge()

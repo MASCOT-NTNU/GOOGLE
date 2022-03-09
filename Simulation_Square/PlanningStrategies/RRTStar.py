@@ -18,6 +18,7 @@ class RRTStar:
         self.knowledge = knowledge
         self.obstacles = np.array(OBSTACLES)
         self.polygon_obstacles = []
+        self.set_obstacles()
         self.nodes = []
         self.trajectory = []
         self.starting_node = TreeNode(self.knowledge.starting_location, None, 0, self.knowledge)
@@ -143,7 +144,7 @@ class RRTStar:
         cost = (node1.cost +
                 self.get_distance_between_nodes(node1, node2) +
                 self.get_cost_according_to_budget(node1, node2) +
-                (10 * self.get_reward_between_nodes(node1, node2)))
+                self.get_reward_between_nodes(node1, node2))
                 # self.get_cost_along_path(node1, node2))
                # RRTStar.get_cost_along_path(node1.location, node2.location)
         # print("Cost: ", cost)
@@ -157,7 +158,7 @@ class RRTStar:
         return reward
 
     def get_eibv_at_node(self, node):
-        node.knowledge.F = self.knowledge.kernel.getIndF(node.location)
+        node.knowledge.F = self.knowledge.kernel.get_ind_F(node.location)
         node.knowledge.EIBV = self.knowledge.kernel.eibv[node.knowledge.F]
 
     def get_cost_according_to_budget(self, node1, node2):
