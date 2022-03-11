@@ -294,8 +294,8 @@ class RRTStar:
                           height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),
                           edgecolor='r', fc='None', lw=2)
         plt.gca().add_patch(ellipse)
-        plt.grid()
-        plt.title("rrt*")
+        # plt.grid()
+        # plt.title("rrt*")
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
         # plt.show()
 
