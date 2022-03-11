@@ -175,7 +175,7 @@ if __name__ == "__main__":
     p = PathPlanner(starting_location=starting_loc, target_location=target_loc)
     p.run()
 
-
+#%%
 # plotf_vector(p.gp.grid_vector, p.gp.penalty_obstacle, 'obstacle')
 # plt.show()
 

@@ -10,7 +10,8 @@ from usr_func import *
 from GOOGLE.Simulation_Square.Config.Config import *
 
 
-def plotf_vector(grid, values, title, alpha=None, cmap="Paired"):
+def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
+                 vmin=None, vmax=None, ticks=None):
     x = grid[:, 0]
     y = grid[:, 1]
     nx = 100
@@ -25,10 +26,12 @@ def plotf_vector(grid, values, title, alpha=None, cmap="Paired"):
 
     grid_values = griddata(grid, values, (grid_x, grid_y))
     # plt.figure()
-    plt.scatter(grid_x, grid_y, c=grid_values, cmap=cmap, alpha=alpha)
+    plt.scatter(grid_x, grid_y, c=grid_values, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax)
     plt.xlim(XLIM)
     plt.ylim(YLIM)
-    plt.colorbar()
+    if colorbar:
+        cbar = plt.colorbar(ticks=ticks)
+        cbar.ax.set_title(cbar_title)
     plt.title(title)
     # plt.show()
 
@@ -47,8 +50,8 @@ def plotf_trajectory(trajectory):
     for location in trajectory:
         path.append([location.x, location.y])
     path = np.array(path)
-    plt.plot(path[:, 0], path[:, 1], 'k.-')
-    plt.plot(path[:, 0], path[:, 1], 'k-')
+    plt.plot(path[:, 0], path[:, 1], 'y.-')
+    plt.plot(path[:, 0], path[:, 1], 'y-')
 
 
 def plotf_matrix(values, title):
