@@ -1,14 +1,14 @@
 
 
-from GOOGLE.RRTStar.RRTStar import *
+from GOOGLE.Simulation_Nidelva.RRTStar.RRTStar import *
 from usr_func import *
 
 
-PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Config/OpArea.csv"
-PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Config/Munkholmen.csv"
+PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_Nidelva/Config/OpArea.csv"
+PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_Nidelva/Config/Munkholmen.csv"
 DISTANCE_LATERAL = 150
 DISTANCE_VERTICAL = .5
-DISTANCE_TOLERANCE = 500
+DISTANCE_TOLERANCE = 100
 DISTANCE_NEIGHBOUR = 200
 DEPTH = [0, 2, 4]
 GOAL_SAMPLE_RATE = .05
@@ -28,8 +28,8 @@ rrtConfig = RRTConfig(polygon_within=polygon, polygon_without=munkholmen, depth=
                       distance_tolerance=DISTANCE_TOLERANCE)
 
 rrtstar = RRTStar(rrtConfig)
-rrtstar.get_shortest_trajectory()
+rrtstar.get_shortest_path()
 rrtstar.plot_tree()
-
+# plt.show()
 
 

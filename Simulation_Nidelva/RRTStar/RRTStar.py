@@ -77,11 +77,19 @@ class RRTStar:
             if self.isarrived(next_node):
                 self.ending_node.parent = next_node
                 self.nodes.append(self.ending_node)
-                # break
+                break
             else:
                 self.nodes.append(next_node)
             pass
         pass
+
+    def get_bigger_box(self):
+        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_within[:, 0],
+                                                                               self.config.polygon_within[:, 1],
+                                                                               self.config.depth])
+        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_within[:, 0],
+                                                                               self.config.polygon_within[:, 1],
+                                                                               self.config.depth])
 
     def get_new_location(self):
         while True:
@@ -91,14 +99,6 @@ class RRTStar:
                 depth = np.random.uniform(self.box_depth_min, self.box_depth_max)
                 location = Location(lat, lon, depth)
                 return location
-
-    def get_bigger_box(self):
-        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_within[:, 0],
-                                                                               self.config.polygon_within[:, 1],
-                                                                               self.config.depth])
-        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_within[:, 0],
-                                                                               self.config.polygon_within[:, 1],
-                                                                               self.config.depth])
 
     def get_nearest_node(self, nodes, location):
         dist = []
