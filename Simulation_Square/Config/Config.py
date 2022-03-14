@@ -10,10 +10,10 @@ import numpy
 # numpy.random.seed(0)
 
 # == GP kernel
-SIGMA = .15
+SIGMA = .1
 LATERAL_RANGE = .7
 NUGGET = .01
-THRESHOLD = .6
+THRESHOLD = .7
 # ==
 
 # == RRTStar
@@ -35,6 +35,7 @@ NY = 25
 # == Budget
 BUDGET_MARGIN = .2
 BUDGET_ELLIPSE_B_MARGIN = .1
+BUDGET_ELLIPSE_B_MARGIN_Tree = .5
 
 # == Penalty
 PENALTY = 10
@@ -54,7 +55,7 @@ OBSTACLES = [[[.4, .4], [.6, .5], [.5, .6], [.3, .4]]]
 # ==
 
 # == Path planner
-BUDGET = 2
+BUDGET = 5
 NUM_STEPS = 80
 FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Square/rrt_star/"
 # ==

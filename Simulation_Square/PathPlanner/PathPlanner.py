@@ -4,6 +4,7 @@ Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
 Date: 2022-03-07
 """
+import numpy as np
 
 from usr_func import *
 from GOOGLE.Simulation_Square.Plotting.plotting_func import *
@@ -25,6 +26,8 @@ class PathPlanner:
         self.goal_location = goal_location
         self.budget = budget
         self.gp = GPKernel()
+
+        self.gp.mu_cond = np.zeros_like(self.gp.mu_cond) # TODO: Wrong prior
 
     def plot_synthetic_field(self):
         plotf_vector(self.gp.grid_vector, self.gp.mu_truth, "Truth")
@@ -72,6 +75,7 @@ class PathPlanner:
                     self.plot_knowledge(i)
                 else:
                     print("Home already! Mission complete")
+                    self.plot_knowledge(i)
                     break
 
             self.distance_travelled = get_distance_between_locations(self.current_location, self.next_location)
@@ -153,6 +157,7 @@ if __name__ == "__main__":
     starting_loc = Location(.0, .0)
     goal_loc = Location(.0, 1.)
     p = PathPlanner(starting_location=starting_loc, goal_location=goal_loc, budget=BUDGET)
+    # p.plot_synthetic_field()
     p.run()
 
 
