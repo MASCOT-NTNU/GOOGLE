@@ -17,6 +17,7 @@ class RRTStar:
         self.nodes = []
         self.trajectory = []
         self.maxiter = MAXITER_EASY
+        self.radius_neighbour = RADIUS_NEIGHBOUR
         self.knowledge = knowledge
 
         self.obstacles = np.array(OBSTACLES)
@@ -27,7 +28,6 @@ class RRTStar:
         self.ending_node = TreeNode(self.knowledge.ending_location, None, 0, self.knowledge)
         self.goal_node = TreeNode(self.knowledge.goal_location, None, 0, self.knowledge)
 
-        # self.get_budget_field()
         self.counter_fig = 0
 
     def expand_trees(self):
@@ -36,7 +36,12 @@ class RRTStar:
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
-                new_location = self.get_new_location()
+                if self.knowledge.kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
+                    # print("Here comes new sampling distribution!")
+                    new_location = self.get_new_location_within_budget_ellipse()
+                    self.radius_neighbour = RADIUS_NEIGHBOUR
+                else:
+                    new_location = self.get_new_location()
 
             nearest_node = self.get_nearest_node(self.nodes, new_location)
             next_node = self.get_next_node(nearest_node, new_location)
@@ -60,6 +65,22 @@ class RRTStar:
         y = np.random.uniform(YLIM[0], YLIM[1])
         location = Location(x, y)
         return location
+
+    def get_new_location_within_budget_ellipse(self):
+        # t1 = time.time()
+        theta = np.random.uniform(0, 2 * np.pi)
+        module = np.sqrt(np.random.rand())
+        x_usr = self.knowledge.kernel.budget_ellipse_a * module * np.cos(theta)
+        y_usr = self.knowledge.kernel.budget_ellipse_b * module * np.sin(theta)
+        x_wgs = (self.knowledge.kernel.budget_middle_location.x +
+                 x_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle) -
+                 y_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle))
+        y_wgs = (self.knowledge.kernel.budget_middle_location.y +
+                 x_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle) +
+                 y_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle))
+        # t2 = time.time()
+        # print("Generating location takes: ", t2 - t1)
+        return Location(x_wgs, y_wgs)
 
     def get_nearest_node(self, nodes, location):
         dist = []
@@ -113,7 +134,7 @@ class RRTStar:
                 distance_between_nodes.append(np.inf)
             else:
                 distance_between_nodes.append(self.get_distance_between_nodes(self.nodes[i], node_current))
-        ind_neighbours = np.where(np.array(distance_between_nodes) <= RADIUS_NEIGHBOUR)[0]
+        ind_neighbours = np.where(np.array(distance_between_nodes) <= self.radius_neighbour)[0]
         return ind_neighbours
 
     def get_cost_between_nodes(self, node1, node2):
