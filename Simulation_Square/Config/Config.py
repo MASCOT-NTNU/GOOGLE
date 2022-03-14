@@ -7,7 +7,7 @@ Date: 2022-03-07
 
 # == random seed
 import numpy
-numpy.random.seed(0)
+# numpy.random.seed(0)
 
 # == GP kernel
 SIGMA = .15
@@ -50,4 +50,12 @@ PENALTY = 10
 OBSTACLES = [[[.4, .4], [.6, .5], [.5, .6], [.3, .4]]]
 # OBSTACLES = [[]]
 # ==
+
+# == Path planner
+BUDGET = 5
+NUM_STEPS = 80
+FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Square/rrt_star/"
+# ==
+
+
 

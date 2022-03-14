@@ -21,7 +21,7 @@ class Knowledge:
 
         self.mu = mu
         self.Sigma = Sigma
-        self.F = F
-        self.EIBV = EIBV
+        # self.F = F
+        # self.EIBV = EIBV
 
 

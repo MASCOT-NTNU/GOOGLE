@@ -51,12 +51,12 @@ class PathPlanner:
         # ending_loc = self.target_location
         self.trajectory.append(current_loc)
 
-        self.cost_valley = (self.gp.eibv +
-                            self.gp.penalty_budget +
+        self.cost_valley = (self.gp.cost_eibv +
+                            self.gp.cost_budget +
                             self.gp.gradient_vector +
-                            self.gp.vr +
-                            self.gp.penalty_obstacle +
-                            self.gp.penalty_direction)
+                            self.gp.cost_vr +
+                            self.gp.cost_obstacle +
+                            self.gp.cost_direction)
         ind_min_cost = np.argmin(self.cost_valley)
         ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
 
@@ -103,12 +103,12 @@ class PathPlanner:
             self.gp.get_obstacle_field()
             self.gp.get_direction_field(current_loc, previous_loc)
             # self.cost_valley = self.gp.eibv + self.gp.penalty_budget
-            self.cost_valley = (self.gp.eibv +
-                                self.gp.penalty_budget +
+            self.cost_valley = (self.gp.cost_eibv +
+                                self.gp.cost_budget +
                                 self.gp.gradient_vector +
-                                self.gp.vr +
-                                self.gp.penalty_obstacle +
-                                self.gp.penalty_direction)
+                                self.gp.cost_vr +
+                                self.gp.cost_obstacle +
+                                self.gp.cost_direction)
             ind_min_cost = np.argmin(self.cost_valley)
             ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
 
@@ -150,7 +150,7 @@ class PathPlanner:
         plotf_vector(self.gp.grid_vector, self.cost_valley, "EIBV+BUDGET+Gradient+VR ", alpha=.1, cmap=cmap)
 
         ax = fig.add_subplot(gs[3])
-        plotf_vector(self.gp.grid_vector, self.gp.eibv, "EIBV", cmap=cmap)
+        plotf_vector(self.gp.grid_vector, self.gp.cost_eibv, "EIBV", cmap=cmap)
         # plotf_vector(self.gp.grid_vector, np.sqrt(np.diag(self.gp.Sigma_cond)), "Prediction Error", cmap=cmap)
         plotf_trajectory(self.trajectory)
 
@@ -159,11 +159,11 @@ class PathPlanner:
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[5])
-        plotf_vector(self.gp.grid_vector, self.gp.vr, "VR", cmap=cmap)
+        plotf_vector(self.gp.grid_vector, self.gp.cost_vr, "VR", cmap=cmap)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[6])
-        plotf_vector(self.gp.grid_vector, self.gp.penalty_budget, "BUDGET", cmap=cmap)
+        plotf_vector(self.gp.grid_vector, self.gp.cost_budget, "BUDGET", cmap=cmap)
         plotf_trajectory(self.trajectory)
 
         plt.savefig(FIGPATH + "P_{:03d}.png".format(i))
