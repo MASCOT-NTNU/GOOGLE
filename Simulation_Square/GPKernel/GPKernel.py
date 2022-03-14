@@ -11,6 +11,8 @@ from GOOGLE.Simulation_Square.Tree.Location import *
 
 class GPKernel:
 
+    gohome = False
+
     def __init__(self):
         self.get_grid()
         self.get_mean_field()
@@ -129,10 +131,9 @@ class GPKernel:
 
             self.budget_ellipse_a = budget / 2
             self.budget_ellipse_c = get_distance_between_locations(current_loc, goal_loc) / 2
-            if self.budget_ellipse_a > self.budget_ellipse_c:
-                self.budget_ellipse_b = np.sqrt(self.budget_ellipse_a ** 2 - self.budget_ellipse_c ** 2)
-                print("a: ", self.budget_ellipse_a, "b: ", self.budget_ellipse_b, "c: ", self.budget_ellipse_c)
-
+            self.budget_ellipse_b = np.sqrt(self.budget_ellipse_a ** 2 - self.budget_ellipse_c ** 2)
+            print("a: ", self.budget_ellipse_a, "b: ", self.budget_ellipse_b, "c: ", self.budget_ellipse_c)
+            if self.budget_ellipse_b > BUDGET_ELLIPSE_B_MARGIN:
                 x_wgs = self.x_vector - self.budget_middle_location.x
                 y_wgs = self.y_vector - self.budget_middle_location.y
                 self.cost_budget = []
@@ -148,13 +149,15 @@ class GPKernel:
                         self.cost_budget.append(np.inf)
                 self.cost_budget = np.array(self.cost_budget)
             else:
-                self.cost_budget = np.ones_like(self.grid_vector[:, 0]) * np.inf
-                ind_goal_loc = self.get_ind_F(goal_loc)
-                self.cost_budget[ind_goal_loc] = 0
+                self.gohome = True
+                # self.cost_budget = np.ones_like(self.grid_vector[:, 0]) * np.inf
+                # ind_goal_loc = self.get_ind_F(goal_loc)
+                # self.cost_budget[ind_goal_loc] = 0
         else:
-            self.cost_budget = np.ones_like(self.grid_vector[:, 0]) * np.inf
-            ind_goal_loc = self.get_ind_F(goal_loc)
-            self.cost_budget[ind_goal_loc] = 0
+            self.gohome = True
+            # self.cost_budget = np.ones_like(self.grid_vector[:, 0]) * np.inf
+            # ind_goal_loc = self.get_ind_F(goal_loc)
+            # self.cost_budget[ind_goal_loc] = 0
 
         t2 = time.time()
         print("budget field consumed: ", t2 - t1)

@@ -18,7 +18,7 @@ class PathPlanner:
 
     trajectory = []
     distance_travelled = 0
-    gohome_signal = False
+    waypoint_return_counter = 0
 
     def __init__(self, starting_location=None, goal_location=None, budget=None):
         self.starting_location = starting_location
@@ -44,7 +44,7 @@ class PathPlanner:
         for i in range(NUM_STEPS):
             print("Step: ", i)
             t1 = time.time()
-            if not self.gohome_signal:
+            if not self.gp.gohome:
                 knowledge = Knowledge(starting_location=self.current_location, ending_location=ending_loc,
                                       goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
                                       step_size=STEPSIZE, budget=self.budget, kernel=self.gp, mu=self.gp.mu_cond,
@@ -53,14 +53,26 @@ class PathPlanner:
                 self.rrtstar = RRTStar(knowledge)
                 self.rrtstar.expand_trees()
                 self.rrtstar.get_shortest_trajectory()
+                if len(self.rrtstar.trajectory) <= 2:
+                    self.rrtstar.maxiter = MAXITER_HARD
+                    self.rrtstar.expand_trees()
+                    self.rrtstar.get_shortest_trajectory()
                 self.path_minimum_cost = self.rrtstar.trajectory
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
                 self.plot_knowledge(i)
                 self.next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
             else:
-                self.next_location = self.goal_location
-                self.plot_knowledge(i)
+                if self.waypoint_return_counter == 0:
+                    print("Compute route home only here once!")
+                    self.waypoints = self.get_route_home()
+                if self.waypoint_return_counter < self.num_waypoints_return_home:
+                    self.next_location = self.waypoints[self.waypoint_return_counter]
+                    self.waypoint_return_counter += 1
+                    self.plot_knowledge(i)
+                else:
+                    print("Home already! Mission complete")
+                    break
 
             self.distance_travelled = get_distance_between_locations(self.current_location, self.next_location)
             self.budget = self.budget - self.distance_travelled
@@ -83,13 +95,20 @@ class PathPlanner:
             self.previous_location = self.current_location
             self.trajectory.append(self.current_location)
 
-            if self.gp.budget_ellipse_a <= self.gp.budget_ellipse_c:
-                print("Time to go home!")
-                self.gohome_signal = True
 
-            if self.is_arrived(self.current_location):
-                print("Arrived")
-                # break
+    def get_route_home(self):
+        distance_remaining = get_distance_between_locations(self.current_location, self.goal_location)
+        angle = np.math.atan2(self.goal_location.y - self.current_location.y,
+                              self.goal_location.x - self.current_location.x)
+        gaps = np.arange(0, distance_remaining, STEPSIZE)
+        self.num_waypoints_return_home = len(gaps)
+        distance_gaps = np.linspace(0, distance_remaining, self.num_waypoints_return_home)
+        waypoints_location = []
+        for i in range(self.num_waypoints_return_home):
+            x = self.current_location.x + distance_gaps[i] * np.cos(angle)
+            y = self.current_location.y + distance_gaps[i] * np.sin(angle)
+            waypoints_location.append(Location(x, y))
+        return waypoints_location
 
     def get_location_from_ind(self, ind):
         return Location(self.gp.grid_vector[ind, 0], self.gp.grid_vector[ind, 1])
