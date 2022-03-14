@@ -16,7 +16,7 @@ class RRTStar:
     def __init__(self, knowledge=None):
         self.nodes = []
         self.trajectory = []
-
+        self.maxiter = MAXITER_EASY
         self.knowledge = knowledge
 
         self.obstacles = np.array(OBSTACLES)
@@ -32,7 +32,7 @@ class RRTStar:
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
-        for i in range(MAXITER):
+        for i in range(self.maxiter):
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
@@ -53,33 +53,6 @@ class RRTStar:
                 self.ending_node.parent = next_node
             else:
                 self.nodes.append(next_node)
-
-            # print("Iteration: ", i)
-            # plt.figure()
-            # if np.any(self.obstacles):
-            #     for i in range(len(self.obstacles)):
-            #         obstacle = np.append(self.obstacles[i], self.obstacles[i][0, :].reshape(1, -1), axis=0)
-            #         plt.plot(obstacle[:, 0], obstacle[:, 1], 'r-.')
-            #
-            # for node in self.nodes:
-            #     if node.parent is not None:
-            #         plt.plot([node.location.x, node.parent.location.x],
-            #                  [node.location.y, node.parent.location.y], "-g")
-            #
-            # # trajectory = np.array(self.trajectory)
-            # # plt.plot(trajectory[:, 0], trajectory[:, 1], "-r")
-            # plt.plot(self.knowledge.starting_location.x, self.knowledge.starting_location.y, 'k*', ms=20)
-            # plt.plot(self.knowledge.ending_location.x, self.knowledge.ending_location.y, 'g*', ms=20)
-            # middle_location = self.get_middle_location(self.starting_node, self.ending_node)
-            # ellipse = Ellipse(xy=(middle_location.x, middle_location.y), width=2 * self.budget_ellipse_a,
-            #                   height=2 * self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),
-            #                   edgecolor='r', fc='None', lw=2)
-            # plt.gca().add_patch(ellipse)
-            # plt.grid()
-            # plt.title("rrt*")
-            # plt.savefig(FIGPATH + "P_{:03d}.png".format(i))
-            # plt.close("all")
-
 
     @staticmethod
     def get_new_location():
@@ -156,86 +129,6 @@ class RRTStar:
         cost2 = self.knowledge.kernel.cost_valley[F2]
         cost_total = ((cost1 + cost2) / 2 * self.get_distance_between_nodes(node1, node2))
         return cost_total
-
-    # def get_reward_between_nodes(self, node1, node2):
-    #     self.get_eibv_at_node(node1)
-    #     self.get_eibv_at_node(node2)
-    #     reward = ((node1.knowledge.EIBV + node2.knowledge.EIBV) / 2 *
-    #               self.get_distance_between_nodes(node1, node2))
-    #     return reward
-    #
-    # def get_eibv_at_node(self, node):
-    #     node.knowledge.F = self.knowledge.kernel.get_ind_F(node.location)
-    #     node.knowledge.EIBV = self.knowledge.kernel.cost_eibv[node.knowledge.F]
-    #
-    # def get_cost_according_to_budget(self, node1, node2):
-    #     cost1 = self.get_cost_from_budget_field(node1)
-    #     cost2 = self.get_cost_from_budget_field(node2)
-    #     cost_total = ((cost1 + cost2) / 2 *
-    #                   self.get_distance_between_nodes(node1, node2))
-    #     return cost_total
-    #
-    # def get_cost_from_budget_field(self, node):
-    #     x_wgs = node.location.x - self.budget_middle_location.x
-    #     y_wgs = node.location.y - self.budget_middle_location.y
-    #     x_usr = (x_wgs * np.cos(self.budget_ellipse_angle) +
-    #              y_wgs * np.sin(self.budget_ellipse_angle))
-    #     y_usr = (- x_wgs * np.sin(self.budget_ellipse_angle) +
-    #              y_wgs * np.cos(self.budget_ellipse_angle))
-    #
-    #     if (x_usr / self.budget_ellipse_a) ** 2 + (y_usr / self.budget_ellipse_b) ** 2 <= 1:
-    #         return 0
-    #     else:
-    #         return np.inf
-
-    # def get_budget_field(self):
-    #     print("Starting location: ", self.starting_node.location.x, self.starting_node.location.y)
-    #     print("Ending location: ", self.goal_node.location.x, self.goal_node.location.y)
-    #     self.budget_middle_location = self.get_middle_location(self.starting_node, self.goal_node)
-    #     self.budget_ellipse_angle = self.get_angle_between_locations(self.starting_node, self.goal_node)
-    #
-    #     self.budget_ellipse_a = self.starting_node.knowledge.budget / 2
-    #     self.budget_ellipse_c = self.get_distance_between_nodes(self.starting_node, self.goal_node) / 2
-    #     self.budget_ellipse_b = np.sqrt(self.budget_ellipse_a ** 2 - self.budget_ellipse_c ** 2)
-    #     print("a: ", self.budget_ellipse_a, "b: ", self.budget_ellipse_b, "c: ", self.budget_ellipse_c)
-
-    # @staticmethod
-    # def get_middle_location(node1, node2):
-    #     x_middle = (node1.location.x + node2.location.x) / 2
-    #     y_middle = (node1.location.y + node2.location.y) / 2
-    #     return Location(x_middle, y_middle)
-    #
-    # @staticmethod
-    # def get_angle_between_locations(node1, node2):
-    #     delta_y = node2.location.y - node1.location.y
-    #     delta_x = node2.location.x - node1.location.x
-    #     angle = np.math.atan2(delta_y, delta_x)
-    #     return angle
-
-    # @staticmethod
-    # def get_cost_along_path(node1, node2):
-    #     N = 10
-    #     x = np.linspace(node1.location.x, node2.location.x, N)
-    #     y = np.linspace(node1.location.y, node2.location.y, N)
-    #     cost = []
-    #     for i in range(N):
-    #         cost.append(RRTStar.get_cost_from_field(Location(x[i], y[i])))
-    #     cost_total = np.trapz(cost) / N
-    #     # cost_total = np.sum(cost) / RRTStar.get_distance_between_nodes(TreeNode(location1), TreeNode(location2))
-    #     # print("cost total: ", cost_total)
-    #     return cost_total
-    #
-    # @staticmethod
-    # def get_cost_from_field(location):
-    #     # return 0
-    #     # return 2**2 * np.exp(-((location.x - .5) ** 2 + (location.y - .5) ** 2) / .09)
-    #     # return (1 - np.exp(-((location.x - .25) ** 2 + (location.y - .75) ** 2) / .09) +
-    #     #         2 ** 2 * np.exp(-((location.x - .25) ** 2 + (location.y - .25) ** 2) / .09))
-    #     if ((location.x - .5)/ .4) ** 2 + ((location.y - .5)/ .2) ** 2 <= 1:
-    #         return 0
-    #     else:
-    #         return 40
-    #     # return (location.x ** 2 / )
 
     def isarrived(self, node):
         dist = self.get_distance_between_nodes(self.ending_node, node)

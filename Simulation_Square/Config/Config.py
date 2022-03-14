@@ -17,7 +17,8 @@ THRESHOLD = .6
 # ==
 
 # == RRTStar
-MAXITER = 600
+MAXITER_EASY = 300
+MAXITER_HARD = 600
 GOAL_SAMPLE_RATE = .01
 STEPSIZE = .1
 RADIUS_NEIGHBOUR = .12
@@ -33,6 +34,7 @@ NY = 25
 
 # == Budget
 BUDGET_MARGIN = .2
+BUDGET_ELLIPSE_B_MARGIN = .1
 
 # == Penalty
 PENALTY = 10
@@ -52,7 +54,7 @@ OBSTACLES = [[[.4, .4], [.6, .5], [.5, .6], [.3, .4]]]
 # ==
 
 # == Path planner
-BUDGET = 5
+BUDGET = 2
 NUM_STEPS = 80
 FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Square/rrt_star/"
 # ==
