@@ -42,7 +42,7 @@ class Visualiser:
         cmap = get_cmap("RdBu", 10)
         plt.figure(figsize=(10, 8))
         salinity_normalised = normalise(self.gp.mu_truth.flatten(), 16, 32)
-        salinity_normalised = salinity_normalised + self.gp.penalty_obstacle
+        salinity_normalised = salinity_normalised + self.gp.cost_obstacle
         plotf_vector(self.gp.grid_vector, salinity_normalised, "Ground truth",
                      cmap=cmap, cbar_title="Salinity", colorbar=True, vmin=16, vmax=32, ticks=np.arange(16, 32, 3))
         obstacle = self.gp.obstacles[0]
@@ -58,7 +58,7 @@ class Visualiser:
         cmap = get_cmap("RdBu", 10)
         plt.figure(figsize=(10, 8))
         salinity_normalised = normalise(self.gp.mu_prior_vector.flatten(), 16, 32)
-        salinity_normalised = salinity_normalised + self.gp.penalty_obstacle
+        salinity_normalised = salinity_normalised + self.gp.cost_obstacle
         plotf_vector(self.gp.grid_vector, salinity_normalised, "Prior",
                      cmap=cmap, cbar_title="Salinity", colorbar=True, vmin=16, vmax=32, ticks=np.arange(16, 32, 3))
         obstacle = self.gp.obstacles[0]
@@ -86,12 +86,12 @@ class Visualiser:
         # ending_loc = self.target_location
         self.trajectory.append(current_loc)
 
-        self.cost_valley = (self.gp.eibv +
-                            self.gp.penalty_budget +
+        self.cost_valley = (self.gp.cost_eibv +
+                            self.gp.cost_budget +
                             # self.gp.gradient_vector +
-                            self.gp.vr +
-                            self.gp.penalty_obstacle +
-                            self.gp.penalty_direction)
+                            self.gp.cost_vr +
+                            self.gp.cost_obstacle +
+                            self.gp.cost_direction)
         ind_min_cost = np.argmin(self.cost_valley)
         ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
 
@@ -138,12 +138,12 @@ class Visualiser:
             self.gp.get_obstacle_field()
             self.gp.get_direction_field(current_loc, previous_loc)
             # self.cost_valley = self.gp.eibv + self.gp.penalty_budget
-            self.cost_valley = (self.gp.eibv + #TODO: change cost valley to object
-                                self.gp.penalty_budget +
+            self.cost_valley = (self.gp.cost_eibv +  #TODO: change cost valley to object
+                                self.gp.cost_budget +
                                 # self.gp.gradient_vector +
-                                self.gp.vr +
-                                self.gp.penalty_obstacle +
-                                self.gp.penalty_direction)
+                                self.gp.cost_vr +
+                                self.gp.cost_obstacle +
+                                self.gp.cost_direction)
             ind_min_cost = np.argmin(self.cost_valley)
             ending_loc = Location(self.gp.grid_vector[ind_min_cost, 0], self.gp.grid_vector[ind_min_cost, 1])
 
@@ -176,7 +176,7 @@ class Visualiser:
         cmap = get_cmap("RdBu", 10)
 
         value_normalised = normalise(self.gp.mu_cond.flatten(), 16, 32)
-        value_normalised = value_normalised + self.gp.penalty_obstacle
+        value_normalised = value_normalised + self.gp.cost_obstacle
         plotf_vector(self.gp.grid_vector, value_normalised, "Conditional mean",
                      cmap=cmap, cbar_title="Salinity", colorbar=True, vmin=16, vmax=32, ticks=np.arange(16, 32, 3))
         obstacle = self.gp.obstacles[0]
@@ -187,8 +187,8 @@ class Visualiser:
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[1])
-        value_normalised = normalise(self.gp.eibv.flatten(), 0, 1)
-        value_normalised = value_normalised + self.gp.penalty_obstacle
+        value_normalised = normalise(self.gp.cost_eibv.flatten(), 0, 1)
+        value_normalised = value_normalised + self.gp.cost_obstacle
         plotf_vector(self.gp.grid_vector, value_normalised, "EIBV cost field",
                      cmap=cmap, cbar_title="Cost", colorbar=True, vmin=0, vmax=1, ticks=np.arange(0, 1, .3))
         obstacle = self.gp.obstacles[0]
@@ -199,8 +199,8 @@ class Visualiser:
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[2])
-        value_normalised = normalise(self.gp.vr.flatten(), 0, 1)
-        value_normalised = value_normalised + self.gp.penalty_obstacle
+        value_normalised = normalise(self.gp.cost_vr.flatten(), 0, 1)
+        value_normalised = value_normalised + self.gp.cost_obstacle
         plotf_vector(self.gp.grid_vector, value_normalised, "VR cost field",
                      cmap=cmap, cbar_title="Cost", colorbar=True, vmin=0, vmax=1, ticks=np.arange(0, 1, .3))
         obstacle = self.gp.obstacles[0]
