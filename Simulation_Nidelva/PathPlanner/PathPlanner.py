@@ -7,12 +7,12 @@ Date: 2022-03-07
 import matplotlib.pyplot as plt
 
 from usr_func import *
-from GOOGLE.Simulation_Square.Plotting.plotting_func import *
-from GOOGLE.Simulation_Square.GPKernel.GPKernel import *
-from GOOGLE.Simulation_Square.Tree.Location import Location
-from GOOGLE.Simulation_Square.Config.Config import *
-from GOOGLE.Simulation_Square.Tree.Knowledge import Knowledge
-from GOOGLE.Simulation_Square.PlanningStrategies.RRTStar import RRTStar
+from GOOGLE.Simulation_2DSquare.Plotting.plotting_func import *
+from GOOGLE.Simulation_2DSquare.GPKernel.GPKernel import *
+from GOOGLE.Simulation_2DSquare.Tree.Location import Location
+from GOOGLE.Simulation_2DSquare.Config.Config import *
+from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
+from GOOGLE.Simulation_2DSquare.PlanningStrategies.RRTStar import RRTStar
 
 np.random.seed(0)
 BUDGET = 5
