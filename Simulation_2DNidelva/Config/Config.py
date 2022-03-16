@@ -14,10 +14,10 @@ import os
 
 import pandas as pd
 
-SIGMA = 4
-LATERAL_RANGE = 400
+SIGMA = 2
+LATERAL_RANGE = 500
 NUGGET = .03
-THRESHOLD = 26
+THRESHOLD = 28
 # ==
 
 # == RRTStar
@@ -44,7 +44,7 @@ BUDGET_ELLIPSE_B_MARGIN_Tree = 500
 PENALTY = 10
 
 # == Path planner
-BUDGET = 6000
+BUDGET = 12000
 NUM_STEPS = 80
 FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_2DNidelva/"
 PATH_FILE = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/"

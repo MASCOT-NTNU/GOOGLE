@@ -7,10 +7,11 @@ Date: 2022-03-07
 
 
 from usr_func import *
-from GOOGLE.Simulation_Square.Config.Config import *
+from GOOGLE.Simulation_2DNidelva.Config.Config import *
 
 
-def plotf_vector(grid, values, title, alpha=None, cmap="Paired"):
+def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
+                 vmin=None, vmax=None, ticks=None):
     x = grid[:, 0]
     y = grid[:, 1]
     nx = 100
@@ -25,10 +26,12 @@ def plotf_vector(grid, values, title, alpha=None, cmap="Paired"):
 
     grid_values = griddata(grid, values, (grid_x, grid_y))
     # plt.figure()
-    plt.scatter(grid_x, grid_y, c=grid_values, cmap=cmap, alpha=alpha)
-    plt.xlim(XLIM)
-    plt.ylim(YLIM)
-    plt.colorbar()
+    plt.scatter(grid_y, grid_x, c=grid_values, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax)
+    # plt.xlim(XLIM)
+    # plt.ylim(YLIM)
+    if colorbar:
+        cbar = plt.colorbar(ticks=ticks)
+        cbar.ax.set_title(cbar_title)
     plt.title(title)
     # plt.show()
 
@@ -45,7 +48,7 @@ def plotf_budget_radar(centre, radius):
 def plotf_trajectory(trajectory):
     path = []
     for location in trajectory:
-        path.append([location.x, location.y])
+        path.append([location.y, location.x])
     path = np.array(path)
     plt.plot(path[:, 0], path[:, 1], 'k.-')
     plt.plot(path[:, 0], path[:, 1], 'k-')

@@ -169,19 +169,25 @@ class RRTStar:
 
     def plot_tree(self):
         # plt.figure()
-        plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        x, y = latlon2xy(self.knowledge.polygon_border[:, 0], self.knowledge.polygon_border[:, 1],
+                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        plt.plot(y, x, 'k-', linewidth=1)
+        x, y = latlon2xy(self.knowledge.polygon_obstacle[:, 0], self.knowledge.polygon_obstacle[:, 1],
+                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        plt.plot(y, x, 'k-', linewidth=1)
+
 
         for node in self.nodes:
             if node.parent is not None:
-                plt.plot([node.location.lon, node.parent.location.lon],
-                         [node.location.lat, node.parent.location.lat], "-g")
+                plt.plot([node.location.y, node.parent.location.y],
+                         [node.location.x, node.parent.location.x], "-g")
 
         trajectory = np.array(self.trajectory)
-        plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
+        x, y = latlon2xy(trajectory[:, 0], trajectory[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        plt.plot(y, x, "-r")
 
-        plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
-        plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
+        plt.plot(self.knowledge.starting_location.y, self.knowledge.starting_location.x, 'kv', ms=10)
+        plt.plot(self.knowledge.ending_location.y, self.knowledge.ending_location.x, 'bx', ms=10)
         # middle_location = self.get_middle_location(self.starting_node, self.goal_node)
         # ellipse = Ellipse(xy=(middle_location.x, middle_location.y), width=2*self.budget_ellipse_a,
         #                   height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),

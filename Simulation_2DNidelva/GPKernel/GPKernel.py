@@ -24,12 +24,16 @@ class GPKernel:
         self.get_obstacle_field()
 
     def load_grid_and_data(self):
-        dataset = pd.read_csv(PATH_DATA).to_numpy()
-        self.coordinates = dataset[:, 0:3]
-        self.mu_prior = vectorise(dataset[:, -1])
+        self.dataset = pd.read_csv(PATH_DATA).to_numpy()
+        self.coordinates = self.dataset[:, 0:3]
+        self.mu_prior = vectorise(self.dataset[:, -1])
         self.polygon_border = pd.read_csv(PATH_BORDER).to_numpy()
         self.polygon_obstacle = pd.read_csv(PATH_OBSTACLE).to_numpy()
-        
+
+        # == setup border & obstacle
+        self.polygon_obstacle_path = Polygon(self.polygon_obstacle)
+        self.polygon_border_path = Polygon(self.polygon_border)
+        self.borderline_path = LineString(self.polygon_border)
 
     def get_Sigma_prior(self):
         self.set_coef()
@@ -50,6 +54,11 @@ class GPKernel:
         self.x_vector, self.y_vector = map(vectorise, [x, y])
         self.grid_xy = np.hstack((vectorise(x), vectorise(y)))
 
+    def get_ground_truth(self):
+        self.mu_truth = (self.mu_prior.reshape(-1, 1) +
+                         np.linalg.cholesky(self.Sigma_prior) @
+                         np.random.randn(len(self.mu_prior)).reshape(-1, 1))
+
     def get_ind_F(self, location):
         x, y = map(vectorise, [location.x, location.y])
         DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
@@ -57,11 +66,6 @@ class GPKernel:
         DM = DM_x ** 2 + DM_y ** 2
         ind_F = np.argmin(DM, axis = 1)
         return ind_F
-
-    def get_ground_truth(self):
-        self.mu_truth = (self.mu_prior.reshape(-1, 1) +
-                         np.linalg.cholesky(self.Sigma_prior) @
-                         np.random.randn(len(self.mu_prior)).reshape(-1, 1))
 
     @staticmethod
     def update_GP_field(mu, Sigma, F, R, measurement):
@@ -176,21 +180,21 @@ class GPKernel:
         vr = np.sum(np.diag(Reduction))
         return vr
 
+    # TODO: finish obstacle field
     def get_obstacle_field(self):
         self.cost_obstacle = []
-        for i in range(len(self.grid_xy)):
-            if self.is_within_obstacles(Location(self.grid_vector[i, 0], self.grid_vector[i, 1])):
+        for i in range(len(self.coordinates)):
+            if self.is_within_obstacles(Location(self.coordinates[i, 0], self.coordinates[i, 1])):
                 self.cost_obstacle.append(np.inf)
             else:
                 self.cost_obstacle.append(0)
         self.cost_obstacle = np.array(self.cost_obstacle)
 
     def is_within_obstacles(self, location):
-        point = Point(location.x, location.y)
+        point = Point(location.lat, location.lon)
         within = False
-        for i in range(len(self.polygon_obstacles)):
-            if self.polygon_obstacles[i].contains(point):
-                within = True
+        if self.polygon_obstacle_path.contains(point):
+            within = True
         return within
 
     def get_direction_field(self, current_loc, previous_loc):
@@ -199,9 +203,9 @@ class GPKernel:
         dy = current_loc.y - previous_loc.y
         vec1 = np.array([[dx, dy]])
         self.cost_direction = []
-        for i in range(len(self.grid_vector)):
-            dx = self.grid_vector[i, 0] - current_loc.x
-            dy = self.grid_vector[i, 1] - current_loc.y
+        for i in range(len(self.grid_xy)):
+            dx = self.grid_xy[i, 0] - current_loc.x
+            dy = self.grid_xy[i, 1] - current_loc.y
             vec2 = np.array([[dx, dy]])
             if np.dot(vec1, vec2.T) >= 0:
                 self.cost_direction.append(0)
@@ -226,17 +230,7 @@ class GPKernel:
         print("Cost valley computed successfully!, time consumed: ", t2 - t1)
 
 
-#%%
-# lat = sinmod.dataset_interpolated['lat']
-# lon = sinmod.dataset_interpolated['lon']
-# sal = sinmod.dataset_interpolated['salinity']
-# cmap = get_cmap("RdBu", 10)
-# plt.scatter(lon, lat, c=sal, cmap=cmap, vmin=25, vmax=32)
-# plt.colorbar()
-# plt.show()
 
-#%%
-# sinmod.dataset_interpolated.shape
 
 
 
