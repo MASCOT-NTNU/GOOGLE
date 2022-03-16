@@ -1,0 +1,305 @@
+"""
+This script creates the strategies using RRT*
+Author: Yaolin Ge
+Contact: yaolin.ge@ntnu.no
+Date: 2022-03-16
+"""
+
+from usr_func import *
+from GOOGLE.Simulation_2DNidelva.Tree.TreeNode import TreeNode
+from GOOGLE.Simulation_2DNidelva.Config.Config import *
+from GOOGLE.Simulation_2DNidelva.Tree.Location import *
+FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Nidelva/rrtstar/"
+
+
+class RRTStar:
+
+    def __init__(self, knowledge=None):
+        self.knowledge = knowledge
+        self.nodes = []
+        self.trajectory = []
+        self.maxiter = self.knowledge.maximum_iteration
+        self.radius_neighbour = RADIUS_NEIGHBOUR
+
+        self.obstacles = np.array(OBSTACLES)
+        self.polygon_obstacles = []
+        # self.set_obstacles()
+
+
+        self.starting_node = TreeNode(self.knowledge.starting_location, None, 0, self.knowledge)
+        self.ending_node = TreeNode(self.knowledge.ending_location, None, 0, self.knowledge)
+        self.goal_node = TreeNode(self.knowledge.goal_location, None, 0, self.knowledge)
+
+        self.counter_fig = 0
+        self.get_bigger_box()
+
+    def expand_trees(self):
+        self.nodes.append(self.starting_node)
+        # self.arrived_signal = False
+        for i in range(self.knowledge.maximum_iteration):
+            print("Iteration: ", i)
+            if np.random.rand() <= self.knowledge.goal_sample_rate:
+                new_location = self.knowledge.ending_location
+            else:
+                new_location = self.get_new_location()
+
+            nearest_node = self.get_nearest_node(self.nodes, new_location)
+            next_node = self.get_next_node(nearest_node, new_location)
+
+            if self.is_node_within_obstacle(next_node):
+                continue
+
+            next_node, nearest_node = self.rewire_tree(next_node, nearest_node)
+
+            if self.is_path_intersect_with_obstacles(nearest_node, next_node):
+                continue
+
+            if self.isarrived(next_node):
+                self.ending_node.parent = next_node
+                # self.arrived_signal = True
+                # self.ending_node.parent = next_node
+                # self.trajectory = []
+                # self.get_shortest_trajectory()
+            else:
+                self.nodes.append(next_node)
+
+            # == 2D plot
+            # plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
+            # plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
+            #
+            # for node in self.nodes:
+            #     if node.parent is not None:
+            #         plt.plot([node.location.lon, node.parent.location.lon],
+            #                  [node.location.lat, node.parent.location.lat], "-g")
+            #
+            # if self.arrived_signal:
+            #     trajectory = np.array(self.trajectory)
+            #     plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
+            # plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
+            # plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
+            # plt.grid()
+            # plt.title("rrt*")
+            # plt.savefig(FIGPATH + "P_{:04d}.png".format(i))
+            # plt.close("all")
+
+
+            # == 3D plot
+            # fig = go.Figure(data=[go.Scatter3d(
+            #     x=self.knowledge.polygon_border[:, 1],
+            #     y=self.knowledge.polygon_border[:, 0],
+            #     z=np.zeros_like(self.knowledge.polygon_border[:, 0]),
+            #     mode='lines',
+            #     line=dict(
+            #         width=2,
+            #         color='darkblue',
+            #     )
+            # )])
+            #
+            # fig.add_trace(go.Scatter3d(
+            #     x=self.knowledge.polygon_obstacle[:, 1],
+            #     y=self.knowledge.polygon_obstacle[:, 0],
+            #     z=np.zeros_like(self.knowledge.polygon_obstacle[:, 0]),
+            #     mode='lines',
+            #     line=dict(
+            #         width=2,
+            #         color='darkblue',
+            #     )
+            # ))
+            #
+            # for node in self.nodes:
+            #     if node.parent is not None:
+            #         # plt.plot([node.location.lon, node.parent.location.lon],
+            #         #          [node.location.lat, node.parent.location.lat], "-g")
+            #         fig.add_trace(go.Scatter3d(
+            #             x=[node.location.lon, node.parent.location.lon],
+            #             y=[node.location.lat, node.parent.location.lat],
+            #             z=[node.location.depth, node.parent.location.depth],
+            #             mode='lines',
+            #             line=dict(
+            #                 width=1,
+            #                 color='green',
+            #             )
+            #         ))
+            #
+            # if self.arrived_signal:
+            #     trajectory = np.array(self.trajectory)
+            #     fig.add_trace(go.Scatter3d(
+            #         x=trajectory[:, 1],
+            #         y=trajectory[:, 0],
+            #         z=trajectory[:, 2],
+            #         mode='lines',
+            #         line=dict(
+            #             width=1,
+            #             color='red',
+            #         )
+            #     ))
+            #
+            # fig.add_trace(go.Scatter3d(
+            #     x=[self.knowledge.starting_location.lon],
+            #     y=[self.knowledge.starting_location.lat],
+            #     z=[self.knowledge.starting_location.depth],
+            #     mode='markers',
+            #     marker=dict(
+            #         size = 20,
+            #         color='blue',
+            #     )
+            # ))
+            #
+            # fig.add_trace(go.Scatter3d(
+            #     x=[self.knowledge.ending_location.lon],
+            #     y=[self.knowledge.ending_location.lat],
+            #     z=[self.knowledge.ending_location.depth],
+            #     mode='markers',
+            #     marker=dict(
+            #         size = 20,
+            #         color='black',
+            #     )
+            # ))
+            # # fig.update_scenes(xaxis_visible=False, yaxis_visible=False,zaxis_visible=False)
+            # plotly.offline.plot(fig, filename=FIGPATH+"P_{:03d}.html".format(i), auto_open=False)
+
+
+    def get_bigger_box(self):
+        self.box_lat_min, self.box_lon_min = map(np.amin, [self.knowledge.polygon_border[:, 0],
+                                                           self.knowledge.polygon_border[:, 1]])
+        self.box_lat_max, self.box_lon_max = map(np.amax, [self.knowledge.polygon_border[:, 0],
+                                                           self.knowledge.polygon_border[:, 1]])
+
+    def get_new_location(self):
+        while True:
+            lat = np.random.uniform(self.box_lat_min, self.box_lat_max)
+            lon = np.random.uniform(self.box_lon_min, self.box_lon_max)
+            if self.is_location_within_border(Location(lat, lon)):
+                location = Location(lat, lon)
+                return location
+
+    def get_nearest_node(self, nodes, location):
+        dist = []
+        node_new = TreeNode(location)
+        for node in nodes:
+            dist.append(self.get_distance_between_nodes(node, node_new))
+        return nodes[dist.index(min(dist))]
+
+    def get_next_node(self, node, location):
+        node_temp = TreeNode(location)
+        if self.get_distance_between_nodes(node, node_temp) <= self.knowledge.step_size:
+            location_next = location
+        else:
+            x, y = latlon2xy(location.lat, location.lon, node.location.lat, node.location.lon)
+            angle = np.math.atan2(x, y)
+            y_new = self.knowledge.step_size * np.cos(angle)
+            x_new = self.knowledge.step_size * np.sin(angle)
+            lat_new, lon_new = xy2latlon(x_new, y_new, node.location.lat, node.location.lon)
+            location_next = Location(lat_new, lon_new)
+        return TreeNode(location_next, node, knowledge=self.knowledge)
+
+    @staticmethod
+    def get_distance_between_nodes(node1, node2):
+        dist_x, dist_y = latlon2xy(node1.location.lat, node1.location.lon,
+                                   node2.location.lat, node2.location.lon)
+        dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
+        return dist
+
+    def rewire_tree(self, node_current, node_nearest):
+        ind_neighbour_nodes = self.get_neighbour_nodes(node_current)
+
+        for i in range(len(ind_neighbour_nodes)):
+            node_neighbour = self.nodes[ind_neighbour_nodes[i]]
+            if self.get_cost_between_nodes(node_neighbour, node_current) < \
+                    self.get_cost_between_nodes(node_nearest, node_current):
+                node_nearest = node_neighbour
+
+            node_current.parent = node_nearest
+            node_current.cost = self.get_cost_between_nodes(node_nearest, node_current)
+
+        for i in range(len(ind_neighbour_nodes)):
+            node_neighbour = self.nodes[ind_neighbour_nodes[i]]
+            cost_current_neighbour = self.get_cost_between_nodes(node_current, node_neighbour)
+            if cost_current_neighbour < node_neighbour.cost:
+                node_neighbour.cost = cost_current_neighbour
+                node_neighbour.parent = node_current
+        return node_current, node_nearest
+
+    def get_neighbour_nodes(self, node_current):
+        distance_between_nodes = []
+        for i in range(len(self.nodes)):
+            if self.is_path_intersect_with_obstacles(self.nodes[i], node_current):
+                distance_between_nodes.append(np.inf)
+            else:
+                distance_between_nodes.append(self.get_distance_between_nodes(self.nodes[i], node_current))
+        ind_neighbours = np.where(np.array(distance_between_nodes) <= self.knowledge.neighbour_radius)[0]
+        return ind_neighbours
+
+    def get_cost_between_nodes(self, node1, node2):
+        cost = (node1.cost +
+                self.get_distance_between_nodes(node1, node2))
+        return cost
+
+    def isarrived(self, node):
+        dist = self.get_distance_between_nodes(self.ending_node, node)
+        if dist < DISTANCE_TOLERANCE:
+            return True
+        else:
+            return False
+
+    '''
+    Collision detection
+    '''
+    def is_location_within_border(self, location):
+        point = Point(location.lat, location.lon)
+        return self.knowledge.polygon_border_path.contains(point)
+
+    def is_node_within_obstacle(self, node):
+        point = Point(node.location.lat, node.location.lon)
+        return self.knowledge.polygon_obstacle_path.contains(point)
+
+    def is_path_intersect_with_obstacles(self, node1, node2):
+        line = LineString([(node1.location.lat, node1.location.lon),
+                           (node2.location.lat, node2.location.lon)])
+        intersect = False
+        if self.knowledge.polygon_obstacle_path.intersects(line):
+            intersect = True
+        if self.knowledge.polygon_border_path.intersects(line):
+            intersect = True
+        return intersect
+    '''
+    End of collision detection
+    '''
+
+    def get_shortest_trajectory(self):
+        self.trajectory.append([self.ending_node.location.lat,
+                                self.ending_node.location.lon])
+        pointer_node = self.ending_node
+        while pointer_node.parent is not None:
+            node = pointer_node.parent
+            self.trajectory.append([node.location.lat,
+                                    node.location.lon])
+            pointer_node = node
+        self.trajectory = np.array(self.trajectory)
+
+    def plot_tree(self):
+        # plt.figure()
+        plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
+
+        for node in self.nodes:
+            if node.parent is not None:
+                plt.plot([node.location.lon, node.parent.location.lon],
+                         [node.location.lat, node.parent.location.lat], "-g")
+
+        trajectory = np.array(self.trajectory)
+        plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
+
+        plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
+        plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
+        # middle_location = self.get_middle_location(self.starting_node, self.goal_node)
+        # ellipse = Ellipse(xy=(middle_location.x, middle_location.y), width=2*self.budget_ellipse_a,
+        #                   height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),
+        #                   edgecolor='r', fc='None', lw=2)
+        # plt.gca().add_patch(ellipse)
+        plt.grid()
+        plt.title("rrt*")
+        # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
+        # plt.show()
+
+

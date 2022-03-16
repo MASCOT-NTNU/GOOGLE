@@ -2,13 +2,13 @@
 This script creates the strategies using RRT*
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-03-07
+Date: 2022-03-16
 """
 
 from usr_func import *
-from GOOGLE.Simulation_2DSquare.Tree.TreeNode import TreeNode
-from GOOGLE.Simulation_2DSquare.Config.Config import *
-from GOOGLE.Simulation_2DSquare.Tree.Location import *
+from GOOGLE.Simulation_2DNidelva.Tree.TreeNode import TreeNode
+from GOOGLE.Simulation_2DNidelva.Config.Config import *
+from GOOGLE.Simulation_2DNidelva.Tree.Location import *
 
 
 class RRTStar:
@@ -65,6 +65,49 @@ class RRTStar:
         y = np.random.uniform(YLIM[0], YLIM[1])
         location = Location(x, y)
         return location
+
+    def get_bigger_box(self):
+        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_within[:, 0],
+                                                                               self.config.polygon_within[:, 1],
+                                                                               self.config.depth])
+        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_within[:, 0],
+                                                                               self.config.polygon_within[:, 1],
+                                                                               self.config.depth])
+
+    def get_new_location(self):
+        while True:
+            lat = np.random.uniform(self.box_lat_min, self.box_lat_max)
+            lon = np.random.uniform(self.box_lon_min, self.box_lon_max)
+            if self.isWithin((lat, lon)):
+                depth = np.random.uniform(self.box_depth_min, self.box_depth_max)
+                location = Location(lat, lon, depth)
+                return location
+
+    def get_nearest_node(self, nodes, location):
+        dist = []
+        node_new = TreeNode(location)
+        for node in nodes:
+            dist.append(self.get_distance_between_nodes(node, node_new))
+        return nodes[dist.index(min(dist))]
+
+    @staticmethod
+    def get_distance_between_nodes(node1, node2):
+        dist_x, dist_y = latlon2xy(node1.location.lat, node1.location.lon, node2.location.lat, node2.location.lon)
+        dist_z = node1.location.depth - node2.location.depth
+        dist = np.sqrt(dist_x ** 2 + dist_y ** 2 + dist_z ** 2)
+        return dist
+
+    def get_next_node(self, node, location):
+        x, y = latlon2xy(location.lat, location.lon, node.location.lat, node.location.lon)
+        angle_lateral = np.math.atan2(x, y)
+        y_new = self.config.step_lateral * np.cos(angle_lateral)
+        x_new = self.config.step_lateral * np.sin(angle_lateral)
+        angle_vertical = np.math.atan2(location.depth - node.location.depth, np.sqrt(x ** 2 + y ** 2))
+        z_new = self.config.step_vertical * np.sin(angle_vertical)
+        lat_new, lon_new = xy2latlon(x_new, y_new, node.location.lat, node.location.lon)
+        depth_new = node.location.depth + z_new
+        location_next = Location(lat_new, lon_new, depth_new)
+        return TreeNode(location_next, node)
 
     def get_new_location_within_budget_ellipse(self):
         # t1 = time.time()
@@ -219,5 +262,4 @@ class RRTStar:
         # plt.title("rrt*")
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
         # plt.show()
-
 
