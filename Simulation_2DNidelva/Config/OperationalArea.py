@@ -9,7 +9,8 @@ import geopandas
 from shapely.geometry import Polygon, GeometryCollection
 from usr_func import *
 from rdp import rdp
-BUFFER_SIZE = 150  # [m]
+BUFFER_SIZE_BORDER = -220 # [m]
+BUFFER_SIZE_MUNKHOLMEN = 150 # [m]
 
 '''
 Path
@@ -76,24 +77,27 @@ class OpArea:
         polygon_obstacle = np.hstack((vectorise(self.lat_munkholmen), vectorise(self.lon_munkholmen)))
 
         # == buffer obstacle
-        polygon_wgs_obstacle_shorten = self.get_buffered_polygon(polygon_obstacle, BUFFER_SIZE)
-        polygon_wgs_border_shorten = self.get_buffered_polygon(polygon_border, -BUFFER_SIZE, epsilon=50)
-
-        plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-')
-        plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-')
-        plt.plot(polygon_wgs_obstacle_shorten[:, 1], polygon_wgs_obstacle_shorten[:, 0], 'r-')
-        plt.plot(polygon_wgs_border_shorten[:, 1], polygon_wgs_border_shorten[:, 0], 'r-')
-        plt.show()
+        polygon_wgs_obstacle_shorten = self.get_buffered_polygon(polygon_obstacle, BUFFER_SIZE_MUNKHOLMEN)
+        polygon_wgs_border_shorten = self.get_buffered_polygon(polygon_border, BUFFER_SIZE_BORDER)
 
         print("Before, ", polygon_border.shape, polygon_obstacle.shape)
         print("After: ", polygon_wgs_border_shorten.shape, polygon_wgs_obstacle_shorten.shape)
         df = pd.DataFrame(polygon_wgs_obstacle_shorten, columns=["lat", "lon"])
         df.to_csv(FILEPATH+"Polygon_obstacle.csv", index=False)
 
-        df = pd.DataFrame(polygon_wgs_border_shorten, columns=["lat", "lon"])
+        polygon_selected = polygon_wgs_border_shorten[1:-1]
+        polygon_selected = np.append(polygon_selected, polygon_selected[0, :].reshape(1, -1), axis=0)
+        df = pd.DataFrame(polygon_selected, columns=["lat", "lon"])
         df.to_csv(FILEPATH + "Polygon_border.csv", index=False)
 
-    def get_buffered_polygon(self, polygon, buffer_size, epsilon=10):
+        plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-')
+        plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-')
+        plt.plot(polygon_wgs_obstacle_shorten[:, 1], polygon_wgs_obstacle_shorten[:, 0], 'r-')
+        plt.plot(polygon_selected[:, 1], polygon_selected[:, 0], 'r-')
+        plt.grid()
+        plt.show()
+
+    def get_buffered_polygon(self, polygon, buffer_size):
         x, y = latlon2xy(polygon[:, 0], polygon[:, 1], 0, 0)
         polygon_xy = np.hstack((vectorise(x), vectorise(y)))
         polygon_xy_shapely = Polygon(polygon_xy)
@@ -101,12 +105,13 @@ class OpArea:
         x_buffer, y_buffer = polygon_xy_shapely_buffered.exterior.xy
 
         # == shorten obstacle
-        polygon_xy_buffer = np.hstack((vectorise(x_buffer), vectorise(y_buffer)))
-        polygon_xy_buffer_shorten = rdp(polygon_xy_buffer, epsilon=epsilon)
-        lat_wgs_shorten, lon_wgs_shorten = xy2latlon(polygon_xy_buffer_shorten[:, 0],
-                                                     polygon_xy_buffer_shorten[:, 1],
-                                                     0, 0)
-        polygon_wgs_buffer_shorten = np.hstack((vectorise(lat_wgs_shorten), vectorise(lon_wgs_shorten)))
+        # polygon_xy_buffer = np.hstack((vectorise(x_buffer), vectorise(y_buffer)))
+        # polygon_xy_buffer_shorten = rdp(polygon_xy_buffer, epsilon=epsilon)
+        # lat_wgs_shorten, lon_wgs_shorten = xy2latlon(polygon_xy_buffer_shorten[:, 0],
+        #                                              polygon_xy_buffer_shorten[:, 1],
+        #                                              0, 0)
+        lat_wgs, lon_wgs = xy2latlon(vectorise(x_buffer), vectorise(y_buffer), 0, 0)
+        polygon_wgs_buffer_shorten = np.hstack((vectorise(lat_wgs), vectorise(lon_wgs)))
         return polygon_wgs_buffer_shorten
 
     def save_operational_areas(self):

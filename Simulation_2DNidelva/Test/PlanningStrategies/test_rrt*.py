@@ -6,21 +6,20 @@ from GOOGLE.Simulation_2DNidelva.Tree.Location import Location
 from usr_func import *
 
 
-PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/OpArea.csv"
-PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/Munkholmen.csv"
+PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/Polygon_border.csv"
+PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/Polygon_obstacle.csv"
 DISTANCE_STEPSIZE = 500
 DISTANCE_TOLERANCE = 500
 DISTANCE_NEIGHBOUR = 600
-DEPTH = [0, 2, 4]
 GOAL_SAMPLE_RATE = .01
-MAX_ITER = 500
+MAX_ITER = 400
 BUDGET = 6000
 
 polygon_border = pd.read_csv(PATH_OPERATION_AREA).to_numpy()
 polygon_obstacle = pd.read_csv(PATH_MUNKHOLMEN).to_numpy()
 
-starting_location = Location(63.440752, 10.349210)
-ending_location = Location(63.457086, 10.440334)
+starting_location = Location(63.440887, 10.354804)
+ending_location = Location(63.455674, 10.429927)
 
 knowledge = Knowledge(starting_location=starting_location, ending_location=ending_location, goal_location=ending_location,
                       goal_sample_rate=GOAL_SAMPLE_RATE, polygon_border=polygon_border, polygon_obstacle=polygon_obstacle,
