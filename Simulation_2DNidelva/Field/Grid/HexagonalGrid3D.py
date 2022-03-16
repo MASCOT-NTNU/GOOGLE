@@ -11,6 +11,7 @@ from usr_func import *
 
 class HexgonalGrid3DGenerator:
 
+    # TODO: use HexgonalGrid2D to produce 2D grid
     def __init__(self, polygon_within=None, polygon_without=None, depth=None, neighbour_distance=0):
         self.polygon_within = polygon_within
         self.polygon_without = polygon_without

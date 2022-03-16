@@ -9,7 +9,7 @@ from usr_func import *
 from GOOGLE.Simulation_2DNidelva.Tree.TreeNode import TreeNode
 from GOOGLE.Simulation_2DNidelva.Config.Config import *
 from GOOGLE.Simulation_2DNidelva.Tree.Location import *
-FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Nidelva/rrtstar/"
+# FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Nidelva/rrtstar/"
 
 
 class RRTStar:
@@ -18,13 +18,6 @@ class RRTStar:
         self.knowledge = knowledge
         self.nodes = []
         self.trajectory = []
-        self.maxiter = self.knowledge.maximum_iteration
-        self.radius_neighbour = RADIUS_NEIGHBOUR
-
-        self.obstacles = np.array(OBSTACLES)
-        self.polygon_obstacles = []
-        # self.set_obstacles()
-
 
         self.starting_node = TreeNode(self.knowledge.starting_location, None, 0, self.knowledge)
         self.ending_node = TreeNode(self.knowledge.ending_location, None, 0, self.knowledge)
@@ -35,7 +28,6 @@ class RRTStar:
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
-        # self.arrived_signal = False
         for i in range(self.knowledge.maximum_iteration):
             print("Iteration: ", i)
             if np.random.rand() <= self.knowledge.goal_sample_rate:
@@ -56,108 +48,8 @@ class RRTStar:
 
             if self.isarrived(next_node):
                 self.ending_node.parent = next_node
-                # self.arrived_signal = True
-                # self.ending_node.parent = next_node
-                # self.trajectory = []
-                # self.get_shortest_trajectory()
             else:
                 self.nodes.append(next_node)
-
-            # == 2D plot
-            # plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
-            # plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
-            #
-            # for node in self.nodes:
-            #     if node.parent is not None:
-            #         plt.plot([node.location.lon, node.parent.location.lon],
-            #                  [node.location.lat, node.parent.location.lat], "-g")
-            #
-            # if self.arrived_signal:
-            #     trajectory = np.array(self.trajectory)
-            #     plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
-            # plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
-            # plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
-            # plt.grid()
-            # plt.title("rrt*")
-            # plt.savefig(FIGPATH + "P_{:04d}.png".format(i))
-            # plt.close("all")
-
-
-            # == 3D plot
-            # fig = go.Figure(data=[go.Scatter3d(
-            #     x=self.knowledge.polygon_border[:, 1],
-            #     y=self.knowledge.polygon_border[:, 0],
-            #     z=np.zeros_like(self.knowledge.polygon_border[:, 0]),
-            #     mode='lines',
-            #     line=dict(
-            #         width=2,
-            #         color='darkblue',
-            #     )
-            # )])
-            #
-            # fig.add_trace(go.Scatter3d(
-            #     x=self.knowledge.polygon_obstacle[:, 1],
-            #     y=self.knowledge.polygon_obstacle[:, 0],
-            #     z=np.zeros_like(self.knowledge.polygon_obstacle[:, 0]),
-            #     mode='lines',
-            #     line=dict(
-            #         width=2,
-            #         color='darkblue',
-            #     )
-            # ))
-            #
-            # for node in self.nodes:
-            #     if node.parent is not None:
-            #         # plt.plot([node.location.lon, node.parent.location.lon],
-            #         #          [node.location.lat, node.parent.location.lat], "-g")
-            #         fig.add_trace(go.Scatter3d(
-            #             x=[node.location.lon, node.parent.location.lon],
-            #             y=[node.location.lat, node.parent.location.lat],
-            #             z=[node.location.depth, node.parent.location.depth],
-            #             mode='lines',
-            #             line=dict(
-            #                 width=1,
-            #                 color='green',
-            #             )
-            #         ))
-            #
-            # if self.arrived_signal:
-            #     trajectory = np.array(self.trajectory)
-            #     fig.add_trace(go.Scatter3d(
-            #         x=trajectory[:, 1],
-            #         y=trajectory[:, 0],
-            #         z=trajectory[:, 2],
-            #         mode='lines',
-            #         line=dict(
-            #             width=1,
-            #             color='red',
-            #         )
-            #     ))
-            #
-            # fig.add_trace(go.Scatter3d(
-            #     x=[self.knowledge.starting_location.lon],
-            #     y=[self.knowledge.starting_location.lat],
-            #     z=[self.knowledge.starting_location.depth],
-            #     mode='markers',
-            #     marker=dict(
-            #         size = 20,
-            #         color='blue',
-            #     )
-            # ))
-            #
-            # fig.add_trace(go.Scatter3d(
-            #     x=[self.knowledge.ending_location.lon],
-            #     y=[self.knowledge.ending_location.lat],
-            #     z=[self.knowledge.ending_location.depth],
-            #     mode='markers',
-            #     marker=dict(
-            #         size = 20,
-            #         color='black',
-            #     )
-            # ))
-            # # fig.update_scenes(xaxis_visible=False, yaxis_visible=False,zaxis_visible=False)
-            # plotly.offline.plot(fig, filename=FIGPATH+"P_{:03d}.html".format(i), auto_open=False)
-
 
     def get_bigger_box(self):
         self.box_lat_min, self.box_lon_min = map(np.amin, [self.knowledge.polygon_border[:, 0],
@@ -257,10 +149,8 @@ class RRTStar:
         line = LineString([(node1.location.lat, node1.location.lon),
                            (node2.location.lat, node2.location.lon)])
         intersect = False
-        if self.knowledge.polygon_obstacle_path.intersects(line):
+        if self.knowledge.polygon_obstacle_path.intersects(line) or self.knowledge.borderline_path.intersects(line):
             intersect = True
-        # if self.knowledge.polygon_border_path.intersects(line):
-        #     intersect = True
         return intersect
     '''
     End of collision detection
@@ -297,18 +187,10 @@ class RRTStar:
         #                   height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),
         #                   edgecolor='r', fc='None', lw=2)
         # plt.gca().add_patch(ellipse)
-        plt.grid()
+        plt.grid(which='minor', alpha=0.2)
         plt.title("rrt*")
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
         # plt.show()
 
-#%%
-# bt = [(0,0), (0,1), (1,2), (1,0)]
-# poly = Polygon(bt)
-# p = poly.buffer(-.1)
-# x, y = poly.exterior.xy
-# x2, y2 = p.exterior.xy
-# plt.plot(x, y)
-# plt.plot(x2, y2)
-# plt.show()
+
 

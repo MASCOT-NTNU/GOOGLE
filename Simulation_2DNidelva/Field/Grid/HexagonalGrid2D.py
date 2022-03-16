@@ -5,29 +5,28 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-02-25
 """
 
-
 from usr_func import *
 
 
 class HexgonalGrid2DGenerator:
 
-    def __init__(self, polygon_within=None, polygon_without=None, neighbour_distance=0):
-        self.polygon_within = polygon_within
-        self.polygon_without = polygon_without
+    def __init__(self, polygon_border=None, polygon_obstacle=None, neighbour_distance=0):
+        self.polygon_border = polygon_border
+        self.polygon_obstacle = polygon_obstacle
         self.neighbour_distance = neighbour_distance
         self.setup_polygons()
         self.get_bigger_box()
-        self.get_grid_within_boundaries()
+        self.get_grid_within_border()
 
     def setup_polygons(self):
-        self.polygon_within_path = mplPath.Path(self.polygon_within)
-        self.polygon_without_path = mplPath.Path(self.polygon_without)
+        self.polygon_border_path = mplPath.Path(self.polygon_border)
+        self.polygon_obstacle_path = mplPath.Path(self.polygon_obstacle)
 
     def get_bigger_box(self):
-        self.box_lat_min, self.box_lon_min = map(np.amin, [self.polygon_within[:, 0], self.polygon_within[:, 1]])
-        self.box_lat_max, self.box_lon_max = map(np.amax, [self.polygon_within[:, 0], self.polygon_within[:, 1]])
+        self.box_lat_min, self.box_lon_min = map(np.amin, [self.polygon_border[:, 0], self.polygon_border[:, 1]])
+        self.box_lat_max, self.box_lon_max = map(np.amax, [self.polygon_border[:, 0], self.polygon_border[:, 1]])
 
-    def get_grid_within_boundaries(self):
+    def get_grid_within_border(self):
         self.get_distance_coverage()
         self.get_lateral_gap()
         self.get_vertical_gap()
@@ -45,7 +44,7 @@ class HexgonalGrid2DGenerator:
                     x = self.grid_x[j]
                     y = self.grid_y[i]
                 lat, lon = xy2latlon(x, y, self.box_lat_min, self.box_lon_min)
-                if self.isWithin((lat, lon)) and self.isWithout((lat, lon)):
+                if self.is_location_within_border((lat, lon)) and self.is_location_collide_with_obstacle((lat, lon)):
                     self.grid_xy.append([x, y])
                     self.grid_wgs.append([lat, lon])
 
@@ -63,19 +62,13 @@ class HexgonalGrid2DGenerator:
     def get_vertical_gap(self):
         self.vertical_distance = self.neighbour_distance * np.sin(deg2rad(60))
 
-    def isWithin(self, location):
-        return self.polygon_within_path.contains_point(location)
+    def is_location_within_border(self, location):
+        return self.polygon_border_path.contains_point(location)
 
-    def isWithout(self, location):
-        return not self.polygon_without_path.contains_point(location)
+    def is_location_collide_with_obstacle(self, location):
+        return not self.polygon_obstacle_path.contains_point(location)
 
 
-if __name__ == "__main__":
-    PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/OpArea.csv"
-    PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/Munkholmen.csv"
-    polygon = pd.read_csv(PATH_OPERATION_AREA).to_numpy()
-    munkholmen = pd.read_csv(PATH_MUNKHOLMEN).to_numpy()
-    grid = HexgonalGrid2DGenerator(polygon_within=polygon, polygon_without=munkholmen, neighbour_distance=500)
 
 
 

@@ -5,7 +5,7 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-03-07
 """
 
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, LineString
 import numpy as np
 
 
@@ -22,6 +22,7 @@ class Knowledge:
         self.polygon_border = polygon_border
         self.polygon_obstacle = polygon_obstacle
         self.polygon_border_path = Polygon(self.polygon_border)
+        self.borderline_path = LineString(self.polygon_border)
         self.polygon_obstacle_path = Polygon(self.polygon_obstacle)
 
         self.step_size = step_size

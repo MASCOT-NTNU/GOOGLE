@@ -5,8 +5,8 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-03-07
 """
 from usr_func import *
-from GOOGLE.Simulation_Square.Config.Config import *
-from GOOGLE.Simulation_Square.Tree.Location import *
+from GOOGLE.Simulation_2DSquare.Config.Config import *
+from GOOGLE.Simulation_2DSquare.Tree.Location import *
 
 
 class GPKernel:

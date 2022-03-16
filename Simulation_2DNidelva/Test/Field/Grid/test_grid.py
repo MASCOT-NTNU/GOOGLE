@@ -10,7 +10,7 @@ DISTANCE_LATERAL = 150
 
 polygon = pd.read_csv(PATH_OPERATION_AREA).to_numpy()
 munkholmen = pd.read_csv(PATH_MUNKHOLMEN).to_numpy()
-gridGenerator = HexgonalGrid2DGenerator(polygon_within=polygon, polygon_without=munkholmen, neighbour_distance=500)
+gridGenerator = HexgonalGrid2DGenerator(polygon_border=polygon, polygon_obstacle=munkholmen, neighbour_distance=500)
 # gridGenerator = GridGenerator(polygon=polygon, depth=[0], distance_neighbour=DISTANCE_LATERAL, no_children=6, points_allowed=5000)
 # grid = gridGenerator.grid
 coordinates = gridGenerator.coordinates2d

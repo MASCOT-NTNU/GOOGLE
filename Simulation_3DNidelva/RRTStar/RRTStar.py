@@ -84,11 +84,11 @@ class RRTStar:
         pass
 
     def get_bigger_box(self):
-        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_within[:, 0],
-                                                                               self.config.polygon_within[:, 1],
+        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_border[:, 0],
+                                                                               self.config.polygon_border[:, 1],
                                                                                self.config.depth])
-        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_within[:, 0],
-                                                                               self.config.polygon_within[:, 1],
+        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_border[:, 0],
+                                                                               self.config.polygon_border[:, 1],
                                                                                self.config.depth])
 
     def get_new_location(self):
@@ -149,12 +149,12 @@ class RRTStar:
         line = LineString([(node.parent.location.lat, node.parent.location.lon),
                            (node.location.lat, node.location.lon)])
         collision = False
-        if self.config.polygon_without_path.contains(point) or self.config.polygon_without_path.intersects(line):
+        if self.config.polygon_obstacle_path.contains(point) or self.config.polygon_obstacle_path.intersects(line):
             collision = True
         return collision
 
     def isWithin(self, location):
-        return self.config.polygon_within_path.contains_point(location)
+        return self.config.polygon_border_path.contains_point(location)
 
     def get_shortest_path(self):
         print("here comes the path finding")
@@ -187,8 +187,8 @@ class RRTStar:
 
         plt.figure(figsize=(8, 8))
         plt.clf()
-        plt.plot(self.config.polygon_without[:, 1], self.config.polygon_without[:, 0], 'k-', linewidth=4)
-        plt.plot(self.config.polygon_within[:, 1], self.config.polygon_within[:, 0], 'k-', linewidth=4)
+        plt.plot(self.config.polygon_obstacle[:, 1], self.config.polygon_obstacle[:, 0], 'k-', linewidth=4)
+        plt.plot(self.config.polygon_border[:, 1], self.config.polygon_border[:, 0], 'k-', linewidth=4)
 
         for node in self.nodes:
             if node.parent is not None:
