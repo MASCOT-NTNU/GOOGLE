@@ -19,7 +19,6 @@ BUDGET = 6000
 polygon_border = pd.read_csv(PATH_OPERATION_AREA).to_numpy()
 polygon_obstacle = pd.read_csv(PATH_MUNKHOLMEN).to_numpy()
 
-
 starting_location = Location(63.440752, 10.349210)
 ending_location = Location(63.457086, 10.440334)
 
@@ -52,9 +51,7 @@ print(rrtstar.knowledge.polygon_border_path.intersects(line))
 path = Polygon(polygon_new)
 
 
-#%%
-rrtstar.knowledge.polygon_border.shape
-rrtstar.knowledge.polygon_obstacle.shape
+
 
 
 

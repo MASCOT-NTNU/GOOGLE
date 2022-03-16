@@ -259,8 +259,8 @@ class RRTStar:
         intersect = False
         if self.knowledge.polygon_obstacle_path.intersects(line):
             intersect = True
-        if self.knowledge.polygon_border_path.intersects(line):
-            intersect = True
+        # if self.knowledge.polygon_border_path.intersects(line):
+        #     intersect = True
         return intersect
     '''
     End of collision detection
@@ -302,4 +302,13 @@ class RRTStar:
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
         # plt.show()
 
+#%%
+# bt = [(0,0), (0,1), (1,2), (1,0)]
+# poly = Polygon(bt)
+# p = poly.buffer(-.1)
+# x, y = poly.exterior.xy
+# x2, y2 = p.exterior.xy
+# plt.plot(x, y)
+# plt.plot(x2, y2)
+# plt.show()
 
