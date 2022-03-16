@@ -6,7 +6,6 @@ Date: 2022-03-07
 """
 
 from shapely.geometry import Polygon, LineString
-import numpy as np
 
 
 class Knowledge:

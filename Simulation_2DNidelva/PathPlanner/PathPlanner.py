@@ -2,17 +2,15 @@
 This script produces the planned trajectory
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-03-07
+Date: 2022-03-16
 """
-import numpy as np
 
-from usr_func import *
-from GOOGLE.Simulation_2DSquare.Plotting.plotting_func import *
-from GOOGLE.Simulation_2DSquare.GPKernel.GPKernel import *
-from GOOGLE.Simulation_2DSquare.Tree.Location import *
-from GOOGLE.Simulation_2DSquare.Config.Config import *
-from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
-from GOOGLE.Simulation_2DSquare.PlanningStrategies.RRTStar import RRTStar
+from GOOGLE.Simulation_2DNidelva.Plotting.plotting_func import *
+from GOOGLE.Simulation_2DNidelva.GPKernel.GPKernel import *
+from GOOGLE.Simulation_2DNidelva.Tree.Location import *
+from GOOGLE.Simulation_2DNidelva.Config.Config import *
+from GOOGLE.Simulation_2DNidelva.Tree.Knowledge import Knowledge
+from GOOGLE.Simulation_2DNidelva.PlanningStrategies.RRTStar import RRTStar
 
 
 class PathPlanner:
@@ -27,12 +25,13 @@ class PathPlanner:
         self.budget = budget
         self.gp = GPKernel()
 
-        self.gp.mu_cond = np.zeros_like(self.gp.mu_cond) # TODO: Wrong prior
+        # self.gp.mu_cond = np.zeros_like(self.gp.mu_cond) # TODO: Wrong prior
 
     def plot_synthetic_field(self):
-        plotf_vector(self.gp.grid_vector, self.gp.mu_truth, "Truth")
+        cmap = get_cmap("RdBu", 10)
+        plotf_vector(self.gp.grid_xy, self.gp.mu_truth, "Ground Truth", cmap=cmap, vmin=16, vmax=30)
         plt.show()
-        plotf_vector(self.gp.grid_vector, self.gp.mu_prior_vector, "Prior")
+        plotf_vector(self.gp.grid_xy, self.gp.mu_prior, "Prior", cmap=cmap, vmin=16, vmax=30)
         plt.show()
 
     def run(self):
@@ -50,8 +49,9 @@ class PathPlanner:
             if not self.gp.gohome:
                 knowledge = Knowledge(starting_location=self.current_location, ending_location=ending_loc,
                                       goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
-                                      step_size=STEPSIZE, budget=self.budget, kernel=self.gp, mu=self.gp.mu_cond,
-                                      Sigma=self.gp.Sigma_cond)
+                                      polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
+                                      step_size=STEPSIZE, maximum_iteration=MAXITER_EASY, neighbour_radius=RADIUS_NEIGHBOUR,
+                                      distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
 
                 self.rrtstar = RRTStar(knowledge)
                 self.rrtstar.expand_trees()
@@ -87,7 +87,7 @@ class PathPlanner:
             print("Distance travelled: ", self.distance_travelled)
 
             ind_F = self.gp.get_ind_F(self.current_location)
-            F = np.zeros([1, self.gp.num_nodes])
+            F = np.zeros([1, self.gp.grid_xy.shape[0]])
             F[0, ind_F] = True
             self.gp.mu_cond, self.gp.Sigma_cond = self.gp.update_GP_field(self.gp.mu_cond, self.gp.Sigma_cond, F,
                                                                           self.gp.R, F @ self.gp.mu_truth)
@@ -102,8 +102,8 @@ class PathPlanner:
 
     def get_route_home(self):
         distance_remaining = get_distance_between_locations(self.current_location, self.goal_location)
-        angle = np.math.atan2(self.goal_location.y - self.current_location.y,
-                              self.goal_location.x - self.current_location.x)
+        angle = np.math.atan2(self.goal_location.x - self.current_location.x,
+                              self.goal_location.y - self.current_location.y)
         gaps = np.arange(0, distance_remaining, STEPSIZE)
         self.num_waypoints_return_home = len(gaps)
         distance_gaps = np.linspace(0, distance_remaining, self.num_waypoints_return_home)
@@ -111,11 +111,12 @@ class PathPlanner:
         for i in range(self.num_waypoints_return_home):
             x = self.current_location.x + distance_gaps[i] * np.cos(angle)
             y = self.current_location.y + distance_gaps[i] * np.sin(angle)
-            waypoints_location.append(Location(x, y))
+            lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+            waypoints_location.append(Location(lat, lon))
         return waypoints_location
 
     def get_location_from_ind(self, ind):
-        return Location(self.gp.grid_vector[ind, 0], self.gp.grid_vector[ind, 1])
+        return Location(self.gp.coordinates[ind, 0], self.gp.coordinates[ind, 1])
 
     def is_arrived(self, current_loc):
         if get_distance_between_locations(current_loc, self.goal_location) <= DISTANCE_TOLERANCE:
@@ -129,34 +130,34 @@ class PathPlanner:
         gs = GridSpec(nrows=1, ncols=5)
         ax = fig.add_subplot(gs[0])
         cmap = get_cmap("RdBu", 10)
-        plotf_vector(self.gp.grid_vector, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True)
+        plotf_vector(self.gp.grid_xy, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True)
 
         ax = fig.add_subplot(gs[1])
-        plotf_vector(self.gp.grid_vector, self.gp.mu_cond, "Conditional Mean", cmap=cmap, colorbar=True)
+        plotf_vector(self.gp.grid_xy, self.gp.mu_cond, "Conditional Mean", cmap=cmap, colorbar=True)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[2])
-        plotf_vector(self.gp.grid_vector, self.gp.cost_eibv, "EIBV", cmap=cmap, cbar_title="Cost", colorbar=True)
+        plotf_vector(self.gp.grid_xy, self.gp.cost_eibv, "EIBV", cmap=cmap, cbar_title="Cost", colorbar=True)
         # plotf_vector(self.gp.grid_vector, np.sqrt(np.diag(self.gp.Sigma_cond)), "Prediction Error", cmap=cmap)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[3])
-        plotf_vector(self.gp.grid_vector, self.gp.cost_vr, "VR", cmap=cmap, cbar_title="Cost", colorbar=True)
+        plotf_vector(self.gp.grid_xy, self.gp.cost_vr, "VR", cmap=cmap, cbar_title="Cost", colorbar=True)
         # plotf_vector(self.gp.grid_vector, np.sqrt(np.diag(self.gp.Sigma_cond)), "Prediction Error", cmap=cmap)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[4])
         self.rrtstar.plot_tree()
-        plotf_vector(self.gp.grid_vector, self.gp.cost_valley, "Cost Valley", alpha=.1,
+        plotf_vector(self.gp.grid_xy, self.gp.cost_valley, "Cost Valley", alpha=.1,
                      cmap=cmap, cbar_title="Cost", colorbar=True, vmin=0, vmax=4)
         plt.savefig(FIGPATH + "P_{:03d}.png".format(i))
         plt.close("all")
 
 
 if __name__ == "__main__":
-    starting_loc = Location(.0, .0)
-    goal_loc = Location(.0, 1.)
-    p = PathPlanner(starting_location=starting_loc, goal_location=goal_loc, budget=BUDGET)
+    starting_location = Location(63.440887, 10.354804)
+    goal_location = Location(63.455674, 10.429927)
+    p = PathPlanner(starting_location=starting_location, goal_location=goal_location, budget=BUDGET)
     # p.plot_synthetic_field()
     p.run()
 
