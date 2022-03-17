@@ -28,12 +28,17 @@ class RRTStar:
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
+        t1 = time.time()
         for i in range(self.knowledge.maximum_iteration):
-            print("Iteration: ", i)
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
-                new_location = self.get_new_location()
+                if self.knowledge.kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
+                    # print("Here comes new sampling distribution!")
+                    new_location = self.get_new_location_within_budget_ellipse()
+                    self.radius_neighbour = RADIUS_NEIGHBOUR
+                else:
+                    new_location = self.get_new_location()
 
             nearest_node = self.get_nearest_node(self.nodes, new_location)
             next_node = self.get_next_node(nearest_node, new_location)
@@ -50,6 +55,8 @@ class RRTStar:
                 self.ending_node.parent = next_node
             else:
                 self.nodes.append(next_node)
+        t2 = time.time()
+        print("Finished tree expansion, time consumed: ", t2 - t1)
 
     def get_bigger_box(self):
         self.box_lat_min, self.box_lon_min = map(np.amin, [self.knowledge.polygon_border[:, 0],
@@ -64,6 +71,23 @@ class RRTStar:
             if self.is_location_within_border(Location(lat, lon)):
                 location = Location(lat, lon)
                 return location
+
+    def get_new_location_within_budget_ellipse(self):
+        # t1 = time.time()
+        theta = np.random.uniform(0, 2 * np.pi)
+        module = np.sqrt(np.random.rand())
+        y_usr = self.knowledge.kernel.budget_ellipse_a * module * np.cos(theta)
+        x_usr = self.knowledge.kernel.budget_ellipse_b * module * np.sin(theta)
+        y_wgs = (self.knowledge.kernel.budget_middle_location.y +
+                 y_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle) -
+                 x_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle))
+        x_wgs = (self.knowledge.kernel.budget_middle_location.x +
+                 y_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle) +
+                 x_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle))
+        lat, lon = xy2latlon(x_wgs, y_wgs, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        # t2 = time.time()
+        # print("Generating location takes: ", t2 - t1)
+        return Location(lat, lon)
 
     def get_nearest_node(self, nodes, location):
         dist = []
@@ -169,25 +193,24 @@ class RRTStar:
 
     def plot_tree(self):
         # plt.figure()
-        x, y = latlon2xy(self.knowledge.polygon_border[:, 0], self.knowledge.polygon_border[:, 1],
-                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
-        plt.plot(y, x, 'k-', linewidth=1)
-        x, y = latlon2xy(self.knowledge.polygon_obstacle[:, 0], self.knowledge.polygon_obstacle[:, 1],
-                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
-        plt.plot(y, x, 'k-', linewidth=1)
-
+        # x, y = latlon2xy(self.knowledge.polygon_border[:, 0], self.knowledge.polygon_border[:, 1],
+        #                  LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
+        # x, y = latlon2xy(self.knowledge.polygon_obstacle[:, 0], self.knowledge.polygon_obstacle[:, 1],
+        #                  LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
 
         for node in self.nodes:
             if node.parent is not None:
-                plt.plot([node.location.y, node.parent.location.y],
-                         [node.location.x, node.parent.location.x], "-g")
+                plt.plot([node.location.lon, node.parent.location.lon],
+                         [node.location.lat, node.parent.location.lat], "-g")
 
         trajectory = np.array(self.trajectory)
-        x, y = latlon2xy(trajectory[:, 0], trajectory[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
-        plt.plot(y, x, "-r")
+        # x, y = latlon2xy(trajectory[:, 0], trajectory[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
 
-        plt.plot(self.knowledge.starting_location.y, self.knowledge.starting_location.x, 'kv', ms=10)
-        plt.plot(self.knowledge.ending_location.y, self.knowledge.ending_location.x, 'bx', ms=10)
+        plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
+        plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
         # middle_location = self.get_middle_location(self.starting_node, self.goal_node)
         # ellipse = Ellipse(xy=(middle_location.x, middle_location.y), width=2*self.budget_ellipse_a,
         #                   height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),

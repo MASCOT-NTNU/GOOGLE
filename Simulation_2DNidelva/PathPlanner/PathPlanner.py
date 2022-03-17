@@ -29,9 +29,15 @@ class PathPlanner:
 
     def plot_synthetic_field(self):
         cmap = get_cmap("RdBu", 10)
-        plotf_vector(self.gp.grid_xy, self.gp.mu_truth, "Ground Truth", cmap=cmap, vmin=16, vmax=30)
+        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=cmap, vmin=20, vmax=36,
+                     kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold)
         plt.show()
-        plotf_vector(self.gp.grid_xy, self.gp.mu_prior, "Prior", cmap=cmap, vmin=16, vmax=30)
+        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plotf_vector(self.gp.coordinates, self.gp.mu_prior, "Prior", cmap=cmap, vmin=20, vmax=33,
+                     kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold)
         plt.show()
 
     def run(self):
@@ -99,7 +105,6 @@ class PathPlanner:
             self.previous_location = self.current_location
             self.trajectory.append(self.current_location)
 
-
     def get_route_home(self):
         distance_remaining = get_distance_between_locations(self.current_location, self.goal_location)
         angle = np.math.atan2(self.goal_location.x - self.current_location.x,
@@ -109,8 +114,8 @@ class PathPlanner:
         distance_gaps = np.linspace(0, distance_remaining, self.num_waypoints_return_home)
         waypoints_location = []
         for i in range(self.num_waypoints_return_home):
-            x = self.current_location.x + distance_gaps[i] * np.cos(angle)
-            y = self.current_location.y + distance_gaps[i] * np.sin(angle)
+            x = self.current_location.x + distance_gaps[i] * np.sin(angle)
+            y = self.current_location.y + distance_gaps[i] * np.cos(angle)
             lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
             waypoints_location.append(Location(lat, lon))
         return waypoints_location
@@ -126,37 +131,49 @@ class PathPlanner:
 
     def plot_knowledge(self, i):
         # == plotting ==
-        fig = plt.figure(figsize=(30, 5))
+        fig = plt.figure(figsize=(45, 8))
         gs = GridSpec(nrows=1, ncols=5)
         ax = fig.add_subplot(gs[0])
-        cmap = get_cmap("RdBu", 10)
-        plotf_vector(self.gp.grid_xy, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True)
+        cmap = get_cmap("BrBG", 10)
+        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True,
+                     kernel=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold)
 
         ax = fig.add_subplot(gs[1])
-        plotf_vector(self.gp.grid_xy, self.gp.mu_cond, "Conditional Mean", cmap=cmap, colorbar=True)
+        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plotf_vector(self.gp.coordinates, self.gp.mu_cond, "Conditional Mean", cmap=cmap, colorbar=True,
+                     kernel=self.gp, vmin=20, vmax=33,stepsize=1.2, threshold=self.gp.threshold)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[2])
-        plotf_vector(self.gp.grid_xy, self.gp.cost_eibv, "EIBV", cmap=cmap, cbar_title="Cost", colorbar=True)
-        # plotf_vector(self.gp.grid_vector, np.sqrt(np.diag(self.gp.Sigma_cond)), "Prediction Error", cmap=cmap)
+        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plotf_vector(self.gp.coordinates, self.gp.cost_eibv, "EIBV", cmap=cmap, cbar_title="Cost", colorbar=True,
+                     kernel=self.gp, vmin=0, vmax=1.1, stepsize=.1)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[3])
-        plotf_vector(self.gp.grid_xy, self.gp.cost_vr, "VR", cmap=cmap, cbar_title="Cost", colorbar=True)
-        # plotf_vector(self.gp.grid_vector, np.sqrt(np.diag(self.gp.Sigma_cond)), "Prediction Error", cmap=cmap)
+        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plotf_vector(self.gp.coordinates, self.gp.cost_vr, "VR", cmap=cmap, cbar_title="Cost", colorbar=True,
+                     kernel=self.gp, vmin=0, vmax=1.1, stepsize=.1)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[4])
         self.rrtstar.plot_tree()
-        plotf_vector(self.gp.grid_xy, self.gp.cost_valley, "Cost Valley", alpha=.1,
+        plt.plot(self.starting_location.lon, self.starting_location.lat, 'kv', ms=10)
+        plt.plot(self.goal_location.lon, self.goal_location.lat, 'bx', ms=10)
+        plotf_vector_scatter(self.gp.coordinates, self.gp.cost_valley, "Cost Valley", alpha=.6,
                      cmap=cmap, cbar_title="Cost", colorbar=True, vmin=0, vmax=4)
         plt.savefig(FIGPATH + "P_{:03d}.png".format(i))
         plt.close("all")
 
 
 if __name__ == "__main__":
-    starting_location = Location(63.440887, 10.354804)
-    goal_location = Location(63.455674, 10.429927)
+    starting_location = Location(63.455674, 10.429927)
+    goal_location = Location(63.440887, 10.354804)
     p = PathPlanner(starting_location=starting_location, goal_location=goal_location, budget=BUDGET)
     # p.plot_synthetic_field()
     p.run()
