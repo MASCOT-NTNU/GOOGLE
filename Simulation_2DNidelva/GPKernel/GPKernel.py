@@ -14,6 +14,8 @@ class GPKernel:
     gohome = False
 
     def __init__(self):
+        self.threshold = THRESHOLD
+
         self.load_grid_and_data()
         self.get_Sigma_prior()
         self.get_ground_truth()
@@ -46,7 +48,6 @@ class GPKernel:
         self.eta = 4.5 / LATERAL_RANGE
         self.tau = NUGGET
         self.R = np.diagflat(self.tau ** 2)
-        self.threshold = THRESHOLD
         print("Coef is set successfully!")
 
     def wgs2xy(self):
@@ -67,30 +68,12 @@ class GPKernel:
         ind_F = np.argmin(DM, axis = 1)
         return ind_F
 
-    @staticmethod
-    def update_GP_field(mu, Sigma, F, R, measurement):
-        C = F @ Sigma @ F.T + R
-        mu = mu + Sigma @ F.T @ np.linalg.solve(C, (measurement - F @ mu))
-        Sigma = Sigma - Sigma @ F.T @ np.linalg.solve(C, F @ Sigma)
-        return mu, Sigma
-
-    @staticmethod
-    def get_eibv(mu, Sigma, F, R, threshold):
-        Sigma_updated = Sigma - Sigma @ F.T @ np.linalg.solve(F @ Sigma @ F.T + R, F @ Sigma)
-        Variance = np.diag(Sigma_updated).reshape(-1, 1)
-        EIBV = 0
-        for i in range(mu.shape[0]):
-            EIBV += (mvn.mvnun(-np.inf, threshold, mu[i], Variance[i])[0] -
-                     mvn.mvnun(-np.inf, threshold, mu[i], Variance[i])[0] ** 2)
-        return EIBV
-
     def get_eibv_field(self):
         t1 = time.time()
         self.cost_eibv = []
         for i in range(self.grid_xy.shape[0]):
-            F = np.zeros([1, self.grid_xy.shape[0]])
-            F[0, i] = True
-            self.cost_eibv.append(self.get_eibv(self.mu_cond, self.Sigma_cond, F, self.R, THRESHOLD))
+            F = getFVector(i, self.grid_xy.shape[0])
+            self.cost_eibv.append(get_eibv_1d(self.threshold, self.mu_cond, self.Sigma_cond, F, self.R))
         self.cost_eibv = normalise(np.array(self.cost_eibv))
         t2 = time.time()
         print("EIBV field takes: ", t2 - t1)

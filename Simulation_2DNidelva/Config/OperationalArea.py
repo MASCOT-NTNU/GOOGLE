@@ -9,8 +9,8 @@ import geopandas
 from shapely.geometry import Polygon, GeometryCollection
 from usr_func import *
 from rdp import rdp
-BUFFER_SIZE_BORDER = -220 # [m]
-BUFFER_SIZE_MUNKHOLMEN = 150 # [m]
+BUFFER_SIZE_BORDER = -100 # [m]
+BUFFER_SIZE_MUNKHOLMEN = 50 # [m]
 
 '''
 Path

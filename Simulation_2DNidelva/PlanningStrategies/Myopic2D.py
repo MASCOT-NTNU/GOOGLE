@@ -2,15 +2,16 @@
 This script generates the next waypoint based on the current knowledge and previous path
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-01-05
+Date: 2022-03-18
 """
 
 """
 Usage:
-lat_next, lon_next, depth_next = MyopicPlanning_3D(Knowledge, Experience).next_waypoint
+lat_next, lon_next = MyopicPlanning_2D(Knowledge, Experience).next_waypoint
 """
 
 from usr_func import *
+from GOOGLE.Simulation_2DNidelva.Tree.Location import Location
 import time
 
 
@@ -28,8 +29,8 @@ class MyopicPlanning_2D:
         eibv = []
         for k in range(len(id)):
             F = getFVector(id[k], self.knowledge.coordinates.shape[0])
-            eibv.append(EIBV_1D(self.knowledge.threshold_salinity, self.knowledge.mu,
-                                self.knowledge.Sigma, F, self.knowledge.kernel.R))
+            eibv.append(get_eibv_1d(self.knowledge.kernel.threshold, self.knowledge.kernel.mu_cond,
+                                    self.knowledge.kernel.Sigma_cond, F, self.knowledge.kernel.R))
         t2 = time.time()
         if len(eibv) == 0:  # in case it is in the corner and not found any valid candidate locations
             while True:
@@ -42,14 +43,11 @@ class MyopicPlanning_2D:
             self.knowledge.ind_next = self.knowledge.ind_cand_filtered[np.argmin(np.array(eibv))]
 
     def find_candidates_loc(self):
-        self.ind_middle_layer = np.where(self.knowledge.coordinates[:, 2] == np.mean(self.knowledge.coordinates[:, 2]))[0]
-        self.coordinates_middle_layer = self.knowledge.coordinates[self.ind_middle_layer, :]
-        delta_x, delta_y = latlon2xy(self.coordinates_middle_layer[:, 0], self.coordinates_middle_layer[:, 1],
+        delta_x, delta_y = latlon2xy(self.knowledge.coordinates[:, 0], self.knowledge.coordinates[:, 1],
                                      self.knowledge.coordinates[self.knowledge.ind_now, 0],
                                      self.knowledge.coordinates[self.knowledge.ind_now, 1])  # using the distance
         distance_vector = np.sqrt(delta_x ** 2 + delta_y ** 2)
-        self.knowledge.ind_cand = self.ind_middle_layer[np.where((distance_vector <= self.knowledge.distance_neighbours) *
-                                                   (distance_vector > self.knowledge.distance_self))[0]]
+        self.knowledge.ind_cand = np.where((distance_vector <= self.knowledge.distance_neighbour_radar))[0]
 
     def filter_candidates_loc(self):
         id = []  # ind vector for containing the filtered desired candidate location
@@ -75,14 +73,13 @@ class MyopicPlanning_2D:
         t2 = time.time()
 
     def search_for_new_location(self):
-        ind_next = self.ind_middle_layer[np.random.randint(len(self.ind_middle_layer))]
+        ind_next = np.random.randint(len(self.knowledge.coordinates))
         return ind_next
 
     @property
     def next_waypoint(self):
-        return self.knowledge.coordinates[self.knowledge.ind_next, 0], \
-               self.knowledge.coordinates[self.knowledge.ind_next, 1], \
-               self.knowledge.coordinates[self.knowledge.ind_next, 2]
+        return Location(self.knowledge.coordinates[self.knowledge.ind_next, 0],
+                        self.knowledge.coordinates[self.knowledge.ind_next, 1])
 
 
 

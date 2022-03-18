@@ -11,7 +11,7 @@ from GOOGLE.Simulation_2DNidelva.Config.Config import *
 
 
 def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
-                 vmin=None, vmax=None, ticks=None, kernel=None, stepsize=None, threshold=None):
+                 vmin=None, vmax=None, ticks=None, kernel=None, stepsize=None, threshold=None, self=None):
     lat = grid[:, 0]
     lon = grid[:, 1]
 
@@ -28,24 +28,34 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
 
     ax = plt.gca()
     # ax.triplot(triangulated, lw=0.5, color='white')
-    levels = np.arange(vmin, vmax, stepsize)
-    if threshold:
-        linewidths = np.ones_like(levels) * .3
-        dist = np.abs(threshold - levels)
-        ind = np.where(dist == np.amin(dist))[0]
-        linewidths[ind] = 3
+    if vmin and vmax:
+        levels = np.arange(vmin, vmax, stepsize)
     else:
-        linewidths = np.ones_like(levels) * .3
+        levels = None
 
-    contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap)
-    ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths)
-                  # colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
-                  # linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
+    if np.any(levels):
+        if threshold:
+            linewidths = np.ones_like(levels) * .3
+            dist = np.abs(threshold - levels)
+            ind = np.where(dist == np.amin(dist))[0]
+            linewidths[ind] = 3
+        else:
+            linewidths = np.ones_like(levels) * .3
+        contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap)
+        ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths)
+    else:
+        contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap)
+        ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax)
+
     if colorbar:
         cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
         cbar.ax.set_title(cbar_title)
     # plt.grid()
     plt.title(title)
+
+    plt.plot(self.kernel.polygon_border[:, 1], self.kernel.polygon_border[:, 0], 'k-', linewidth=1)
+    plt.plot(self.kernel.polygon_obstacle[:, 1], self.kernel.polygon_obstacle[:, 0], 'k-', linewidth=1)
+
     # plt.show()
 
 def plotf_vector_scatter(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,

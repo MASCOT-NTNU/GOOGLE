@@ -8,7 +8,6 @@ Date: 2022-01-08
 from usr_func import *
 import warnings
 import matplotlib.path as mplPath
-from Nidelva.Simulation.Plotter.Scatter3dPlot import Scatter3DPlot
 
 
 class LawnMowerPlanning:

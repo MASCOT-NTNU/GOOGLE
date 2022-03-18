@@ -128,7 +128,7 @@ class RRTStar:
 
     def rewire_tree(self, node_new, node_nearest):
         for i in range(len(self.nodes)):
-            if RRTStar.get_distance_between_nodes(self.nodes[i], node_new) <= self.config.neighbour_radius:
+            if RRTStar.get_distance_between_nodes(self.nodes[i], node_new) <= self.config.distance_neighbour_radar:
                 if self.nodes[i].cost + RRTStar.get_distance_between_nodes(self.nodes[i], node_new) < \
                         node_nearest.cost + RRTStar.get_distance_between_nodes(node_nearest, node_new):
                     node_nearest = self.nodes[i]

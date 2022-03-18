@@ -10,10 +10,10 @@ from usr_func import *
 
 class HexgonalGrid2DGenerator:
 
-    def __init__(self, polygon_border=None, polygon_obstacle=None, neighbour_distance=0):
+    def __init__(self, polygon_border=None, polygon_obstacle=None, distance_neighbour=0):
         self.polygon_border = polygon_border
         self.polygon_obstacle = polygon_obstacle
-        self.neighbour_distance = neighbour_distance
+        self.neighbour_distance = distance_neighbour
         self.setup_polygons()
         self.get_bigger_box()
         self.get_grid_within_border()
