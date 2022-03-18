@@ -56,7 +56,7 @@ class PathPlanner:
                 knowledge = Knowledge(starting_location=self.current_location, ending_location=ending_loc,
                                       goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
                                       polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
-                                      step_size=STEPSIZE, maximum_iteration=MAXITER_EASY, neighbour_radius=RADIUS_NEIGHBOUR,
+                                      step_size=STEPSIZE, maximum_iteration=MAXITER_EASY, distance_neighbour_radar=RADIUS_NEIGHBOUR,
                                       distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
 
                 self.rrtstar = RRTStar(knowledge)
@@ -175,8 +175,8 @@ if __name__ == "__main__":
     starting_location = Location(63.455674, 10.429927)
     goal_location = Location(63.440887, 10.354804)
     p = PathPlanner(starting_location=starting_location, goal_location=goal_location, budget=BUDGET)
-    # p.plot_synthetic_field()
-    p.run()
+    p.plot_synthetic_field()
+    # p.run()
 
 
 

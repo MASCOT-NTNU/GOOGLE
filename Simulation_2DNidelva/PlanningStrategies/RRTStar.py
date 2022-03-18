@@ -143,7 +143,7 @@ class RRTStar:
                 distance_between_nodes.append(np.inf)
             else:
                 distance_between_nodes.append(self.get_distance_between_nodes(self.nodes[i], node_current))
-        ind_neighbours = np.where(np.array(distance_between_nodes) <= self.knowledge.neighbour_radius)[0]
+        ind_neighbours = np.where(np.array(distance_between_nodes) <= self.knowledge.distance_neighbour_radar)[0]
         return ind_neighbours
 
     def get_cost_between_nodes(self, node1, node2):
