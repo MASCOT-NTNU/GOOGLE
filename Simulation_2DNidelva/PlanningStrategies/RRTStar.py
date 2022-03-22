@@ -7,7 +7,6 @@ Date: 2022-03-16
 
 from usr_func import *
 from GOOGLE.Simulation_2DNidelva.Tree.TreeNode import TreeNode
-from GOOGLE.Simulation_2DNidelva.Config.Config import *
 from GOOGLE.Simulation_2DNidelva.Tree.Location import *
 # FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Nidelva/rrtstar/"
 
@@ -163,17 +162,17 @@ class RRTStar:
     '''
     def is_location_within_border(self, location):
         point = Point(location.lat, location.lon)
-        return self.knowledge.polygon_border_path.contains(point)
+        return self.knowledge.polygon_border_shapely.contains(point)
 
     def is_node_within_obstacle(self, node):
         point = Point(node.location.lat, node.location.lon)
-        return self.knowledge.polygon_obstacle_path.contains(point)
+        return self.knowledge.polygon_obstacle_shapely.contains(point)
 
     def is_path_intersect_with_obstacles(self, node1, node2):
         line = LineString([(node1.location.lat, node1.location.lon),
                            (node2.location.lat, node2.location.lon)])
         intersect = False
-        if self.knowledge.polygon_obstacle_path.intersects(line) or self.knowledge.borderline_path.intersects(line):
+        if self.knowledge.polygon_obstacle_shapely.intersects(line) or self.knowledge.polygon_borderline_shapely.intersects(line):
             intersect = True
         return intersect
     '''

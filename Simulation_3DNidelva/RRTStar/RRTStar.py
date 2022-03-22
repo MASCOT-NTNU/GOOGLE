@@ -149,12 +149,12 @@ class RRTStar:
         line = LineString([(node.parent.location.lat, node.parent.location.lon),
                            (node.location.lat, node.location.lon)])
         collision = False
-        if self.config.polygon_obstacle_path.contains(point) or self.config.polygon_obstacle_path.intersects(line):
+        if self.config.polygon_obstacle_shapely.contains(point) or self.config.polygon_obstacle_shapely.intersects(line):
             collision = True
         return collision
 
     def isWithin(self, location):
-        return self.config.polygon_border_path.contains_point(location)
+        return self.config.polygon_border_shapely.contains_point(location)
 
     def get_shortest_path(self):
         print("here comes the path finding")

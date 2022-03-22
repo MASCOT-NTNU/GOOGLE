@@ -15,14 +15,11 @@ class GPKernel:
 
     def __init__(self):
         self.threshold = THRESHOLD
-
         self.load_grid_and_data()
         self.get_Sigma_prior()
         self.get_ground_truth()
-
         self.mu_cond = self.mu_prior
         self.Sigma_cond = self.Sigma_prior
-
         self.get_obstacle_field()
 
     def load_grid_and_data(self):
@@ -68,6 +65,29 @@ class GPKernel:
         ind_F = np.argmin(DM, axis = 1)
         return ind_F
 
+    def get_obstacle_field(self):
+        self.cost_obstacle = []
+        for i in range(len(self.coordinates)):
+            if self.is_within_obstacles(Location(self.coordinates[i, 0], self.coordinates[i, 1])):
+                self.cost_obstacle.append(np.inf)
+            else:
+                self.cost_obstacle.append(0)
+        self.cost_obstacle = np.array(self.cost_obstacle)
+
+    def get_cost_valley(self, current_location=None, previous_location=None, goal_location=None, budget=None):
+        t1 = time.time()
+        self.get_eibv_field()
+        self.get_variance_reduction_field()
+        self.get_direction_field(current_location, previous_location)
+        self.get_budget_field(current_location, goal_location, budget)
+        self.cost_valley = (self.cost_eibv +
+                            self.cost_budget +
+                            self.cost_vr +
+                            self.cost_obstacle +
+                            self.cost_direction)
+        t2 = time.time()
+        print("Cost valley computed successfully!, time consumed: ", t2 - t1)
+
     def get_eibv_field(self):
         t1 = time.time()
         self.cost_eibv = []
@@ -98,14 +118,14 @@ class GPKernel:
     #         EIBV += (mvn.mvnun(-np.inf, THRESHOLD, self.mu_cond[i], Variance[i])[0] -
     #                  mvn.mvnun(-np.inf, THRESHOLD, self.mu_cond[i], Variance[i])[0] ** 2)
 
-    def get_budget_field(self, current_loc, goal_loc, budget):
+    def get_budget_field(self, current_location, goal_location, budget):
         t1 = time.time()
         if budget >= BUDGET_MARGIN:
-            self.budget_middle_location = self.get_middle_location(current_loc, goal_loc)
-            self.budget_ellipse_angle = self.get_angle_between_locations(current_loc, goal_loc)
+            self.budget_middle_location = self.get_middle_location(current_location, goal_location)
+            self.budget_ellipse_angle = self.get_angle_between_locations(current_location, goal_location)
 
             self.budget_ellipse_a = budget / 2
-            self.budget_ellipse_c = get_distance_between_locations(current_loc, goal_loc) / 2
+            self.budget_ellipse_c = get_distance_between_locations(current_location, goal_location) / 2
             self.budget_ellipse_b = np.sqrt(self.budget_ellipse_a ** 2 - self.budget_ellipse_c ** 2)
             print("a: ", self.budget_ellipse_a, "b: ", self.budget_ellipse_b, "c: ", self.budget_ellipse_c)
             if self.budget_ellipse_b > BUDGET_ELLIPSE_B_MARGIN:
@@ -117,7 +137,6 @@ class GPKernel:
                              y_wgs[i] * np.sin(self.budget_ellipse_angle))
                     y_usr = (x_wgs[i] * np.sin(self.budget_ellipse_angle) +
                              y_wgs[i] * np.cos(self.budget_ellipse_angle))
-
                     if (x_usr / self.budget_ellipse_b) ** 2 + (y_usr / self.budget_ellipse_a) ** 2 <= 1:
                         self.cost_budget.append(0)
                     else:
@@ -127,7 +146,6 @@ class GPKernel:
                 self.gohome = True
         else:
             self.gohome = True
-
         t2 = time.time()
         print("budget field consumed: ", t2 - t1)
 
@@ -163,15 +181,6 @@ class GPKernel:
         vr = np.sum(np.diag(Reduction))
         return vr
 
-    def get_obstacle_field(self):
-        self.cost_obstacle = []
-        for i in range(len(self.coordinates)):
-            if self.is_within_obstacles(Location(self.coordinates[i, 0], self.coordinates[i, 1])):
-                self.cost_obstacle.append(np.inf)
-            else:
-                self.cost_obstacle.append(0)
-        self.cost_obstacle = np.array(self.cost_obstacle)
-
     def is_within_obstacles(self, location):
         point = Point(location.lat, location.lon)
         within = False
@@ -179,15 +188,15 @@ class GPKernel:
             within = True
         return within
 
-    def get_direction_field(self, current_loc, previous_loc):
+    def get_direction_field(self, current_location, previous_location):
         t1 = time.time()
-        dx = current_loc.x - previous_loc.x
-        dy = current_loc.y - previous_loc.y
+        dx = current_location.x - previous_location.x
+        dy = current_location.y - previous_location.y
         vec1 = np.array([[dx, dy]])
         self.cost_direction = []
         for i in range(len(self.grid_xy)):
-            dx = self.grid_xy[i, 0] - current_loc.x
-            dy = self.grid_xy[i, 1] - current_loc.y
+            dx = self.grid_xy[i, 0] - current_location.x
+            dy = self.grid_xy[i, 1] - current_location.y
             vec2 = np.array([[dx, dy]])
             if np.dot(vec1, vec2.T) >= 0:
                 self.cost_direction.append(0)
@@ -196,20 +205,6 @@ class GPKernel:
         self.cost_direction = np.array(self.cost_direction)
         t2 = time.time()
         print("Direction field takes: ", t2 - t1)
-
-    def get_cost_valley(self, current_loc=None, previous_loc=None, goal_loc=None, budget=None):
-        t1 = time.time()
-        self.get_eibv_field()
-        self.get_variance_reduction_field()
-        self.get_direction_field(current_loc, previous_loc)
-        self.get_budget_field(current_loc, goal_loc, budget)
-        self.cost_valley = (self.cost_eibv +
-                            self.cost_budget +
-                            self.cost_vr +
-                            self.cost_obstacle +
-                            self.cost_direction)
-        t2 = time.time()
-        print("Cost valley computed successfully!, time consumed: ", t2 - t1)
 
 
 
