@@ -11,7 +11,7 @@ from GOOGLE.Simulation_2DNidelva.Config.Config import *
 
 
 def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
-                 vmin=None, vmax=None, ticks=None, knowledge=None, stepsize=None, threshold=None, self=None):
+                 vmin=None, vmax=None, ticks=None, knowledge=None, stepsize=None, threshold=None):
     lat = grid[:, 0]
     lon = grid[:, 1]
 
@@ -28,10 +28,12 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
 
     ax = plt.gca()
     # ax.triplot(triangulated, lw=0.5, color='white')
-    if vmin and vmax:
+    if np.any([vmin, vmax]):
         levels = np.arange(vmin, vmax, stepsize)
     else:
         levels = None
+
+    # print("levels: ", levels)
 
     if np.any(levels):
         if threshold:
@@ -41,11 +43,11 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
             linewidths[ind] = 3
         else:
             linewidths = np.ones_like(levels) * .3
-        contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap)
-        ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths)
+        contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap, alpha=alpha)
+        ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths, alpha=alpha)
     else:
-        contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap)
-        ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax)
+        contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap, alpha=alpha)
+        ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
 
     if colorbar:
         cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
@@ -55,7 +57,10 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
 
     plt.plot(knowledge.polygon_border[:, 1], knowledge.polygon_border[:, 0], 'k-', linewidth=1)
     plt.plot(knowledge.polygon_obstacle[:, 1], knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
-
+    plt.plot(knowledge.starting_location.lon, knowledge.starting_location.lat, 'kv', ms=10)
+    plt.plot(knowledge.goal_location.lon, knowledge.goal_location.lat, 'rv', ms=10)
+    plt.xlim([np.amin(lon), np.amax(lon)])
+    plt.ylim([np.amin(lat), np.amax(lat)])
     # plt.show()
 
 def plotf_vector_scatter(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
@@ -107,8 +112,8 @@ def plotf_trajectory(trajectory):
     for location in trajectory:
         path.append([location.lon, location.lat])
     path = np.array(path)
-    plt.plot(path[:, 0], path[:, 1], 'k.-')
-    plt.plot(path[:, 0], path[:, 1], 'k-')
+    plt.plot(path[:, 0], path[:, 1], 'y.-')
+    plt.plot(path[:, 0], path[:, 1], 'y-')
 
 
 def plotf_matrix(values, title):

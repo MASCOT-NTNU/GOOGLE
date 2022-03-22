@@ -4,6 +4,7 @@ Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
 Date: 2022-03-16
 """
+import matplotlib.pyplot as plt
 
 from GOOGLE.Simulation_2DNidelva.Plotting.plotting_func import *
 from GOOGLE.Simulation_2DNidelva.GPKernel.GPKernel import *
@@ -11,6 +12,9 @@ from GOOGLE.Simulation_2DNidelva.Tree.Location import *
 from GOOGLE.Simulation_2DNidelva.Config.Config import *
 from GOOGLE.Simulation_2DNidelva.Tree.Knowledge import Knowledge
 from GOOGLE.Simulation_2DNidelva.PlanningStrategies.RRTStar import RRTStar
+
+foldername = PATH_REPLICATES + "R_{:03d}/rrtstar/".format(0)
+checkfolder(foldername)
 
 
 class PathPlanner:
@@ -32,25 +36,30 @@ class PathPlanner:
         self.goal_location = goal_location
         self.budget = budget
 
-        self.knowledge = Knowledge(coordinates=self.coordinates, goal_location=self.goal_location,
-                                   goal_sample_rate=GOAL_SAMPLE_RATE, polygon_border=self.polygon_border,
-                                   polygon_obstacle=self.polygon_obstacle, step_size=STEPSIZE,
-                                   maximum_iteration=MAXITER_EASY, distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
-                                   distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, threshold=THRESHOLD)
+        self.knowledge = Knowledge(starting_location=self.starting_location, coordinates=self.coordinates,
+                                   goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
+                                   polygon_border=self.polygon_border, polygon_obstacle=self.polygon_obstacle,
+                                   step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
+                                   distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
+                                   distance_tolerance=DISTANCE_TOLERANCE,
+                                   budget=self.budget, threshold=THRESHOLD)
         self.knowledge.mu_prior = self.mu_prior
         self.gp = GPKernel(self.knowledge)
-        # self.gp.mu_cond = np.zeros_like(self.gp.mu_cond) # TODO: Wrong prior
+        # self.gp.mu_cond = np.zeros_like(self.knowledge.mu_cond) # TODO: Wrong prior
 
     def plot_synthetic_field(self):
         cmap = get_cmap("RdBu", 10)
         plotf_vector(self.knowledge.coordinates, self.knowledge.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.5, threshold=self.knowledge.threshold,
-                     self=self.knowledge)
-        plt.show()
-        plotf_vector(self.knowledge.coordinates, self.knowledge.mu_prior, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.5, threshold=self.knowledge.threshold,
-                     self=self.knowledge)
-        plt.show()
+                     cbar_title="Salinity", knowledge=self.knowledge, stepsize=1.5, threshold=self.knowledge.threshold)
+        # plt.show()
+        plt.savefig(foldername+"truth.png")
+        plt.close("all")
+
+        plotf_vector(self.knowledge.coordinates, self.knowledge.mu_prior, "Prior", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", knowledge=self.knowledge, stepsize=1.5, threshold=self.knowledge.threshold)
+        # plt.show()
+        plt.savefig(foldername + "prior.png")
+        plt.close('all')
 
     def run(self):
         self.current_location = self.starting_location
@@ -58,22 +67,23 @@ class PathPlanner:
         self.trajectory.append(self.current_location)
         self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
 
-        ind_min_cost = np.argmin(self.gp.cost_valley)
+        ind_min_cost = np.argmin(self.knowledge.cost_valley)
         ending_location = self.get_location_from_ind(ind_min_cost)
 
         for i in range(NUM_STEPS):
             print("Step: ", i)
             t1 = time.time()
-            if not self.gp.gohome:
+            if not self.knowledge.gohome:
                 self.knowledge.starting_location = self.current_location
                 self.knowledge.ending_location = ending_location
                 self.rrtstar = RRTStar(self.knowledge)
                 self.rrtstar.expand_trees()
                 self.rrtstar.get_shortest_trajectory()
-                if len(self.rrtstar.trajectory) <= 2: #TODO: check detailed double check not having path
-                    self.rrtstar.maxiter = MAXITER_HARD
+                while len(self.rrtstar.trajectory) <= 2: #TODO: check detailed double check not having path
+                    self.knowledge.maximum_iteration += MAXITER_EASY
                     self.rrtstar.expand_trees()
                     self.rrtstar.get_shortest_trajectory()
+                    print("New path length: ", len(self.rrtstar.trajectory))
                 self.path_minimum_cost = self.rrtstar.trajectory
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
@@ -100,14 +110,15 @@ class PathPlanner:
             print("Budget left: ", self.budget)
             print("Distance travelled: ", self.distance_travelled)
 
-            ind_F = self.gp.get_ind_F(self.current_location)
-            F = np.zeros([1, self.gp.grid_xy.shape[0]])
+            ind_F = get_ind_at_location2d(self.knowledge.coordinates, self.current_location)
+            F = np.zeros([1, self.knowledge.coordinates.shape[0]])
             F[0, ind_F] = True
-            self.gp.mu_cond, self.gp.Sigma_cond = update_GP_field(self.gp.mu_cond, self.gp.Sigma_cond, F,
-                                                                  self.gp.R, F @ self.gp.mu_truth)
+            self.knowledge.mu_cond, self.knowledge.Sigma_cond = update_GP_field(self.knowledge.mu_cond,
+                                                                                self.knowledge.Sigma_cond, F, self.gp.R,
+                                                                                F @ self.knowledge.mu_truth)
 
             self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
-            ind_min_cost = np.argmin(self.gp.cost_valley)
+            ind_min_cost = np.argmin(self.knowledge.cost_valley)
             ending_location = self.get_location_from_ind(ind_min_cost)
 
             self.previous_location = self.current_location
@@ -129,7 +140,7 @@ class PathPlanner:
         return waypoints_location
 
     def get_location_from_ind(self, ind):
-        return Location(self.gp.coordinates[ind, 0], self.gp.coordinates[ind, 1])
+        return Location(self.knowledge.coordinates[ind, 0], self.knowledge.coordinates[ind, 1])
 
     def is_arrived(self, current_loc):
         if get_distance_between_locations(current_loc, self.goal_location) <= DISTANCE_TOLERANCE:
@@ -137,48 +148,49 @@ class PathPlanner:
         else:
             return False
 
-    def plot_knowledge(self, i):
+    def plot_knowledge(self, fig_index):
         # == plotting ==
         fig = plt.figure(figsize=(45, 8))
         gs = GridSpec(nrows=1, ncols=5)
         ax = fig.add_subplot(gs[0])
-        cmap = get_cmap("BrBG", 10)
-        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
-        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True,
-                     knowledge=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold, self=self)
-        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.2, threshold=self.gp.threshold,
-                     self=self.knowledge)
+        plotf_vector(self.knowledge.coordinates, self.knowledge.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", knowledge=self.knowledge, stepsize=1.2, threshold=self.knowledge.threshold)
 
         ax = fig.add_subplot(gs[1])
-        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
-        plotf_vector(self.gp.coordinates, self.gp.mu_cond, "Conditional Mean", cmap=cmap, colorbar=True,
-                     knowledge=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold)
+        plotf_vector(self.knowledge.coordinates, self.knowledge.mu_cond, "Conditional Mean", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", knowledge=self.knowledge, stepsize=1.2, threshold=self.knowledge.threshold)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[2])
-        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
-        plotf_vector(self.gp.coordinates, self.gp.cost_eibv, "EIBV", cmap=cmap, cbar_title="Cost", colorbar=True,
-                     knowledge=self.gp, vmin=0, vmax=1.1, stepsize=.1)
+        plotf_vector(self.knowledge.coordinates, self.knowledge.cost_eibv, "COST_{EIBV}", cmap=CMAP, cbar_title="Cost", colorbar=True,
+                     vmin=-.2, vmax=1.2, knowledge=self.knowledge, stepsize=.1)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[3])
-        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
-        plotf_vector(self.gp.coordinates, self.gp.cost_vr, "VR", cmap=cmap, cbar_title="Cost", colorbar=True,
-                     knowledge=self.gp, vmin=0, vmax=1.1, stepsize=.1)
+        plotf_vector(self.knowledge.coordinates, self.knowledge.cost_vr, "COST_{VR}", cmap=CMAP, cbar_title="Cost",
+                     colorbar=True, vmin=-.2, vmax=1.2, knowledge=self.knowledge, stepsize=.1)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[4])
         self.rrtstar.plot_tree()
-        plt.plot(self.starting_location.lon, self.starting_location.lat, 'kv', ms=10)
-        plt.plot(self.goal_location.lon, self.goal_location.lat, 'bx', ms=10)
-        plotf_vector_scatter(self.gp.coordinates, self.gp.cost_valley, "Cost Valley", alpha=.6,
-                     cmap=cmap, cbar_title="Cost", colorbar=True, vmin=0, vmax=4)
-        plt.savefig(FIGPATH + "P_{:03d}.png".format(i))
+        cost_valley = self.knowledge.cost_valley
+        cost_valley[cost_valley == np.inf] = PENALTY # To avoid plotting interpolation
+        # plotf_vector(self.knowledge.coordinates, cost_valley, "COST VALLEY", cmap=CMAP, vmin=-.2, vmax=4, cbar_title="Cost",
+        #              colorbar=True, knowledge=self.knowledge, stepsize=.1)
+
+        plt.scatter(self.knowledge.coordinates[:, 1],
+                    self.knowledge.coordinates[:, 0],
+                    c=self.knowledge.cost_valley, cmap=CMAP,
+                    vmin=0, vmax=4, alpha=.6, s=105)
+        plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
+        plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
+        plt.plot(self.knowledge.goal_location.lon, self.knowledge.goal_location.lat, 'rv', ms=10)
+        plt.xlim([np.amin(self.knowledge.coordinates[:, 1]), np.amax(self.knowledge.coordinates[:, 1])])
+        plt.ylim([np.amin(self.knowledge.coordinates[:, 0]), np.amax(self.knowledge.coordinates[:, 0])])
+        plt.colorbar()
+        plt.title("COST_{Valley}")
+        plt.savefig(foldername + "P_{:03d}.png".format(fig_index))
         plt.close("all")
 
 
@@ -186,8 +198,8 @@ if __name__ == "__main__":
     starting_location = Location(63.455674, 10.429927)
     goal_location = Location(63.440887, 10.354804)
     p = PathPlanner(starting_location=starting_location, goal_location=goal_location, budget=BUDGET)
-    # p.plot_synthetic_field()
-    # p.run()
+    p.plot_synthetic_field()
+    p.run()
 
 
 

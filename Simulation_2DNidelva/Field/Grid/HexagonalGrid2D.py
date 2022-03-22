@@ -32,7 +32,7 @@ class HexgonalGrid2DGenerator:
         self.get_vertical_gap()
 
         self.grid_x = np.arange(0, self.box_vertical_range, self.vertical_distance)
-        self.grid_y = np.arange(0, self.box_lateral_range, self.lateral_distance)
+        self.grid_y = np.arange(0, self.box_lateral_range + self.lateral_distance * 5, self.lateral_distance)
         self.grid_xy = []
         self.grid_wgs = []
         for i in range(len(self.grid_y)):
