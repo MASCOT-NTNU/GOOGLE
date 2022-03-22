@@ -16,13 +16,14 @@ class Knowledge:
         self.starting_location = starting_location
         self.ending_location = ending_location
         self.goal_location = goal_location
+
         self.goal_sample_rate = goal_sample_rate
 
         self.polygon_border = polygon_border
         self.polygon_obstacle = polygon_obstacle
-        self.polygon_border_path = Polygon(self.polygon_border)
-        self.borderline_path = LineString(self.polygon_border)
-        self.polygon_obstacle_path = Polygon(self.polygon_obstacle)
+        self.polygon_border_shapely = Polygon(self.polygon_border)
+        self.polygon_borderline_shapely = LineString(self.polygon_border)
+        self.polygon_obstacle_shapely = Polygon(self.polygon_obstacle)
 
         self.step_size = step_size
         self.maximum_iteration = maximum_iteration

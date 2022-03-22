@@ -81,8 +81,8 @@ class Simulator:
         # plt.show()
 
     def run_2d(self):
-        self.ind_start = get_grid_ind_at_nearest_loc([self.starting_location.lat, self.starting_location.lon, 0],
-                                                        self.knowledge.coordinates) # get nearest neighbour
+        self.ind_start = get_ind_at_location([self.starting_location.lat, self.starting_location.lon, 0],
+                                             self.knowledge.coordinates)  # get nearest neighbour
         # plt.plot(self.starting_location.lon, self.starting_location.lat, 'b.')
         # plt.plot(self.knowledge.coordinates[self.ind_start, 1], self.knowledge.coordinates[self.ind_start, 0], 'r.')
         # plt.plot(self.knowledge.coordinates[:, 1], self.knowledge.coordinates[:, 0], 'k.', alpha=.25)
@@ -122,8 +122,8 @@ class Simulator:
                     print("Home already! Mission complete")
                     # self.plot_knowledge(i)
                     break
-            self.ind_sample = get_grid_ind_at_nearest_loc([self.next_location.lat, self.next_location.lon, 0],
-                                                          self.knowledge.coordinates)
+            self.ind_sample = get_ind_at_location([self.next_location.lat, self.next_location.lon, 0],
+                                                  self.knowledge.coordinates)
             self.knowledge.step_no = i
             self.plot_2d(foldername, i)
 

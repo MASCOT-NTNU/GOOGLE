@@ -51,7 +51,7 @@ plt.show()
 line = LineString([(loc1.lat, loc1.lon),
                    (loc2.lat, loc2.lon)])
 
-print(rrtstar.knowledge.polygon_border_path.intersects(line))
+print(rrtstar.knowledge.polygon_border_shapely.intersects(line))
 path = Polygon(polygon_new)
 
 

@@ -24,8 +24,7 @@ class PathPlanner:
         self.goal_location = goal_location
         self.budget = budget
         self.gp = GPKernel()
-        self.knowledge = Knowledge(starting_location=None,
-                                   goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
+        self.knowledge = Knowledge(goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
                                    polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
                                    step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
                                    distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,

@@ -88,7 +88,7 @@ def plotf_vector_scatter(grid, values, title=None, alpha=None, cmap="Paired", cb
 def is_masked(lat, lon, kernel):
     point = Point(lat, lon)
     masked = False
-    if kernel.polygon_obstacle_path.contains(point) or not kernel.polygon_border_path.contains(point):
+    if kernel.polygon_obstacle_shapely.contains(point) or not kernel.polygon_border_shapely.contains(point):
         masked = True
     return masked
 
