@@ -29,8 +29,8 @@ class MyopicPlanning_2D:
         eibv = []
         for k in range(len(id)):
             F = getFVector(id[k], self.knowledge.coordinates.shape[0])
-            eibv.append(get_eibv_1d(self.knowledge.kernel.threshold, self.knowledge.kernel.mu_cond,
-                                    self.knowledge.kernel.Sigma_cond, F, self.knowledge.kernel.R))
+            eibv.append(get_eibv_1d(self.knowledge.gp_kernel.threshold, self.knowledge.gp_kernel.mu_cond,
+                                    self.knowledge.gp_kernel.Sigma_cond, F, self.knowledge.gp_kernel.R))
         t2 = time.time()
         if len(eibv) == 0:  # in case it is in the corner and not found any valid candidate locations
             while True:

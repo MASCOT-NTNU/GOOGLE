@@ -11,7 +11,7 @@ from GOOGLE.Simulation_2DNidelva.Config.Config import *
 
 
 def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
-                 vmin=None, vmax=None, ticks=None, kernel=None, stepsize=None, threshold=None, self=None):
+                 vmin=None, vmax=None, ticks=None, knowledge=None, stepsize=None, threshold=None, self=None):
     lat = grid[:, 0]
     lon = grid[:, 1]
 
@@ -21,7 +21,7 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
 
     ind_mask = []
     for i in range(len(lon_triangulated)):
-        ind_mask.append(is_masked(lat_triangulated[i], lon_triangulated[i], kernel))
+        ind_mask.append(is_masked(lat_triangulated[i], lon_triangulated[i], knowledge))
     triangulated.set_mask(ind_mask)
     refiner = tri.UniformTriRefiner(triangulated)
     triangulated_refined, value_refined = refiner.refine_field(values.flatten(), subdiv=3)
@@ -53,8 +53,8 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
     # plt.grid()
     plt.title(title)
 
-    plt.plot(self.kernel.polygon_border[:, 1], self.kernel.polygon_border[:, 0], 'k-', linewidth=1)
-    plt.plot(self.kernel.polygon_obstacle[:, 1], self.kernel.polygon_obstacle[:, 0], 'k-', linewidth=1)
+    plt.plot(knowledge.polygon_border[:, 1], knowledge.polygon_border[:, 0], 'k-', linewidth=1)
+    plt.plot(knowledge.polygon_obstacle[:, 1], knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
 
     # plt.show()
 

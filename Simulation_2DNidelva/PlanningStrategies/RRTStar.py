@@ -32,7 +32,7 @@ class RRTStar:
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
-                if self.knowledge.kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
+                if self.knowledge.gp_kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
                     # print("Here comes new sampling distribution!")
                     new_location = self.get_new_location_within_budget_ellipse()
                     self.radius_neighbour = RADIUS_NEIGHBOUR
@@ -75,14 +75,14 @@ class RRTStar:
         # t1 = time.time()
         theta = np.random.uniform(0, 2 * np.pi)
         module = np.sqrt(np.random.rand())
-        y_usr = self.knowledge.kernel.budget_ellipse_a * module * np.cos(theta)
-        x_usr = self.knowledge.kernel.budget_ellipse_b * module * np.sin(theta)
-        y_wgs = (self.knowledge.kernel.budget_middle_location.y +
-                 y_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle) -
-                 x_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle))
-        x_wgs = (self.knowledge.kernel.budget_middle_location.x +
-                 y_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle) +
-                 x_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle))
+        y_usr = self.knowledge.gp_kernel.budget_ellipse_a * module * np.cos(theta)
+        x_usr = self.knowledge.gp_kernel.budget_ellipse_b * module * np.sin(theta)
+        y_wgs = (self.knowledge.gp_kernel.budget_middle_location.y +
+                 y_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle) -
+                 x_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle))
+        x_wgs = (self.knowledge.gp_kernel.budget_middle_location.x +
+                 y_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle) +
+                 x_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle))
         lat, lon = xy2latlon(x_wgs, y_wgs, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         # t2 = time.time()
         # print("Generating location takes: ", t2 - t1)

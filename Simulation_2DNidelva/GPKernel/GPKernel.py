@@ -11,34 +11,19 @@ from GOOGLE.Simulation_2DNidelva.Tree.Location import *
 
 class GPKernel:
 
-    gohome = False
-
-    def __init__(self):
-        self.threshold = THRESHOLD
-        self.load_grid_and_data()
+    def __init__(self, knowledge=None):
+        self.knowledge = knowledge
         self.get_Sigma_prior()
         self.get_ground_truth()
-        self.mu_cond = self.mu_prior
-        self.Sigma_cond = self.Sigma_prior
+        self.knowledge.mu_cond = self.knowledge.mu_prior
+        self.knowledge.Sigma_cond = self.knowledge.Sigma_prior
         self.get_obstacle_field()
-
-    def load_grid_and_data(self):
-        self.dataset = pd.read_csv(PATH_DATA).to_numpy()
-        self.coordinates = self.dataset[:, 0:3]
-        self.mu_prior = vectorise(self.dataset[:, -1])
-        self.polygon_border = pd.read_csv(PATH_BORDER).to_numpy()
-        self.polygon_obstacle = pd.read_csv(PATH_OBSTACLE).to_numpy()
-
-        # == setup border & obstacle
-        self.polygon_obstacle_path = Polygon(self.polygon_obstacle)
-        self.polygon_border_path = Polygon(self.polygon_border)
-        self.borderline_path = LineString(self.polygon_border)
 
     def get_Sigma_prior(self):
         self.set_coef()
         self.wgs2xy()
         DistanceMatrix = cdist(self.grid_xy, self.grid_xy)
-        self.Sigma_prior = self.sigma ** 2 * (1 + self.eta * DistanceMatrix) * np.exp(-self.eta * DistanceMatrix)
+        self.knowledge.Sigma_prior = self.sigma ** 2 * (1 + self.eta * DistanceMatrix) * np.exp(-self.eta * DistanceMatrix)
 
     def set_coef(self):
         self.sigma = SIGMA
@@ -48,14 +33,15 @@ class GPKernel:
         print("Coef is set successfully!")
 
     def wgs2xy(self):
-        x, y = latlon2xy(self.coordinates[:, 0], self.coordinates[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        x, y = latlon2xy(self.knowledge.coordinates[:, 0], self.knowledge.coordinates[:, 1],
+                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         self.x_vector, self.y_vector = map(vectorise, [x, y])
         self.grid_xy = np.hstack((vectorise(x), vectorise(y)))
 
     def get_ground_truth(self):
-        self.mu_truth = (self.mu_prior.reshape(-1, 1) +
-                         np.linalg.cholesky(self.Sigma_prior) @
-                         np.random.randn(len(self.mu_prior)).reshape(-1, 1))
+        self.knowledge.mu_truth = (self.knowledge.mu_prior.reshape(-1, 1) +
+                                   np.linalg.cholesky(self.knowledge.Sigma_prior) @
+                                   np.random.randn(len(self.knowledge.mu_prior)).reshape(-1, 1))
 
     def get_ind_F(self, location):
         x, y = map(vectorise, [location.x, location.y])
@@ -67,8 +53,8 @@ class GPKernel:
 
     def get_obstacle_field(self):
         self.cost_obstacle = []
-        for i in range(len(self.coordinates)):
-            if self.is_within_obstacles(Location(self.coordinates[i, 0], self.coordinates[i, 1])):
+        for i in range(len(self.knowledge.coordinates)):
+            if self.is_within_obstacles(Location(self.knowledge.coordinates[i, 0], self.knowledge.coordinates[i, 1])):
                 self.cost_obstacle.append(np.inf)
             else:
                 self.cost_obstacle.append(0)
@@ -93,7 +79,8 @@ class GPKernel:
         self.cost_eibv = []
         for i in range(self.grid_xy.shape[0]):
             F = getFVector(i, self.grid_xy.shape[0])
-            self.cost_eibv.append(get_eibv_1d(self.threshold, self.mu_cond, self.Sigma_cond, F, self.R))
+            self.cost_eibv.append(get_eibv_1d(self.knowledge.threshold, self.knowledge.mu_cond,
+                                              self.knowledge.Sigma_cond, F, self.R))
         self.cost_eibv = normalise(np.array(self.cost_eibv))
         t2 = time.time()
         print("EIBV field takes: ", t2 - t1)
@@ -166,11 +153,11 @@ class GPKernel:
     def get_variance_reduction_field(self):
         t1 = time.time()
         self.cost_vr = []
-        for i in range(len(self.coordinates)):
-            ind_F = self.get_ind_F(Location(self.coordinates[i, 0], self.coordinates[i, 1]))
+        for i in range(len(self.knowledge.coordinates)):
+            ind_F = self.get_ind_F(Location(self.knowledge.coordinates[i, 0], self.knowledge.coordinates[i, 1]))
             F = np.zeros([1, self.grid_xy.shape[0]])
             F[0, ind_F] = True
-            self.cost_vr.append(self.get_variance_reduction(self.Sigma_cond, F, self.R))
+            self.cost_vr.append(self.get_variance_reduction(self.knowledge.Sigma_cond, F, self.R))
         self.cost_vr = 1 - normalise(np.array(self.cost_vr))
         t2 = time.time()
         print("Variance Reduction field takes: ", t2 - t1)
@@ -184,7 +171,7 @@ class GPKernel:
     def is_within_obstacles(self, location):
         point = Point(location.lat, location.lon)
         within = False
-        if self.polygon_obstacle_path.contains(point):
+        if self.knowledge.polygon_obstacle_shapely.contains(point):
             within = True
         return within
 

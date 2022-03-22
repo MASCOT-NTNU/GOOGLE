@@ -20,26 +20,35 @@ class PathPlanner:
     waypoint_return_counter = 0
 
     def __init__(self, starting_location=None, goal_location=None, budget=None):
+        # load data
+        self.dataset = pd.read_csv(PATH_DATA).to_numpy()
+        self.coordinates = self.dataset[:, 0:3]
+        self.mu_prior = vectorise(self.dataset[:, -1])
+        self.polygon_border = pd.read_csv(PATH_BORDER).to_numpy()
+        self.polygon_obstacle = pd.read_csv(PATH_OBSTACLE).to_numpy()
+
+        # set starting location
         self.starting_location = starting_location
         self.goal_location = goal_location
         self.budget = budget
-        self.gp = GPKernel()
-        self.knowledge = Knowledge(goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
-                                   polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
-                                   step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
-                                   distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
-                                   distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
 
+        self.knowledge = Knowledge(coordinates=self.coordinates, goal_location=self.goal_location,
+                                   goal_sample_rate=GOAL_SAMPLE_RATE, polygon_border=self.polygon_border,
+                                   polygon_obstacle=self.polygon_obstacle, step_size=STEPSIZE,
+                                   maximum_iteration=MAXITER_EASY, distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
+                                   distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, threshold=THRESHOLD)
+        self.knowledge.mu_prior = self.mu_prior
+        self.gp = GPKernel(self.knowledge)
         # self.gp.mu_cond = np.zeros_like(self.gp.mu_cond) # TODO: Wrong prior
 
     def plot_synthetic_field(self):
         cmap = get_cmap("RdBu", 10)
-        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold,
+        plotf_vector(self.knowledge.coordinates, self.knowledge.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.5, threshold=self.knowledge.threshold,
                      self=self.knowledge)
         plt.show()
-        plotf_vector(self.gp.coordinates, self.gp.mu_prior, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold,
+        plotf_vector(self.knowledge.coordinates, self.knowledge.mu_prior, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.5, threshold=self.knowledge.threshold,
                      self=self.knowledge)
         plt.show()
 
@@ -137,30 +146,30 @@ class PathPlanner:
         plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
         plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
         plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True,
-                     kernel=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold, self=self)
+                     knowledge=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold, self=self)
         plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", kernel=self.gp, stepsize=1.2, threshold=self.gp.threshold,
+                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.2, threshold=self.gp.threshold,
                      self=self.knowledge)
 
         ax = fig.add_subplot(gs[1])
         plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
         plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
         plotf_vector(self.gp.coordinates, self.gp.mu_cond, "Conditional Mean", cmap=cmap, colorbar=True,
-                     kernel=self.gp, vmin=20, vmax=33,stepsize=1.2, threshold=self.gp.threshold)
+                     knowledge=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[2])
         plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
         plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
         plotf_vector(self.gp.coordinates, self.gp.cost_eibv, "EIBV", cmap=cmap, cbar_title="Cost", colorbar=True,
-                     kernel=self.gp, vmin=0, vmax=1.1, stepsize=.1)
+                     knowledge=self.gp, vmin=0, vmax=1.1, stepsize=.1)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[3])
         plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
         plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
         plotf_vector(self.gp.coordinates, self.gp.cost_vr, "VR", cmap=cmap, cbar_title="Cost", colorbar=True,
-                     kernel=self.gp, vmin=0, vmax=1.1, stepsize=.1)
+                     knowledge=self.gp, vmin=0, vmax=1.1, stepsize=.1)
         plotf_trajectory(self.trajectory)
 
         ax = fig.add_subplot(gs[4])
@@ -177,7 +186,7 @@ if __name__ == "__main__":
     starting_location = Location(63.455674, 10.429927)
     goal_location = Location(63.440887, 10.354804)
     p = PathPlanner(starting_location=starting_location, goal_location=goal_location, budget=BUDGET)
-    p.plot_synthetic_field()
+    # p.plot_synthetic_field()
     # p.run()
 
 
