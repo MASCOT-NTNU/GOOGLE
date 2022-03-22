@@ -24,20 +24,24 @@ class PathPlanner:
         self.goal_location = goal_location
         self.budget = budget
         self.gp = GPKernel()
+        self.knowledge = Knowledge(starting_location=None,
+                                   goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
+                                   polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
+                                   step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
+                                   distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
+                                   distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
 
         # self.gp.mu_cond = np.zeros_like(self.gp.mu_cond) # TODO: Wrong prior
 
     def plot_synthetic_field(self):
         cmap = get_cmap("RdBu", 10)
-        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
-        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=cmap, vmin=20, vmax=36,
-                     kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold)
+        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold,
+                     self=self.knowledge)
         plt.show()
-        plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
-        plotf_vector(self.gp.coordinates, self.gp.mu_prior, "Prior", cmap=cmap, vmin=20, vmax=33,
-                     kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold)
+        plotf_vector(self.gp.coordinates, self.gp.mu_prior, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold,
+                     self=self.knowledge)
         plt.show()
 
     def run(self):
@@ -47,22 +51,18 @@ class PathPlanner:
         self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
 
         ind_min_cost = np.argmin(self.gp.cost_valley)
-        ending_loc = self.get_location_from_ind(ind_min_cost)
+        ending_location = self.get_location_from_ind(ind_min_cost)
 
         for i in range(NUM_STEPS):
             print("Step: ", i)
             t1 = time.time()
             if not self.gp.gohome:
-                knowledge = Knowledge(starting_location=self.current_location, ending_location=ending_loc,
-                                      goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
-                                      polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
-                                      step_size=STEPSIZE, maximum_iteration=MAXITER_EASY, distance_neighbour_radar=RADIUS_NEIGHBOUR,
-                                      distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
-
-                self.rrtstar = RRTStar(knowledge)
+                self.knowledge.starting_location = self.current_location
+                self.knowledge.ending_location = ending_location
+                self.rrtstar = RRTStar(self.knowledge)
                 self.rrtstar.expand_trees()
                 self.rrtstar.get_shortest_trajectory()
-                if len(self.rrtstar.trajectory) <= 2:
+                if len(self.rrtstar.trajectory) <= 2: #TODO: check detailed double check not having path
                     self.rrtstar.maxiter = MAXITER_HARD
                     self.rrtstar.expand_trees()
                     self.rrtstar.get_shortest_trajectory()
@@ -95,12 +95,12 @@ class PathPlanner:
             ind_F = self.gp.get_ind_F(self.current_location)
             F = np.zeros([1, self.gp.grid_xy.shape[0]])
             F[0, ind_F] = True
-            self.gp.mu_cond, self.gp.Sigma_cond = self.gp.update_GP_field(self.gp.mu_cond, self.gp.Sigma_cond, F,
-                                                                          self.gp.R, F @ self.gp.mu_truth)
+            self.gp.mu_cond, self.gp.Sigma_cond = update_GP_field(self.gp.mu_cond, self.gp.Sigma_cond, F,
+                                                                  self.gp.R, F @ self.gp.mu_truth)
 
             self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
             ind_min_cost = np.argmin(self.gp.cost_valley)
-            ending_loc = self.get_location_from_ind(ind_min_cost)
+            ending_location = self.get_location_from_ind(ind_min_cost)
 
             self.previous_location = self.current_location
             self.trajectory.append(self.current_location)
@@ -138,7 +138,10 @@ class PathPlanner:
         plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)
         plt.plot(self.gp.polygon_obstacle[:, 1], self.gp.polygon_obstacle[:, 0], 'k-', linewidth=1)
         plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=cmap, colorbar=True,
-                     kernel=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold)
+                     kernel=self.gp, vmin=20, vmax=33, stepsize=1.2, threshold=self.gp.threshold, self=self)
+        plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
+                     cbar_title="Salinity", kernel=self.gp, stepsize=1.2, threshold=self.gp.threshold,
+                     self=self.knowledge)
 
         ax = fig.add_subplot(gs[1])
         plt.plot(self.gp.polygon_border[:, 1], self.gp.polygon_border[:, 0], 'k-', linewidth=1)

@@ -192,23 +192,14 @@ class RRTStar:
         self.trajectory = np.array(self.trajectory)
 
     def plot_tree(self):
-        # plt.figure()
-        # x, y = latlon2xy(self.knowledge.polygon_border[:, 0], self.knowledge.polygon_border[:, 1],
-        #                  LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
-        # x, y = latlon2xy(self.knowledge.polygon_obstacle[:, 0], self.knowledge.polygon_obstacle[:, 1],
-        #                  LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
-
         for node in self.nodes:
             if node.parent is not None:
                 plt.plot([node.location.lon, node.parent.location.lon],
                          [node.location.lat, node.parent.location.lat], "-g")
-
         trajectory = np.array(self.trajectory)
-        # x, y = latlon2xy(trajectory[:, 0], trajectory[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
-
         plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
         plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
         # middle_location = self.get_middle_location(self.starting_node, self.goal_node)
@@ -216,7 +207,7 @@ class RRTStar:
         #                   height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),
         #                   edgecolor='r', fc='None', lw=2)
         # plt.gca().add_patch(ellipse)
-        plt.grid(which='minor', alpha=0.2)
+        # plt.grid(which='minor', alpha=0.2)
         plt.title("rrt*")
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
         # plt.show()

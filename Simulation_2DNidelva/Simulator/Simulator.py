@@ -35,7 +35,9 @@ class Simulator:
         # == setup path planner
 
         # self.starting_location = Location(63.43402, 10.36401)
-        self.starting_location = Location(63.43990, 10.35273)
+        # self.starting_location = Location(63.43990, 10.35273)
+        # self.starting_location = Location(63.455, 10.415)
+        self.starting_location = Location(63.45546, 10.43784)
         self.goal_location = Location(63.45546, 10.43784)
         self.budget = BUDGET
         self.gp = GPKernel()
@@ -273,7 +275,7 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    a = Simulator(steps=100, random_seed=2)
+    a = Simulator(steps=100, random_seed=6)
     a.plot_synthetic_field()
     a.run_2d()
     # a.run_lawn_mower()
