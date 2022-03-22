@@ -70,7 +70,7 @@ class SlicerPlot:
             im = ax.scatter(lon[ind_depth], lat[ind_depth], c=self.value[ind_depth], cmap="Paired", vmin=self.vmin, vmax=self.vmax)
             grid_x, grid_y, grid_value = scatter_to_high_resolution(lon[ind_depth], lat[ind_depth], self.value[ind_depth])
             im = ax.scatter(grid_x, grid_y, c=grid_value, cmap="Paired", vmin=self.vmin, vmax=self.vmax)
-            ax.grid()
+            ax.gridGenerator()
             # im = ax.scatter(lon[ind_depth], lat[ind_depth], c = vectorise(mu_prior["salinity"])[ind_depth], cmap = "Paired", vmin = 28, vmax = 30)
             # grid_x, grid_y, grid_value = scatter_to_high_resolution(lon[ind_depth], lat[ind_depth], vectorise(mu_prior["salinity"])[ind_depth])
             # im = ax.scatter(grid_x, grid_y, c=grid_value, cmap="Paired", vmin=28, vmax=30)

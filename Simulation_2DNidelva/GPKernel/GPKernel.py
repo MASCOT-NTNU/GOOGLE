@@ -46,7 +46,7 @@ class GPKernel:
     def set_coef(self):
         self.sigma = SIGMA
         self.eta = 4.5 / LATERAL_RANGE
-        self.tau = NUGGET
+        self.tau = np.sqrt(NUGGET)
         self.R = np.diagflat(self.tau ** 2)
         print("Coef is set successfully!")
 
@@ -163,7 +163,6 @@ class GPKernel:
         vr = np.sum(np.diag(Reduction))
         return vr
 
-    # TODO: finish obstacle field
     def get_obstacle_field(self):
         self.cost_obstacle = []
         for i in range(len(self.coordinates)):
