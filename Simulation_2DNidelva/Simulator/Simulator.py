@@ -47,18 +47,18 @@ class Simulator:
                                    polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
                                    step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
                                    distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
-                                   distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
+                                   distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, gp_kernel=self.gp)
 
     def plot_synthetic_field(self):
         foldername = PATH_REPLICATES + "R_{:03d}/".format(self.seed)
         checkfolder(foldername)
         plotf_vector(self.gp.coordinates, self.gp.mu_truth, "Ground Truth", cmap=CMAP, vmin=20, vmax=36,
-                     cbar_title="Salinity", kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
+                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
         plt.savefig(foldername+"truth.png")
         plt.close('all')
         plt.show()
         plotf_vector(self.gp.coordinates, self.gp.mu_prior, "Prior", cmap=CMAP, vmin=20, vmax=33,
-                     cbar_title="Salinity", kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
+                     cbar_title="Salinity", knowledge=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
         plt.savefig(foldername + "prior.png")
         plt.close('all')
         plt.show()
@@ -98,7 +98,7 @@ class Simulator:
 
         for i in range(self.steps):
             print("Step No. ", i)
-            self.knowledge = Sampler(self.knowledge, self.knowledge.kernel.mu_truth, self.ind_sample).Knowledge
+            self.knowledge = Sampler(self.knowledge, self.knowledge.gp_kernel.mu_truth, self.ind_sample).Knowledge
 
             self.gp.get_budget_field(self.current_location, self.goal_location, self.budget)
 
@@ -140,8 +140,8 @@ class Simulator:
                  self.knowledge.coordinates[self.knowledge.ind_cand, 0], 'b.')
         plt.plot(self.knowledge.coordinates[self.knowledge.ind_next, 1],
                  self.knowledge.coordinates[self.knowledge.ind_next, 0], 'y.')
-        plotf_vector(self.gp.coordinates, self.knowledge.kernel.mu_cond, "Mean", cmap=CMAP, vmin=20, vmax=33,
-                     kernel=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
+        plotf_vector(self.gp.coordinates, self.knowledge.gp_kernel.mu_cond, "Mean", cmap=CMAP, vmin=20, vmax=33,
+                     knowledge=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
 
         lat_temp, lon_temp = xy2latlon(2 * self.gp.budget_ellipse_a, 2 * self.gp.budget_ellipse_b,
                                        LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
@@ -198,7 +198,7 @@ class Simulator:
                                       polygon_obstacle=self.gp.polygon_obstacle,
                                       step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
                                       distance_neighbour_radar=RADIUS_NEIGHBOUR,
-                                      distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, kernel=self.gp)
+                                      distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, gp_kernel=self.gp)
 
                 self.rrtstar = RRTStar(knowledge)
                 self.rrtstar.expand_trees()

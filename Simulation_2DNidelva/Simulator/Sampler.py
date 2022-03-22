@@ -20,25 +20,25 @@ class Sampler:
 
     def sample(self):
         F = getFVector(self.ind_sample, self.knowledge.coordinates.shape[0])
-        eibv = get_eibv_1d(self.knowledge.kernel.threshold, self.knowledge.kernel.mu_cond, self.knowledge.kernel.Sigma_cond,
-                           F, self.knowledge.kernel.R)
+        eibv = get_eibv_1d(self.knowledge.gp_kernel.threshold, self.knowledge.gp_kernel.mu_cond, self.knowledge.gp_kernel.Sigma_cond,
+                           F, self.knowledge.gp_kernel.R)
         dist = self.getDistanceTravelled()
 
-        self.knowledge.kernel.mu_cond, self.knowledge.kernel.Sigma_cond = \
-            update_GP_field(mu_cond=self.knowledge.kernel.mu_cond, Sigma_cond=self.knowledge.kernel.Sigma_cond, F=F,
-                            R=self.knowledge.kernel.R, y_sampled=self.ground_truth[self.ind_sample])
-        self.knowledge.excursion_prob = get_excursion_prob_1d(self.knowledge.kernel.mu_cond,
-                                                              self.knowledge.kernel.Sigma_cond,
-                                                              self.knowledge.kernel.threshold)
+        self.knowledge.gp_kernel.mu_cond, self.knowledge.gp_kernel.Sigma_cond = \
+            update_GP_field(mu_cond=self.knowledge.gp_kernel.mu_cond, Sigma_cond=self.knowledge.gp_kernel.Sigma_cond, F=F,
+                            R=self.knowledge.gp_kernel.R, y_sampled=self.ground_truth[self.ind_sample])
+        self.knowledge.excursion_prob = get_excursion_prob_1d(self.knowledge.gp_kernel.mu_cond,
+                                                              self.knowledge.gp_kernel.Sigma_cond,
+                                                              self.knowledge.gp_kernel.threshold)
         self.knowledge.trajectory.append([self.knowledge.coordinates[self.knowledge.ind_now, 0],
                                           self.knowledge.coordinates[self.knowledge.ind_now, 1]])
         self.knowledge.ind_visited.append(self.knowledge.ind_now)
         self.knowledge.ind_prev = self.knowledge.ind_now
         self.knowledge.ind_now = self.ind_sample
 
-        self.knowledge.rootMeanSquaredError.append(mean_squared_error(self.ground_truth, self.knowledge.kernel.mu_cond,
+        self.knowledge.rootMeanSquaredError.append(mean_squared_error(self.ground_truth, self.knowledge.gp_kernel.mu_cond,
                                                                       squared=False))
-        self.knowledge.expectedVariance.append(np.sum(np.diag(self.knowledge.kernel.Sigma_cond)))
+        self.knowledge.expectedVariance.append(np.sum(np.diag(self.knowledge.gp_kernel.Sigma_cond)))
         self.knowledge.integratedBernoulliVariance.append(eibv)
         self.knowledge.distance_travelled.append(dist + self.knowledge.distance_travelled[-1])
 

@@ -24,7 +24,7 @@ ending_location = Location(63.455674, 10.429927)
 knowledge = Knowledge(starting_location=starting_location, ending_location=ending_location, goal_location=ending_location,
                       goal_sample_rate=GOAL_SAMPLE_RATE, polygon_border=polygon_border, polygon_obstacle=polygon_obstacle,
                       step_size=DISTANCE_STEPSIZE, maximum_iteration=MAX_ITER, distance_neighbour_radar=DISTANCE_NEIGHBOUR,
-                      distance_tolerance=DISTANCE_TOLERANCE, budget=BUDGET, kernel=None)
+                      distance_tolerance=DISTANCE_TOLERANCE, budget=BUDGET, gp_kernel=None)
 
 rrtstar = RRTStar(knowledge)
 rrtstar.expand_trees()

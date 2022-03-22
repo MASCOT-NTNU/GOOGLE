@@ -136,14 +136,14 @@ class RRTStar:
         # t1 = time.time()
         theta = np.random.uniform(0, 2 * np.pi)
         module = np.sqrt(np.random.rand())
-        x_usr = self.knowledge.kernel.budget_ellipse_a * module * np.cos(theta)
-        y_usr = self.knowledge.kernel.budget_ellipse_b * module * np.sin(theta)
-        x_wgs = (self.knowledge.kernel.budget_middle_location.x +
-                 x_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle) -
-                 y_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle))
-        y_wgs = (self.knowledge.kernel.budget_middle_location.y +
-                 x_usr * np.sin(self.knowledge.kernel.budget_ellipse_angle) +
-                 y_usr * np.cos(self.knowledge.kernel.budget_ellipse_angle))
+        x_usr = self.knowledge.gp_kernel.budget_ellipse_a * module * np.cos(theta)
+        y_usr = self.knowledge.gp_kernel.budget_ellipse_b * module * np.sin(theta)
+        x_wgs = (self.knowledge.gp_kernel.budget_middle_location.x +
+                 x_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle) -
+                 y_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle))
+        y_wgs = (self.knowledge.gp_kernel.budget_middle_location.y +
+                 x_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle) +
+                 y_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle))
         # t2 = time.time()
         # print("Generating location takes: ", t2 - t1)
         return Location(x_wgs, y_wgs)
@@ -216,10 +216,10 @@ class RRTStar:
         return cost
 
     def get_cost_from_cost_valley(self, node1, node2):
-        F1 = self.knowledge.kernel.get_ind_F(node1.location)
-        F2 = self.knowledge.kernel.get_ind_F(node2.location)
-        cost1 = self.knowledge.kernel.cost_valley[F1]
-        cost2 = self.knowledge.kernel.cost_valley[F2]
+        F1 = self.knowledge.gp_kernel.get_ind_F(node1.location)
+        F2 = self.knowledge.gp_kernel.get_ind_F(node2.location)
+        cost1 = self.knowledge.gp_kernel.cost_valley[F1]
+        cost2 = self.knowledge.gp_kernel.cost_valley[F2]
         cost_total = ((cost1 + cost2) / 2 * self.get_distance_between_nodes(node1, node2))
         return cost_total
 
