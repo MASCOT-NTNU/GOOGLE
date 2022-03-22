@@ -41,6 +41,16 @@ class Knowledge:
         self.mu_cond = None
         self.Sigma_prior = None
         self.Sigma_cond = None
+        self.cost_valley = None
+        self.cost_eibv = None
+        self.cost_vr = None
+
+        # computed budget ellipse
+        self.budget_middle_location = None
+        self.budget_ellipse_angle = None
+        self.budget_ellipse_a = None
+        self.budget_ellipse_b = None
+        self.budget_ellipse_c = None
 
         # learned
         self.ind_cand = [] # save all potential candidate locations

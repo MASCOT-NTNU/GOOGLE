@@ -18,6 +18,7 @@ class GPKernel:
         self.knowledge.mu_cond = self.knowledge.mu_prior
         self.knowledge.Sigma_cond = self.knowledge.Sigma_prior
         self.get_obstacle_field()
+        # self.save_information_to_knowledge()
 
     def get_Sigma_prior(self):
         self.set_coef()
@@ -43,14 +44,6 @@ class GPKernel:
                                    np.linalg.cholesky(self.knowledge.Sigma_prior) @
                                    np.random.randn(len(self.knowledge.mu_prior)).reshape(-1, 1))
 
-    def get_ind_F(self, location):
-        x, y = map(vectorise, [location.x, location.y])
-        DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
-        DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
-        DM = DM_x ** 2 + DM_y ** 2
-        ind_F = np.argmin(DM, axis = 1)
-        return ind_F
-
     def get_obstacle_field(self):
         self.cost_obstacle = []
         for i in range(len(self.knowledge.coordinates)):
@@ -67,12 +60,23 @@ class GPKernel:
         self.get_direction_field(current_location, previous_location)
         self.get_budget_field(current_location, goal_location, budget)
         self.cost_valley = (self.cost_eibv +
-                            self.cost_budget +
-                            self.cost_vr +
-                            self.cost_obstacle +
-                            self.cost_direction)
+                          self.cost_budget +
+                          self.cost_vr +
+                          self.cost_obstacle +
+                          self.cost_direction)
+        self.save_information_to_knowledge()
         t2 = time.time()
         print("Cost valley computed successfully!, time consumed: ", t2 - t1)
+
+    def save_information_to_knowledge(self):
+        self.knowledge.cost_eibv = self.cost_eibv
+        self.knowledge.cost_vr = self.cost_vr
+        self.knowledge.cost_valley = self.cost_valley
+        self.knowledge.budget_middle_location = self.budget_middle_location
+        self.knowledge.budget_ellipse_angle = self.budget_ellipse_angle
+        self.knowledge.budget_ellipse_a = self.budget_ellipse_a
+        self.knowledge.budget_ellipse_b = self.budget_ellipse_b
+        self.knowledge.budget_ellipse_c = self.budget_ellipse_c
 
     def get_eibv_field(self):
         t1 = time.time()
@@ -130,9 +134,9 @@ class GPKernel:
                         self.cost_budget.append(np.inf)
                 self.cost_budget = np.array(self.cost_budget)
             else:
-                self.gohome = True
+                self.knowledge.gohome = True
         else:
-            self.gohome = True
+            self.knowledge.gohome = True
         t2 = time.time()
         print("budget field consumed: ", t2 - t1)
 
@@ -154,7 +158,8 @@ class GPKernel:
         t1 = time.time()
         self.cost_vr = []
         for i in range(len(self.knowledge.coordinates)):
-            ind_F = self.get_ind_F(Location(self.knowledge.coordinates[i, 0], self.knowledge.coordinates[i, 1]))
+            ind_F = get_ind_at_location2d(self.knowledge.coordinates,
+                                          Location(self.knowledge.coordinates[i, 0], self.knowledge.coordinates[i, 1]))
             F = np.zeros([1, self.grid_xy.shape[0]])
             F[0, ind_F] = True
             self.cost_vr.append(self.get_variance_reduction(self.knowledge.Sigma_cond, F, self.R))
