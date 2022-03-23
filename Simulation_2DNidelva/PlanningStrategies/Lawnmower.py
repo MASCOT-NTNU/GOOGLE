@@ -13,8 +13,8 @@ class LawnMowerPlanning:
         self.knowledge = knowledge
         self.starting_location = self.knowledge.starting_location
         self.ending_location = self.knowledge.ending_location
-        self.polygon_border = self.knowledge.polygon_border
-        self.polygon_obstacle = self.knowledge.polygon_obstacle
+        self.polygon_border = self.knowledge.polygon_border_xy
+        self.polygon_obstacle = self.knowledge.polygon_obstacle_xy
         self.polygon_border_shapely = Polygon(self.polygon_border)
         self.polygon_obstacle_shapely = Polygon(self.polygon_obstacle)
         self.budget = self.knowledge.budget

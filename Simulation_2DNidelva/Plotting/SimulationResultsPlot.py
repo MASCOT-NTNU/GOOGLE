@@ -16,21 +16,21 @@ class SimulationResultsPlot:
 
         plt.subplot(221)
         for i in range(len(self.knowledges)):
-            plt.plot(self.knowledges[i].integratedBernoulliVariance, label = str(i + 2)+"D")
+            plt.plot(self.knowledges[i].intergrated_bernoulli_variance, label =str(i + 2) + "D")
         plt.title("ibv")
         plt.legend()
         plt.xlabel("iteration")
 
         plt.subplot(222)
         for i in range(len(self.knowledges)):
-            plt.plot(self.knowledges[i].rootMeanSquaredError, label = str(i + 2)+"D")
+            plt.plot(self.knowledges[i].root_mean_squared_error, label =str(i + 2) + "D")
         plt.title("rmse")
         plt.legend()
         plt.xlabel("iteration")
 
         plt.subplot(223)
         for i in range(len(self.knowledges)):
-            plt.plot(self.knowledges[i].expectedVariance, label = str(i + 2)+"D")
+            plt.plot(self.knowledges[i].expected_variance, label =str(i + 2) + "D")
         plt.title("ev")
         plt.legend()
         plt.xlabel("iteration")

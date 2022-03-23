@@ -15,19 +15,20 @@ THRESHOLD = 27
 # ==
 
 # == RRTStar
-MAXITER_EASY = 300
+MAXITER_EASY = 1000
 MAXITER_HARD = 600
 GOAL_SAMPLE_RATE = .01
-STEPSIZE = 500
-RADIUS_NEIGHBOUR = 750
-DISTANCE_TOLERANCE = 500
+STEPSIZE = 600
+RADIUS_NEIGHBOUR = 250
+DISTANCE_TOLERANCE = 100
 # ==
 
 # == Grid
+ORIGIN = [63.4269097,10.3969375]
 DISTANCE_NEIGHBOUR = 120
 DISTANCE_NEIGHBOUR_RADAR = 150
-LATITUDE_ORIGIN = 0
-LONGITUDE_ORIGIN = 0
+LATITUDE_ORIGIN = ORIGIN[0]
+LONGITUDE_ORIGIN = ORIGIN[1]
 # ==
 
 # == Budget
@@ -49,12 +50,13 @@ PATH_BORDER = FILEPATH + "Config/Polygon_border.csv"
 PATH_OBSTACLE = FILEPATH + "Config/Polygon_obstacle.csv"
 PATH_DATA = FILEPATH + "Field/Data/data_interpolated.csv"
 PATH_GRID = FILEPATH + "Field/Grid/Grid.csv"
+PATH_RANDOM_LOCATIONS = FILEPATH + "Config/RandomLocations.npy"
 # ==
 
 # == PLotting
 from matplotlib.cm import get_cmap
 CMAP = get_cmap("BrBG", 10)
-PATH_REPLICATES = os.getcwd() + "/GOOGLE/fig/Sim_2DNidelva/Replicates/"
+PATH_REPLICATES = FIGPATH + "Replicates/"
 # ==
 
 

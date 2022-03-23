@@ -33,8 +33,11 @@ class PathPlanner:
         self.knowledge = Knowledge(starting_location=self.starting_location, ending_location=self.ending_location,
                               goal_sample_rate=GOAL_SAMPLE_RATE, step_size=STEPSIZE, budget=BUDGET)
         self.rrt = RRTStar(self.knowledge)
+        t1 = time.time()
         self.rrt.expand_trees()
         self.rrt.get_shortest_trajectory()
+        t2 = time.time()
+        print("Path planning takes: ", t2 - t1)
         self.rrt.plot_tree()
         plt.show()
 

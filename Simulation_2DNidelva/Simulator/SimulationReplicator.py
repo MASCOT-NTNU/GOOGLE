@@ -46,18 +46,18 @@ class SimulationReplicator:
 
     def plot_simulation_result(self):
         ibv_2d = np.array(self.result_simulation_2d.expectedIntegratedBernoulliVariance)
-        rmse_2d = np.array(self.result_simulation_2d.rootMeanSquaredError)
-        ev_2d = np.array(self.result_simulation_2d.expectedVariance)
+        rmse_2d = np.array(self.result_simulation_2d.root_mean_squared_error)
+        ev_2d = np.array(self.result_simulation_2d.expected_variance)
         dist_2d = np.array(self.result_simulation_2d.distanceTravelled)[:, 2:]
 
         ibv_3d = np.array(self.result_simulation_3d.expectedIntegratedBernoulliVariance)
-        rmse_3d = np.array(self.result_simulation_3d.rootMeanSquaredError)
-        ev_3d = np.array(self.result_simulation_3d.expectedVariance)
+        rmse_3d = np.array(self.result_simulation_3d.root_mean_squared_error)
+        ev_3d = np.array(self.result_simulation_3d.expected_variance)
         dist_3d = np.array(self.result_simulation_3d.distanceTravelled)[:, 2:]
 
         ibv_lawnmower = np.array(self.result_simulation_lawnmower.expectedIntegratedBernoulliVariance)
-        rmse_lawnmower = np.array(self.result_simulation_lawnmower.rootMeanSquaredError)
-        ev_lawnmower = np.array(self.result_simulation_lawnmower.expectedVariance)
+        rmse_lawnmower = np.array(self.result_simulation_lawnmower.root_mean_squared_error)
+        ev_lawnmower = np.array(self.result_simulation_lawnmower.expected_variance)
         dist_lawnmower = np.array(self.result_simulation_lawnmower.distanceTravelled)[:, 2:]
 
         fig = plt.figure(figsize=(20, 20))

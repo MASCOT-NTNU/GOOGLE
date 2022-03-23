@@ -84,11 +84,11 @@ class RRTStar:
         pass
 
     def get_bigger_box(self):
-        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_border[:, 0],
-                                                                               self.config.polygon_border[:, 1],
+        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_border_xy[:, 0],
+                                                                               self.config.polygon_border_xy[:, 1],
                                                                                self.config.depth])
-        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_border[:, 0],
-                                                                               self.config.polygon_border[:, 1],
+        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_border_xy[:, 0],
+                                                                               self.config.polygon_border_xy[:, 1],
                                                                                self.config.depth])
 
     def get_new_location(self):
@@ -187,8 +187,8 @@ class RRTStar:
 
         plt.figure(figsize=(8, 8))
         plt.clf()
-        plt.plot(self.config.polygon_obstacle[:, 1], self.config.polygon_obstacle[:, 0], 'k-', linewidth=4)
-        plt.plot(self.config.polygon_border[:, 1], self.config.polygon_border[:, 0], 'k-', linewidth=4)
+        plt.plot(self.config.polygon_obstacle_xy[:, 1], self.config.polygon_obstacle_xy[:, 0], 'k-', linewidth=4)
+        plt.plot(self.config.polygon_border_xy[:, 1], self.config.polygon_border_xy[:, 0], 'k-', linewidth=4)
 
         for node in self.nodes:
             if node.parent is not None:

@@ -12,12 +12,12 @@ from GOOGLE.Simulation_2DNidelva.Config.Config import *
 
 def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
                  vmin=None, vmax=None, ticks=None, knowledge=None, stepsize=None, threshold=None):
-    lat = grid[:, 0]
-    lon = grid[:, 1]
+    x = grid[:, 0]
+    y = grid[:, 1]
 
-    triangulated = tri.Triangulation(lon, lat)
-    lon_triangulated = lon[triangulated.triangles].mean(axis=1)
-    lat_triangulated = lat[triangulated.triangles].mean(axis=1)
+    triangulated = tri.Triangulation(y, x)
+    lon_triangulated = y[triangulated.triangles].mean(axis=1)
+    lat_triangulated = x[triangulated.triangles].mean(axis=1)
 
     ind_mask = []
     for i in range(len(lon_triangulated)):
@@ -55,12 +55,12 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
     # plt.grid()
     plt.title(title)
 
-    plt.plot(knowledge.polygon_border[:, 1], knowledge.polygon_border[:, 0], 'k-', linewidth=1)
-    plt.plot(knowledge.polygon_obstacle[:, 1], knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
-    plt.plot(knowledge.starting_location.lon, knowledge.starting_location.lat, 'kv', ms=10)
-    plt.plot(knowledge.goal_location.lon, knowledge.goal_location.lat, 'rv', ms=10)
-    plt.xlim([np.amin(lon), np.amax(lon)])
-    plt.ylim([np.amin(lat), np.amax(lat)])
+    plt.plot(knowledge.polygon_border_xy[:, 1], knowledge.polygon_border_xy[:, 0], 'k-', linewidth=1)
+    plt.plot(knowledge.polygon_obstacle_xy[:, 1], knowledge.polygon_obstacle_xy[:, 0], 'k-', linewidth=1)
+    plt.plot(knowledge.starting_location.y, knowledge.starting_location.x, 'kv', ms=10)
+    plt.plot(knowledge.goal_location.y, knowledge.goal_location.x, 'rv', ms=10)
+    plt.xlim([np.amin(y), np.amax(y)])
+    plt.ylim([np.amin(x), np.amax(x)])
     # plt.show()
 
 def plotf_vector_scatter(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
@@ -110,7 +110,7 @@ def plotf_budget_radar(centre, radius):
 def plotf_trajectory(trajectory):
     path = []
     for location in trajectory:
-        path.append([location.lon, location.lat])
+        path.append([location.y, location.x])
     path = np.array(path)
     plt.plot(path[:, 0], path[:, 1], 'y.-')
     plt.plot(path[:, 0], path[:, 1], 'y-')

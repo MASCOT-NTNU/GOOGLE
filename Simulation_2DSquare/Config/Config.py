@@ -6,8 +6,7 @@ Date: 2022-03-07
 """
 
 # == random seed
-import numpy
-# numpy.random.seed(0)
+import os
 
 # == GP kernel
 SIGMA = .1
@@ -17,7 +16,7 @@ THRESHOLD = .7
 # ==
 
 # == RRTStar
-MAXITER_EASY = 300
+MAXITER_EASY = 1000
 MAXITER_HARD = 600
 GOAL_SAMPLE_RATE = .01
 STEPSIZE = .1
@@ -51,13 +50,14 @@ PENALTY = 10
 #              [[.5, .0], [.6, .0], [.6, .4], [.5, .4]]]
 # OBSTACLES = [[[1.2, 1.2], [1.4, 1.2], [1.4, 1.4], [1.2, 1.4]]]
 OBSTACLES = [[[.4, .4], [.6, .5], [.5, .6], [.3, .4]]]
+BORDER = [[[.0, .0], [1., .0], [1., 1.], [.0, 1.]]]
 # OBSTACLES = [[]]
 # ==
 
 # == Path planner
 BUDGET = 5
 NUM_STEPS = 80
-FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_Square/rrt_star/"
+FIGPATH = os.getcwd() + "GOOGLE/fig/Sim_Square/rrt_star/"
 # ==
 
 

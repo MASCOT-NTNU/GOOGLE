@@ -23,11 +23,11 @@ class Radar:
         pass
 
     def find_candidates_loc(self):
-        delta_x, delta_y = latlon2xy(self.knowledge.coordinates[:, 0], self.knowledge.coordinates[:, 1],
-                                     self.knowledge.coordinates[self.knowledge.ind_now, 0],
-                                     self.knowledge.coordinates[self.knowledge.ind_now, 1])  # using the distance
+        delta_x, delta_y = latlon2xy(self.knowledge.coordinates_wgs[:, 0], self.knowledge.coordinates_wgs[:, 1],
+                                     self.knowledge.coordinates_wgs[self.knowledge.ind_now, 0],
+                                     self.knowledge.coordinates_wgs[self.knowledge.ind_now, 1])  # using the distance
 
-        delta_z = self.knowledge.coordinates[:, 2] - self.knowledge.coordinates[self.knowledge.ind_now, 2]  # depth distance in z-direction
+        delta_z = self.knowledge.coordinates_wgs[:, 2] - self.knowledge.coordinates_wgs[self.knowledge.ind_now, 2]  # depth distance in z-direction
         self.distance_vector = (delta_x ** 2 / (1.5 * self.knowledge.distance_lateral) ** 2) + \
                               (delta_y ** 2 / (1.5 * self.knowledge.distance_lateral) ** 2) + \
                               (delta_z ** 2 / (self.knowledge.distance_vertical + 0.3) ** 2)
@@ -54,9 +54,9 @@ class Radar:
         ind_radar_surface = np.where(self.distance_radar <= 1)[0]
         # ind_radar_surface = np.arange(len(self.distance_radar))
         self.lat_radar, self.lon_radar = xy2latlon(xv[ind_radar_surface], yv[ind_radar_surface],
-                                                   self.knowledge.coordinates[self.knowledge.ind_now, 0],
-                                                   self.knowledge.coordinates[self.knowledge.ind_now, 1])
-        self.depth_radar = zv[ind_radar_surface] + self.knowledge.coordinates[self.knowledge.ind_now, 2]
+                                                   self.knowledge.coordinates_wgs[self.knowledge.ind_now, 0],
+                                                   self.knowledge.coordinates_wgs[self.knowledge.ind_now, 1])
+        self.depth_radar = zv[ind_radar_surface] + self.knowledge.coordinates_wgs[self.knowledge.ind_now, 2]
         self.distance_radar = self.distance_radar[ind_radar_surface]
         print("lat_radar:", self.lat_radar)
         print("lon_radar: ", self.lon_radar)

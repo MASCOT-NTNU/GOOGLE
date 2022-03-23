@@ -18,7 +18,7 @@ gridGenerator = HexgonalGrid3DGenerator(polygon_within=polygon, polygon_without=
                                         depth=DEPTH, neighbour_distance=NEIGHBOUR_DISTANCE)
 # gridGenerator = GridGenerator(polygon=polygon, depth=[0], distance_neighbour=DISTANCE_LATERAL, no_children=6, points_allowed=5000)
 # grid = gridGenerator.grid
-coordinates = gridGenerator.coordinates
+coordinates = gridGenerator.coordinates_wgs
 
 sinmod = SINMOD()
 sinmod.get_data_at_coordinates(coordinates)
