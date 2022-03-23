@@ -9,39 +9,37 @@ from usr_func import *
 
 class LawnMowerPlanning:
 
-    def __init__(self, starting_location=None, ending_location=None, polygon_border=None, polygon_obstacle=None,
-                 budget=None, width=None, stepsize=None):
-        self.starting_location = starting_location
-        self.ending_location = ending_location
-        self.polygon_border = polygon_border
-        self.polygon_obstacle = polygon_obstacle
+    def __init__(self, knowledge=None):
+        self.knowledge = knowledge
+        self.starting_location = self.knowledge.starting_location
+        self.ending_location = self.knowledge.ending_location
+        self.polygon_border = self.knowledge.polygon_border
+        self.polygon_obstacle = self.knowledge.polygon_obstacle
         self.polygon_border_shapely = Polygon(self.polygon_border)
         self.polygon_obstacle_shapely = Polygon(self.polygon_obstacle)
-        self.budget = budget
-        self.width = width
-        self.stepsize = stepsize
+        self.budget = self.knowledge.budget
+        self.stepsize = self.knowledge.step_size_lawnmower
         print("End of initialisation! ")
 
     def get_lawnmower_path(self):
         self.get_bigger_box()
         self.discretise_the_grid()
-        self.lawn_mower_path_2d = []
+        self.lawnmower_trajectory = []
+        self.lawnmower_trajectory.append([self.starting_location.lat, self.starting_location.lon])
         for j in range(len(self.y)):
             if isEven(j):
                 for i in range(len(self.x)):
                     lat_temp, lon_temp = xy2latlon(self.x[i], self.y[j], self.box_lat_min, self.box_lon_min)
                     point = Point(lat_temp, lon_temp)
-                    if self.polygon_border_shapely.contains(point):
-                        self.lawn_mower_path_2d.append([lat_temp, lon_temp])
+                    if self.polygon_border_shapely.contains(point) and not self.polygon_obstacle_shapely.contains(point):
+                        self.lawnmower_trajectory.append([lat_temp, lon_temp])
             else:
                 for i in range(len(self.x)-1, -1, -1):
                     lat_temp, lon_temp = xy2latlon(self.x[i], self.y[j], self.box_lat_min, self.box_lon_min)
                     point = Point(lat_temp, lon_temp)
-                    if self.polygon_border_shapely.contains(point):
-                        self.lawn_mower_path_2d.append([lat_temp, lon_temp])
-        self.lawn_mower_path_2d = self.lawn_mower_path_2d[::-1] # change the starting location.
-
-        pass
+                    if self.polygon_border_shapely.contains(point) and not self.polygon_obstacle_shapely.contains(point):
+                        self.lawnmower_trajectory.append([lat_temp, lon_temp])
+        self.lawnmower_trajectory.append([self.ending_location.lat, self.ending_location.lon])
 
     def get_bigger_box(self):
         self.box_lat_min, self.box_lon_min = map(np.amin, [self.polygon_border[:, 0],
@@ -53,38 +51,15 @@ class LawnMowerPlanning:
         XRANGE, YRANGE = latlon2xy(self.box_lat_max, self.box_lon_max, self.box_lat_min, self.box_lon_min)
         self.x, self.y = map(np.arange, [0, 0], [XRANGE, YRANGE], [self.stepsize, self.stepsize])
 
-
-    def build_3d_lawn_mower(self):
-        self.lawn_mower_path_3d = []
-        self.build_2d_lawn_mower()
-        self.get_unique_depth_layer()
-        self.get_yoyo_depth_waypoint()
-        quotient = int(np.ceil(len(self.lawn_mower_path_2d) / len(self.depth_yoyo)))
-        self.depth_yoyo_path_waypoint = np.tile(self.depth_yoyo, quotient)
-        self.depth_yoyo_path_waypoint = self.depth_yoyo_path_waypoint[:len(self.lawn_mower_path_2d)]
-        self.lawn_mower_path_3d = np.hstack((self.lawn_mower_path_2d, self.depth_yoyo_path_waypoint.reshape(-1, 1)))
-
-    def build_2d_lawn_mower(self):
-        self.lawn_mower_path_2d = []
-        self.get_polygon_path()
-
-        for j in range(len(self.y)):
-            if isEven(j):
-                for i in range(len(self.x)):
-                    lat_temp, lon_temp = xy2latlon(self.x[i], self.y[j], self.box_lat_min, self.box_lon_min)
-                    if self.polygon_path.contains_point((lat_temp, lon_temp)):
-                        self.lawn_mower_path_2d.append([lat_temp, lon_temp])
-            else:
-                for i in range(len(self.x)-1, -1, -1):
-                    lat_temp, lon_temp = xy2latlon(self.x[i], self.y[j], self.box_lat_min, self.box_lon_min)
-                    if self.polygon_path.contains_point((lat_temp, lon_temp)):
-                        self.lawn_mower_path_2d.append([lat_temp, lon_temp])
-        self.lawn_mower_path_2d = self.lawn_mower_path_2d[::-1] # change the starting location.
-
-    def get_polygon_path(self):
-        self.polygon_path = mplPath.Path(self.knowledge.polygon)
-
-
+    def get_distance_of_trajectory(self):
+        dist = 0
+        path = np.array(self.lawnmower_trajectory)
+        for i in range(len(path) - 1):
+            dist_x, dist_y = latlon2xy(path[i, 0], path[i, 1],
+                                       path[i+1, 0], path[i+1, 1])
+            dist += np.sqrt(dist_x ** 2 + dist_y ** 2)
+        print("Distance of the trajectory: ", dist)
+        return dist
 
 
 

@@ -30,10 +30,11 @@ class PathPlanner:
         pass
 
     def run(self):
-        knowledge = Knowledge(starting_location=self.starting_location, ending_location=self.ending_location,
+        self.knowledge = Knowledge(starting_location=self.starting_location, ending_location=self.ending_location,
                               goal_sample_rate=GOAL_SAMPLE_RATE, step_size=STEPSIZE, budget=BUDGET,
                               mu=self.gp.mu_prior_vector, Sigma=self.gp.Sigma_prior)
-        self.rrt = RRTStar(knowledge)
+        # self.knowledge.cost_valley =
+        self.rrt = RRTStar(self.knowledge)
         self.rrt.expand_trees()
         self.rrt.get_shortest_trajectory()
         self.rrt.plot_tree()

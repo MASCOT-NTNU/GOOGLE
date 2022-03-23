@@ -7,7 +7,7 @@ Date: 2022-03-07
 
 
 from usr_func import *
-from GOOGLE.Simulation_Square.Config.Config import *
+from GOOGLE.Simulation_2DSquare.Config.Config import *
 
 
 def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title='test', colorbar=True,
