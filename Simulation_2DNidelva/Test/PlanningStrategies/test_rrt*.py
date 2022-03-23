@@ -1,4 +1,4 @@
-
+import os
 
 from GOOGLE.Simulation_2DNidelva.PlanningStrategies.RRTStar import RRTStar
 from GOOGLE.Simulation_2DNidelva.Tree.Knowledge import Knowledge
@@ -6,11 +6,11 @@ from GOOGLE.Simulation_2DNidelva.Tree.Location import Location
 from usr_func import *
 
 
-PATH_OPERATION_AREA = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/Polygon_border.csv"
-PATH_MUNKHOLMEN = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/Polygon_obstacle.csv"
+PATH_OPERATION_AREA = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/Config/Polygon_border.csv"
+PATH_MUNKHOLMEN = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/Config/Polygon_obstacle.csv"
 DISTANCE_STEPSIZE = 500
 DISTANCE_TOLERANCE = 500
-DISTANCE_NEIGHBOUR = 600
+DISTANCE_NEIGHBOUR = 500
 GOAL_SAMPLE_RATE = .01
 MAX_ITER = 400
 BUDGET = 6000
@@ -24,7 +24,7 @@ ending_location = Location(63.455674, 10.429927)
 knowledge = Knowledge(starting_location=starting_location, ending_location=ending_location, goal_location=ending_location,
                       goal_sample_rate=GOAL_SAMPLE_RATE, polygon_border=polygon_border, polygon_obstacle=polygon_obstacle,
                       step_size=DISTANCE_STEPSIZE, maximum_iteration=MAX_ITER, distance_neighbour_radar=DISTANCE_NEIGHBOUR,
-                      distance_tolerance=DISTANCE_TOLERANCE, budget=BUDGET, gp_kernel=None)
+                      distance_tolerance=DISTANCE_TOLERANCE, budget=BUDGET)
 
 rrtstar = RRTStar(knowledge)
 rrtstar.expand_trees()
