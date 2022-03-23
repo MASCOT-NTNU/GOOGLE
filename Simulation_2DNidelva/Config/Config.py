@@ -4,6 +4,8 @@ Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
 Date: 2022-03-16
 """
+import os
+
 
 # == GP kernel
 SIGMA = .6
@@ -39,8 +41,8 @@ PENALTY = 10
 # == Path planner
 BUDGET = 8000 # [m]
 NUM_STEPS = 80
-FIGPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_2DNidelva/"
-FILEPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/"
+FIGPATH = os.getcwd() + "/GOOGLE/fig/Sim_2DNidelva/"
+FILEPATH = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/"
 # PATH_BORDER = PATH_FILE + "Config/OpArea.csv"
 # PATH_OBSTACLE = PATH_FILE + "Config/Munkholmen.csv"
 PATH_BORDER = FILEPATH + "Config/Polygon_border.csv"
@@ -52,7 +54,7 @@ PATH_GRID = FILEPATH + "Field/Grid/Grid.csv"
 # == PLotting
 from matplotlib.cm import get_cmap
 CMAP = get_cmap("BrBG", 10)
-PATH_REPLICATES = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/fig/Sim_2DNidelva/Replicates/"
+PATH_REPLICATES = os.getcwd() + "/GOOGLE/fig/Sim_2DNidelva/Replicates/"
 # ==
 
 

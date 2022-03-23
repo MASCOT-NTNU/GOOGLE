@@ -36,12 +36,12 @@ class RRTStar:
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
-                if self.knowledge.gp_kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
-                    # print("Here comes new sampling distribution!")
-                    new_location = self.get_new_location_within_budget_ellipse()
-                    self.radius_neighbour = RADIUS_NEIGHBOUR
-                else:
-                    new_location = self.get_new_location()
+                # if self.knowledge.gp_kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
+                #     # print("Here comes new sampling distribution!")
+                #     new_location = self.get_new_location_within_budget_ellipse()
+                #     self.radius_neighbour = RADIUS_NEIGHBOUR
+                # else:
+                new_location = self.get_new_location()
 
             nearest_node = self.get_nearest_node(self.nodes, new_location)
             next_node = self.get_next_node(nearest_node, new_location)
@@ -139,8 +139,8 @@ class RRTStar:
 
     def get_cost_between_nodes(self, node1, node2):
         cost = (node1.cost +
-                self.get_distance_between_nodes(node1, node2) +
-                self.get_cost_from_cost_valley(node1, node2))
+                self.get_distance_between_nodes(node1, node2))
+                # self.get_cost_from_cost_valley(node1, node2))
         return cost
 
     def get_cost_from_cost_valley(self, node1, node2):

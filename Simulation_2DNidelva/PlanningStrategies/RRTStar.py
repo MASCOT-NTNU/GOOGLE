@@ -27,26 +27,35 @@ class RRTStar:
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
-        t1 = time.time()
+        ts = time.time()
         for i in range(self.knowledge.maximum_iteration):
-            # print("iteration: ", i)
+            print("iteration: ", i)
+            t1 = time.time()
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
-                if self.knowledge.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
-                    # print("Here comes new sampling distribution!")
-                    new_location = self.get_new_location_within_budget_ellipse()
-                    self.radius_neighbour = RADIUS_NEIGHBOUR
-                else:
-                    new_location = self.get_new_location()
+                # if self.knowledge.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
+                #     # print("Here comes new sampling distribution!")
+                #     new_location = self.get_new_location_within_budget_ellipse()
+                #     self.radius_neighbour = RADIUS_NEIGHBOUR
+                # else:
+                new_location = self.get_new_location()
+            t2 = time.time()
+            print("I - getting new location takes: ", t2 - t1)
 
+            t1 = time.time()
             nearest_node = self.get_nearest_node(self.nodes, new_location)
             next_node = self.get_next_node(nearest_node, new_location)
+            t2 = time.time()
+            print("II - steering takes: ", t2 - t1)
 
             if self.is_node_within_obstacle(next_node):
                 continue
 
+            t1 = time.time()
             next_node, nearest_node = self.rewire_tree(next_node, nearest_node)
+            t2 = time.time()
+            print("III - rewiring takes: ", t2 - t1)
 
             if self.is_path_intersect_with_obstacles(nearest_node, next_node):
                 continue
@@ -55,8 +64,8 @@ class RRTStar:
                 self.ending_node.parent = next_node
             else:
                 self.nodes.append(next_node)
-        t2 = time.time()
-        print("Finished tree expansion, time consumed: ", t2 - t1)
+        te = time.time()
+        print("Finished tree expansion, time consumed: ", te - ts)
 
     def get_bigger_box(self):
         self.box_lat_min, self.box_lon_min = map(np.amin, [self.knowledge.polygon_border[:, 0],
@@ -148,8 +157,8 @@ class RRTStar:
 
     def get_cost_between_nodes(self, node1, node2):
         cost = (node1.cost +
-                self.get_distance_between_nodes(node1, node2) +
-                self.get_cost_from_cost_valley(node1, node2))
+                self.get_distance_between_nodes(node1, node2))
+                # self.get_cost_from_cost_valley(node1, node2))
         return cost
 
     def get_cost_from_cost_valley(self, node1, node2):
@@ -202,6 +211,7 @@ class RRTStar:
         self.trajectory = np.array(self.trajectory)
 
     def plot_tree(self):
+        print("Here comes the plotting")
         plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
         plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
         for node in self.nodes:
@@ -212,17 +222,18 @@ class RRTStar:
         plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
         plt.plot(self.knowledge.starting_location.lon, self.knowledge.starting_location.lat, 'kv', ms=10)
         plt.plot(self.knowledge.ending_location.lon, self.knowledge.ending_location.lat, 'bx', ms=10)
-        budget_ellipse_lat_max, budget_ellipse_lon_max = xy2latlon(self.knowledge.budget_ellipse_b,
-                                                                   self.knowledge.budget_ellipse_a,
-                                                                   self.knowledge.budget_middle_location.lat,
-                                                                   self.knowledge.budget_middle_location.lon)
-        width = 2 * (budget_ellipse_lon_max - self.knowledge.budget_middle_location.lon)
-        height = 2 * (budget_ellipse_lat_max - self.knowledge.budget_middle_location.lat)
-        middle_location = self.knowledge.budget_middle_location
-        ellipse = Ellipse(xy=(middle_location.lon, middle_location.lat), width=width, height=height,
-                          angle=math.degrees(self.knowledge.budget_ellipse_angle),
-                          edgecolor='r', fc='None', lw=2)
-        plt.gca().add_patch(ellipse)
+
+        # budget_ellipse_lat_max, budget_ellipse_lon_max = xy2latlon(self.knowledge.budget_ellipse_b,
+        #                                                            self.knowledge.budget_ellipse_a,
+        #                                                            self.knowledge.budget_middle_location.lat,
+        #                                                            self.knowledge.budget_middle_location.lon)
+        # width = 2 * (budget_ellipse_lon_max - self.knowledge.budget_middle_location.lon)
+        # height = 2 * (budget_ellipse_lat_max - self.knowledge.budget_middle_location.lat)
+        # middle_location = self.knowledge.budget_middle_location
+        # ellipse = Ellipse(xy=(middle_location.lon, middle_location.lat), width=width, height=height,
+        #                   angle=math.degrees(self.knowledge.budget_ellipse_angle),
+        #                   edgecolor='r', fc='None', lw=2)
+        # plt.gca().add_patch(ellipse)
         # plt.grid(which='minor', alpha=0.2)
         # plt.title("rrt*")
         # plt.savefig(FIGPATH + "T_{:04d}.png".format(self.counter_fig))
