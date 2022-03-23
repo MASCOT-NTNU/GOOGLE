@@ -12,8 +12,8 @@ class Knowledge:
 
     def __init__(self, coordinates=None, starting_location=None, ending_location=None, goal_location=None,
                  goal_sample_rate=None, polygon_border=None, polygon_obstacle=None, step_size=None,
-                 maximum_iteration=1000, distance_neighbour_radar=None, distance_tolerance=None, budget=None,
-                 threshold=None):
+                 step_size_lawnmower=None, maximum_iteration=1000, distance_neighbour_radar=None,
+                 distance_tolerance=None, budget=None, threshold=None):
         self.coordinates = coordinates
         self.starting_location = starting_location
         self.ending_location = ending_location
@@ -22,6 +22,7 @@ class Knowledge:
         self.polygon_border = polygon_border
         self.polygon_obstacle = polygon_obstacle
         self.step_size = step_size
+        self.step_size_lawnmower = step_size_lawnmower
         self.maximum_iteration = maximum_iteration
         self.distance_neighbour_radar = distance_neighbour_radar
         self.distance_tolerance = distance_tolerance
