@@ -69,3 +69,5 @@ class Knowledge:
         # signal
         self.gohome = False
 
+if __name__ == "__main__":
+    pass

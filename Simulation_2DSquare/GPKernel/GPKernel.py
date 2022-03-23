@@ -11,8 +11,8 @@ from GOOGLE.Simulation_2DSquare.Tree.Location import *
 
 class GPKernel:
 
-    def __init__(self):
-        self.get_grid()
+    def __init__(self, knowledge=None):
+        self.knowledge = knowledge
         self.get_mean_field()
         self.get_Sigma()
         self.get_ground_truth()
@@ -27,7 +27,6 @@ class GPKernel:
         self.eta = 4.5 / LATERAL_RANGE
         self.tau = np.sqrt(NUGGET)
         self.R = np.diagflat(self.tau ** 2)
-        self.threshold = THRESHOLD
         print("Coef is set successfully!")
 
     @staticmethod
@@ -38,13 +37,13 @@ class GPKernel:
                 # 1 - np.exp(- ((x - .5) ** 2 + (y - .0) ** 2) / .004) +
                 # 1 - np.exp(- ((x - .99) ** 2 + (y - .1) ** 2) / .1))
 
-    def get_ind_F(self, location):
-        x, y = map(vectorise, [location.x, location.y])
-        DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
-        DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
-        DM = DM_x ** 2 + DM_y ** 2
-        ind_F = np.argmin(DM, axis = 1)
-        return ind_F
+    # def get_ind_F(self, location):
+    #     x, y = map(vectorise, [location.x, location.y])
+    #     DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
+    #     DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
+    #     DM = DM_x ** 2 + DM_y ** 2
+    #     ind_F = np.argmin(DM, axis = 1)
+    #     return ind_F
 
     def get_mean_field(self):
         self.mu_prior_vector = vectorise(self.get_prior(self.x_vector, self.y_vector))
