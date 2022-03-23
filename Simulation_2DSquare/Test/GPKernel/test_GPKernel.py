@@ -1,9 +1,11 @@
-from GOOGLE.Simulation_Square.GPKernel.GPKernel import *
-
-gp = GPKernel()
-
-gp.get_eibv_field()
+from GOOGLE.Simulation_2DSquare.GPKernel.GPKernel import *
+from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
 
 
-gp.get_eibv_field_mp()
+knowledge = Knowledge()
+
+gp = GPKernel(knowledge)
+
+
+
 
