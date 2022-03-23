@@ -44,7 +44,7 @@ loc2 = Location(63.46, 10.4)
 
 n1 = 50
 n2 = 250
-polygon_new = rrtstar.knowledge.polygon_border[n1:n2]
+polygon_new = rrtstar.knowledge.polygon_border_xy[n1:n2]
 plt.plot(polygon_border[n1:n2, 1], polygon_border[n1:n2, 0], 'k.-')
 plt.plot([loc1.lon, loc2.lon], [loc1.lat, loc2.lat], 'r-')
 plt.show()
@@ -56,8 +56,8 @@ path = Polygon(polygon_new)
 
 
 #%%
-rrtstar.knowledge.polygon_border.shape
-rrtstar.knowledge.polygon_obstacle.shape
+rrtstar.knowledge.polygon_border_xy.shape
+rrtstar.knowledge.polygon_obstacle_xy.shape
 
 
 

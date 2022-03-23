@@ -8,7 +8,8 @@ import pandas as pd
 from DataHandler.SINMOD import SINMOD
 
 PATH_FILE = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/"
-coordinates = pd.read_csv(PATH_FILE+"Field/Grid/Grid.csv").to_numpy()
+dataset_coordinates = pd.read_csv(PATH_FILE+"Field/Grid/Grid.csv").to_numpy()
+coordinates = dataset_coordinates[:, :3]
 
 sinmod = SINMOD()
 sinmod.load_sinmod_data(raw_data=True)

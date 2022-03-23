@@ -12,8 +12,8 @@ foldername = PATH_REPLICATES + "R_{:03d}/lawnmower/".format(0)
 checkfolder(foldername)
 
 
-starting_location = Location(63.440887, 10.354804)
-ending_location = Location(63.455674, 10.429927)
+starting_location = LocationWGS(63.440887, 10.354804)
+ending_location = LocationWGS(63.455674, 10.429927)
 polygon_border = pd.read_csv(PATH_BORDER).to_numpy()
 polygon_obstacle = pd.read_csv(PATH_OBSTACLE).to_numpy()
 budget = BUDGET
@@ -22,7 +22,7 @@ stepsizes = [1400]
 
 for stepsize in stepsizes:
     knowledge = Knowledge(starting_location=starting_location, ending_location=ending_location,
-                          polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, budget=budget,
+                          polygon_border_xy=polygon_border, polygon_obstacle_xy=polygon_obstacle, budget=budget,
                           step_size_lawnmower=stepsize)
     t = LawnMowerPlanning(knowledge=knowledge)
     t.get_lawnmower_path()

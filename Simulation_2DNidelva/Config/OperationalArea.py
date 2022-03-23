@@ -6,8 +6,10 @@ Date: 2022-02-23
 """
 
 import geopandas
-from shapely.geometry import Polygon, GeometryCollection
+import pandas as pd
+
 from usr_func import *
+from GOOGLE.Simulation_2DNidelva.Config.Config import *
 from rdp import rdp
 BUFFER_SIZE_BORDER = -100 # [m]
 BUFFER_SIZE_MUNKHOLMEN = 50 # [m]
@@ -82,19 +84,31 @@ class OpArea:
 
         print("Before, ", polygon_border.shape, polygon_obstacle.shape)
         print("After: ", polygon_wgs_border_shorten.shape, polygon_wgs_obstacle_shorten.shape)
-        df = pd.DataFrame(polygon_wgs_obstacle_shorten, columns=["lat", "lon"])
+        x, y = latlon2xy(polygon_wgs_obstacle_shorten[:, 0], polygon_wgs_obstacle_shorten[:, 1],
+                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        x, y = map(vectorise, [x, y])
+        df = pd.DataFrame(np.hstack((polygon_wgs_obstacle_shorten, x, y)), columns=["lat", "lon", "x", "y"])
         df.to_csv(FILEPATH+"Polygon_obstacle.csv", index=False)
+        plt.plot(y, x, 'r.-')
+        plt.show()
 
-        polygon_selected = polygon_wgs_border_shorten[1:-1]
-        polygon_selected = np.append(polygon_selected, polygon_selected[0, :].reshape(1, -1), axis=0)
-        df = pd.DataFrame(polygon_selected, columns=["lat", "lon"])
+        # polygon_selected = polygon_wgs_border_shorten[1:-1]
+        # polygon_selected = np.append(polygon_selected, polygon_selected[0, :].reshape(1, -1), axis=0)
+        # df = pd.DataFrame(polygon_selected, columns=["lat", "lon"])
+        x, y = latlon2xy(polygon_wgs_border_shorten[:, 0], polygon_wgs_border_shorten[:, 1],
+                         LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        x, y = map(vectorise, [x, y])
+        df = pd.DataFrame(np.hstack((polygon_wgs_border_shorten, x, y)), columns=["lat", "lon", "x", "y"])
         df.to_csv(FILEPATH + "Polygon_border.csv", index=False)
 
         plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-')
         plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-')
         plt.plot(polygon_wgs_obstacle_shorten[:, 1], polygon_wgs_obstacle_shorten[:, 0], 'r-')
-        plt.plot(polygon_selected[:, 1], polygon_selected[:, 0], 'r-')
+        plt.plot(polygon_wgs_border_shorten[:, 1], polygon_wgs_border_shorten[:, 0], 'r-')
+        # plt.plot(polygon_selected[:, 1], polygon_selected[:, 0], 'r-')
         plt.grid()
+        plt.show()
+        plt.plot(y, x, 'r.-')
         plt.show()
 
     def get_buffered_polygon(self, polygon, buffer_size):

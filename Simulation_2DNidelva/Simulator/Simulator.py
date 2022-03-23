@@ -37,14 +37,14 @@ class Simulator:
         # self.starting_location = Location(63.43402, 10.36401)
         # self.starting_location = Location(63.43990, 10.35273)
         # self.starting_location = Location(63.455, 10.415)
-        self.starting_location = Location(63.45546, 10.43784)
-        self.goal_location = Location(63.45546, 10.43784)
+        self.starting_location = LocationWGS(63.45546, 10.43784)
+        self.goal_location = LocationWGS(63.45546, 10.43784)
         self.budget = BUDGET
         self.gp = GPKernel()
 
         self.knowledge = Knowledge(starting_location=None,
                                    goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
-                                   polygon_border=self.gp.polygon_border, polygon_obstacle=self.gp.polygon_obstacle,
+                                   polygon_border_xy=self.gp.polygon_border, polygon_obstacle_xy=self.gp.polygon_obstacle,
                                    step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
                                    distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
                                    distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, gp_kernel=self.gp)
@@ -81,8 +81,8 @@ class Simulator:
         # plt.show()
 
     def run_2d(self):
-        self.ind_start = get_ind_at_location3d([self.starting_location.lat, self.starting_location.lon, 0],
-                                               self.knowledge.coordinates)  # get nearest neighbour
+        self.ind_start = get_ind_at_location3d_wgs([self.starting_location.lat, self.starting_location.lon, 0],
+                                                   self.knowledge.coordinates_xy)  # get nearest neighbour
         # plt.plot(self.starting_location.lon, self.starting_location.lat, 'b.')
         # plt.plot(self.knowledge.coordinates[self.ind_start, 1], self.knowledge.coordinates[self.ind_start, 0], 'r.')
         # plt.plot(self.knowledge.coordinates[:, 1], self.knowledge.coordinates[:, 0], 'k.', alpha=.25)
@@ -102,7 +102,7 @@ class Simulator:
 
             self.gp.get_budget_field(self.current_location, self.goal_location, self.budget)
 
-            self.distance_travelled = get_distance_between_locations(self.current_location, self.previous_location)
+            self.distance_travelled = get_distance_between_wgs_locations(self.current_location, self.previous_location)
             self.budget = self.budget - self.distance_travelled
             print("Budget left: ", self.budget)
             print("Distance travelled: ", self.distance_travelled)
@@ -122,8 +122,8 @@ class Simulator:
                     print("Home already! Mission complete")
                     # self.plot_knowledge(i)
                     break
-            self.ind_sample = get_ind_at_location3d([self.next_location.lat, self.next_location.lon, 0],
-                                                    self.knowledge.coordinates)
+            self.ind_sample = get_ind_at_location3d_wgs([self.next_location.lat, self.next_location.lon, 0],
+                                                        self.knowledge.coordinates_wgs)
             self.knowledge.step_no = i
             self.plot_2d(foldername, i)
 
@@ -134,12 +134,12 @@ class Simulator:
         filename = foldername + "P_{:03d}.png".format(i)
         plt.plot(self.starting_location.lon, self.starting_location.lat, 'gv', ms=20)
         plt.plot(self.goal_location.lon, self.goal_location.lat, 'cv', ms=20)
-        plt.plot(self.knowledge.coordinates[:, 1], self.knowledge.coordinates[:, 0], 'k.', alpha=.05)
+        plt.plot(self.knowledge.coordinates_xy[:, 1], self.knowledge.coordinates_xy[:, 0], 'k.', alpha=.05)
         plt.plot(self.current_location.lon, self.current_location.lat, 'r.')
-        plt.plot(self.knowledge.coordinates[self.knowledge.ind_cand, 1],
-                 self.knowledge.coordinates[self.knowledge.ind_cand, 0], 'b.')
-        plt.plot(self.knowledge.coordinates[self.knowledge.ind_next, 1],
-                 self.knowledge.coordinates[self.knowledge.ind_next, 0], 'y.')
+        plt.plot(self.knowledge.coordinates_xy[self.knowledge.ind_cand, 1],
+                 self.knowledge.coordinates_xy[self.knowledge.ind_cand, 0], 'b.')
+        plt.plot(self.knowledge.coordinates_xy[self.knowledge.ind_next, 1],
+                 self.knowledge.coordinates_xy[self.knowledge.ind_next, 0], 'y.')
         plotf_vector(self.gp.coordinates, self.knowledge.gp_kernel.mu_cond, "Mean", cmap=CMAP, vmin=20, vmax=33,
                      knowledge=self.gp, stepsize=1.5, threshold=self.gp.threshold, self=self.knowledge)
 
@@ -164,7 +164,7 @@ class Simulator:
 
     def run_lawn_mower(self):
         lat_start, lon_start, depth_start = self.lawn_mower_path_3d[self.starting_index, :]
-        ind_start = get_grid_ind_at_nearest_loc_2d([lat_start, lon_start, depth_start], self.knowledge.coordinates)
+        ind_start = get_grid_ind_at_nearest_loc_2d([lat_start, lon_start, depth_start], self.knowledge.coordinates_xy)
         self.knowledge.ind_prev = self.knowledge.ind_now = ind_start
 
         foldername = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Publication/Nidelva/fig/Simulation/Replicates/R_{:03d}/Lawnmower/".format(self.seed)
@@ -173,7 +173,7 @@ class Simulator:
         for i in range(self.steps):
             # print("Step No. ", i)
             lat_next, lon_next, depth_next = self.lawn_mower_path_3d[self.starting_index + i, :]
-            ind_sample = get_grid_ind_at_nearest_loc_2d([lat_next, lon_next, depth_next], self.knowledge.coordinates)
+            ind_sample = get_grid_ind_at_nearest_loc_2d([lat_next, lon_next, depth_next], self.knowledge.coordinates_wgs)
 
             self.knowledge.step_no = i
             self.knowledge = Sampler(self.knowledge, self.ground_truth, ind_sample).Knowledge
@@ -194,8 +194,8 @@ class Simulator:
             if not self.gp.gohome:
                 knowledge = Knowledge(starting_location=self.current_location, ending_location=ending_loc,
                                       goal_location=self.goal_location, goal_sample_rate=GOAL_SAMPLE_RATE,
-                                      polygon_border=self.gp.polygon_border,
-                                      polygon_obstacle=self.gp.polygon_obstacle,
+                                      polygon_border_xy=self.gp.polygon_border,
+                                      polygon_obstacle_xy=self.gp.polygon_obstacle,
                                       step_size=STEPSIZE, maximum_iteration=MAXITER_EASY,
                                       distance_neighbour_radar=RADIUS_NEIGHBOUR,
                                       distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, gp_kernel=self.gp)
@@ -211,7 +211,7 @@ class Simulator:
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
                 self.plot_knowledge(i)
-                self.next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
+                self.next_location = LocationWGS(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
             else:
                 if self.waypoint_return_counter == 0:
                     print("Compute route home only here once!")
@@ -225,7 +225,7 @@ class Simulator:
                     self.plot_knowledge(i)
                     break
 
-            self.distance_travelled = get_distance_between_locations(self.current_location, self.next_location)
+            self.distance_travelled = get_distance_between_wgs_locations(self.current_location, self.next_location)
             self.budget = self.budget - self.distance_travelled
 
             self.current_location = self.next_location
@@ -248,7 +248,7 @@ class Simulator:
 
 
     def get_route_home(self, stepsize=None):
-        distance_remaining = get_distance_between_locations(self.current_location, self.goal_location)
+        distance_remaining = get_distance_between_wgs_locations(self.current_location, self.goal_location)
         angle = np.math.atan2(self.goal_location.x - self.current_location.x,
                               self.goal_location.y - self.current_location.y)
         gaps = np.arange(0, distance_remaining, stepsize)
@@ -261,14 +261,14 @@ class Simulator:
             y = self.current_location.y + distance_gaps[i] * np.cos(angle)
             lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
             print("loc: ", lat, lon)
-            waypoints_location.append(Location(lat, lon))
+            waypoints_location.append(LocationWGS(lat, lon))
         return waypoints_location
 
     def get_location_from_ind(self, ind):
-        return Location(self.gp.coordinates[ind, 0], self.gp.coordinates[ind, 1])
+        return LocationWGS(self.gp.coordinates[ind, 0], self.gp.coordinates[ind, 1])
 
     def is_arrived(self, current_loc):
-        if get_distance_between_locations(current_loc, self.goal_location) <= DISTANCE_TOLERANCE:
+        if get_distance_between_wgs_locations(current_loc, self.goal_location) <= DISTANCE_TOLERANCE:
             return True
         else:
             return False
@@ -280,5 +280,5 @@ if __name__ == "__main__":
     a.run_2d()
     # a.run_lawn_mower()
 #%%
-plt.plot(a.knowledge.expectedVariance)
+plt.plot(a.knowledge.expected_variance)
 plt.show()

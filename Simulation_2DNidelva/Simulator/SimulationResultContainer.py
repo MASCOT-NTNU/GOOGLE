@@ -10,8 +10,8 @@ class SimulationResultContainer:
         self.distanceTravelled = []
 
     def append(self, knowledge):
-        self.expectedIntegratedBernoulliVariance.append(knowledge.integratedBernoulliVariance)
-        self.rootMeanSquaredError.append(knowledge.rootMeanSquaredError)
-        self.expectedVariance.append(knowledge.expectedVariance)
+        self.expectedIntegratedBernoulliVariance.append(knowledge.intergrated_bernoulli_variance)
+        self.rootMeanSquaredError.append(knowledge.root_mean_squared_error)
+        self.expectedVariance.append(knowledge.expected_variance)
         self.distanceTravelled.append(knowledge.distance_travelled)
 

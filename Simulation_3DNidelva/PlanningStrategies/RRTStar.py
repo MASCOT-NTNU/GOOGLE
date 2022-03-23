@@ -60,8 +60,8 @@ class RRTStar:
                 self.nodes.append(next_node)
 
             # == 2D plot
-            plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
-            plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
+            plt.plot(self.knowledge.polygon_border_xy[:, 1], self.knowledge.polygon_border_xy[:, 0], 'k-', linewidth=1)
+            plt.plot(self.knowledge.polygon_obstacle_xy[:, 1], self.knowledge.polygon_obstacle_xy[:, 0], 'k-', linewidth=1)
 
             for node in self.nodes:
                 if node.parent is not None:
@@ -156,11 +156,11 @@ class RRTStar:
 
 
     def get_bigger_box(self):
-        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.knowledge.polygon_border[:, 0],
-                                                                               self.knowledge.polygon_border[:, 1],
+        self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.knowledge.polygon_border_xy[:, 0],
+                                                                               self.knowledge.polygon_border_xy[:, 1],
                                                                                self.knowledge.depth])
-        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.knowledge.polygon_border[:, 0],
-                                                                               self.knowledge.polygon_border[:, 1],
+        self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.knowledge.polygon_border_xy[:, 0],
+                                                                               self.knowledge.polygon_border_xy[:, 1],
                                                                                self.knowledge.depth])
 
     def get_new_location(self):
@@ -375,8 +375,8 @@ class RRTStar:
 
     def plot_tree(self):
         # plt.figure()
-        plt.plot(self.knowledge.polygon_border[:, 1], self.knowledge.polygon_border[:, 0], 'k-', linewidth=1)
-        plt.plot(self.knowledge.polygon_obstacle[:, 1], self.knowledge.polygon_obstacle[:, 0], 'k-', linewidth=1)
+        plt.plot(self.knowledge.polygon_border_xy[:, 1], self.knowledge.polygon_border_xy[:, 0], 'k-', linewidth=1)
+        plt.plot(self.knowledge.polygon_obstacle_xy[:, 1], self.knowledge.polygon_obstacle_xy[:, 0], 'k-', linewidth=1)
 
         for node in self.nodes:
             if node.parent is not None:

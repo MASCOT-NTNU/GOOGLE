@@ -11,8 +11,6 @@ from GOOGLE.Simulation_2DSquare.Tree.Location import *
 
 class GPKernel:
 
-    gohome = False
-
     def __init__(self):
         self.get_grid()
         self.get_mean_field()
@@ -24,24 +22,10 @@ class GPKernel:
 
         self.get_obstacle_field()
 
-    def get_grid(self):
-        self.x = np.linspace(XLIM[0], XLIM[1], NX)
-        self.y = np.linspace(YLIM[0], YLIM[1], NY)
-        self.x_matrix, self.y_matrix = np.meshgrid(self.x, self.y)
-        self.grid_vector = []
-        for i in range(self.x_matrix.shape[0]):
-            for j in range(self.x_matrix.shape[1]):
-                self.grid_vector.append([self.x_matrix[i, j], self.y_matrix[i, j]])
-        self.grid_vector = np.array(self.grid_vector)
-        self.x_vector = self.grid_vector[:, 0].reshape(-1, 1)
-        self.y_vector = self.grid_vector[:, 1].reshape(-1, 1)
-        self.num_nodes = len(self.grid_vector)
-        print("Grid is built successfully!")
-
     def set_coef(self):
         self.sigma = SIGMA
         self.eta = 4.5 / LATERAL_RANGE
-        self.tau = NUGGET
+        self.tau = np.sqrt(NUGGET)
         self.R = np.diagflat(self.tau ** 2)
         self.threshold = THRESHOLD
         print("Coef is set successfully!")

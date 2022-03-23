@@ -13,7 +13,7 @@ munkholmen = pd.read_csv(PATH_MUNKHOLMEN).to_numpy()
 gridGenerator = HexgonalGrid2DGenerator(polygon_within=polygon, polygon_without=munkholmen, neighbour_distance=500)
 # gridGenerator = GridGenerator(polygon=polygon, depth=[0], distance_neighbour=DISTANCE_LATERAL, no_children=6, points_allowed=5000)
 # grid = gridGenerator.grid
-coordinates = gridGenerator.coordinates
+coordinates = gridGenerator.coordinates_wgs
 
 plt.plot(coordinates[:, 1], coordinates[:, 0], 'k.')
 plt.plot(polygon[:, 1], polygon[:, 0], 'r-.')
