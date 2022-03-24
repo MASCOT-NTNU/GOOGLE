@@ -45,20 +45,20 @@ class SimulationReplicator:
             print('Each replicate takes: ', t2 - t1)
 
     def plot_simulation_result(self):
-        ibv_2d = np.array(self.result_simulation_2d.expectedIntegratedBernoulliVariance)
+        ibv_2d = np.array(self.result_simulation_2d.expected_integrated_bernoulli_variance)
         rmse_2d = np.array(self.result_simulation_2d.root_mean_squared_error)
         ev_2d = np.array(self.result_simulation_2d.expected_variance)
-        dist_2d = np.array(self.result_simulation_2d.distanceTravelled)[:, 2:]
+        dist_2d = np.array(self.result_simulation_2d.distance_travelled)[:, 2:]
 
-        ibv_3d = np.array(self.result_simulation_3d.expectedIntegratedBernoulliVariance)
+        ibv_3d = np.array(self.result_simulation_3d.expected_integrated_bernoulli_variance)
         rmse_3d = np.array(self.result_simulation_3d.root_mean_squared_error)
         ev_3d = np.array(self.result_simulation_3d.expected_variance)
-        dist_3d = np.array(self.result_simulation_3d.distanceTravelled)[:, 2:]
+        dist_3d = np.array(self.result_simulation_3d.distance_travelled)[:, 2:]
 
-        ibv_lawnmower = np.array(self.result_simulation_lawnmower.expectedIntegratedBernoulliVariance)
+        ibv_lawnmower = np.array(self.result_simulation_lawnmower.expected_integrated_bernoulli_variance)
         rmse_lawnmower = np.array(self.result_simulation_lawnmower.root_mean_squared_error)
         ev_lawnmower = np.array(self.result_simulation_lawnmower.expected_variance)
-        dist_lawnmower = np.array(self.result_simulation_lawnmower.distanceTravelled)[:, 2:]
+        dist_lawnmower = np.array(self.result_simulation_lawnmower.distance_travelled)[:, 2:]
 
         fig = plt.figure(figsize=(20, 20))
         gs = GridSpec(nrows=2, ncols=2)

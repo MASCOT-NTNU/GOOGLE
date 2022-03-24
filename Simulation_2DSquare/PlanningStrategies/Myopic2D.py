@@ -47,7 +47,7 @@ class MyopicPlanning2D:
         delta_x = self.knowledge.grid[:, 0] - self.knowledge.grid[self.knowledge.ind_now, 0]
         delta_y = self.knowledge.grid[:, 1] - self.knowledge.grid[self.knowledge.ind_now, 1]
         distance_vector = np.sqrt(delta_x ** 2 + delta_y ** 2)
-        self.knowledge.ind_cand = np.where((distance_vector <= self.knowledge.distance_neighbour_radar))[0]
+        self.knowledge.ind_cand = np.where((distance_vector <= self.knowledge.distance_neighbour_radar_myopic2d))[0]
 
     def filter_candidates_loc(self):
         id = []  # ind vector for containing the filtered desired candidate location

@@ -25,10 +25,11 @@ class Simulator:
     knowledge = None
 
 
-    def __init__(self, steps=10, random_seed=0):
+    def __init__(self, steps=10, random_seed=0, replicates=False):
         print("Random seed: ", random_seed)
         self.seed = random_seed
         self.steps = steps
+        self.replicates = replicates
         np.random.seed(self.seed)
 
         # == setup path planner
@@ -51,6 +52,7 @@ class Simulator:
                                    goal_sample_rate=GOAL_SAMPLE_RATE, step_size=STEPSIZE,
                                    step_size_lawnmower=STEPSIZE_LAWNMOWER, maximum_iteration=MAXITER_EASY,
                                    distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
+                                   distance_neighbour_radar_myopic2d=DISTANCE_NEIGHBOUR_RADAR4MYOPIC2D,
                                    distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, threshold=THRESHOLD)
         self.knowledge.mu_prior = self.mu_prior
         self.gp = GPKernel(self.knowledge)
@@ -76,23 +78,6 @@ class Simulator:
         plt.savefig(foldername + "prior.png")
         plt.close('all')
         plt.show()
-
-        # self.knowledge_prior = self.knowledge
-        # self.knowledge_prior.excursion_prob = get_excursion_prob_1d(self.gp.mu_prior,
-        #                                                             self.gp.Sigma_prior,
-        #                                                             self.gp.threshold)
-        # plotf_vector_triangulated(self.knowledge.grid, self.knowledge_prior.excursion_prob, "Prior EP", vmin=0, vmax=1, cmap=CMAP, kernel=self.gp,
-        #              self=self)
-        # plt.show()
-        #
-        # self.knowledge_ground_truth = self.knowledge
-        # self.knowledge_ground_truth.mu = self.gp.mu_truth
-        # self.knowledge_ground_truth.excursion_prob = get_excursion_prob_1d(self.gp.mu_truth,
-        #                                                                    self.gp.Sigma_prior,
-        #                                                                    self.gp.threshold)
-        # plotf_vector_triangulated(self.knowledge.grid, self.knowledge_prior.excursion_prob, "Truth EP", vmin=0, vmax=1, cmap=CMAP, kernel=self.gp,
-        #              self=self)
-        # plt.show()
 
     def run_2d(self):
         self.ind_start = get_ind_at_location2d_xy(self.knowledge.grid,
@@ -134,10 +119,12 @@ class Simulator:
             self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, 
                                                        Location(self.next_location.x, self.next_location.y))
             self.knowledge.step_no = i
-            self.plot_2d(foldername, i)
+            if not self.replicates:
+                self.plot_2d(foldername, i)
 
             self.previous_location = self.current_location
             self.current_location = self.next_location
+        # print(self.knowledge.root_mean_squared_error)
 
     def plot_2d(self, foldername, i):
         filename = foldername + "P_{:03d}.png".format(i)
@@ -236,7 +223,8 @@ class Simulator:
         foldername = PATH_REPLICATES + "R_{:03d}/Lawnmower/".format(self.seed)
         checkfolder(foldername)
 
-        for i in range(len(self.lawnmower_trajectory) - 1):
+        for i in range(self.steps):
+        # for i in range(len(self.lawnmower_trajectory) - 1):
             print("Step No. ", i)
             self.gp.get_cost_valley(current_loc=self.current_location, previous_loc=self.previous_location,
                                     goal_loc=self.goal_location, budget=self.budget)
@@ -252,7 +240,8 @@ class Simulator:
             self.knowledge.step_no = i
             self.knowledge = Sampler(self.knowledge, self.knowledge.mu_truth, ind_sample).Knowledge
 
-            self.plot_2d(foldername, i)
+            if not self.replicates:
+                self.plot_2d(foldername, i)
 
             self.previous_location = self.current_location
             self.current_location = self.next_location
@@ -271,7 +260,8 @@ class Simulator:
 
         self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, self.current_location)
 
-        for i in range(NUM_STEPS):
+        for i in range(self.steps):
+        # for i in range(NUM_STEPS):
             print("Step: ", i)
             t1 = time.time()
             self.knowledge = Sampler(self.knowledge, self.knowledge.mu_truth, self.ind_sample).Knowledge
@@ -279,24 +269,12 @@ class Simulator:
             if not self.knowledge.gohome:
                 self.knowledge.ending_location = ending_loc
                 self.knowledge.starting_location = self.current_location
-                # self.knowledge.starting_location = Location(.75, .1)
-                # self.knowledge.ending_location = Location(.1, .75)
-                # self.rrtstar = RRTStar(self.knowledge)
-                # self.rrtstar.expand_trees()
-                # self.rrtstar.get_shortest_trajectory()
-                # self.rrtstar.plot_tree()
-                # plt.scatter(self.knowledge.grid[:, 0], self.knowledge.grid[:, 1], c=self.knowledge.cost_valley,
-                #             cmap=CMAP,
-                #             vmin=0, vmax=4)
-                # plt.show()
-                # break
                 self.rrtstar = RRTStar(self.knowledge)
                 self.next_location = self.rrtstar.get_next_waypoint()
-                # self.path_minimum_cost = self.rrtstar.trajectory
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
-                self.plot_knowledge(i, foldername)
-                # self.next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
+                if not self.replicates:
+                    self.plot_knowledge(i, foldername)
             else:
                 if self.waypoint_return_counter == 0:
                     print("Compute route home only here once!")
@@ -304,10 +282,12 @@ class Simulator:
                 if self.waypoint_return_counter < self.num_waypoints_return_home:
                     self.next_location = self.waypoints[self.waypoint_return_counter]
                     self.waypoint_return_counter += 1
-                    self.plot_knowledge(i, foldername)
+                    if not self.replicates:
+                        self.plot_knowledge(i, foldername)
                 else:
                     print("Home already! Mission complete")
-                    self.plot_knowledge(i, foldername)
+                    if not self.replicates:
+                        self.plot_knowledge(i, foldername)
                     break
 
             self.distance_travelled = get_distance_between_locations(self.current_location, self.next_location)
@@ -319,21 +299,12 @@ class Simulator:
             print("Distance travelled: ", self.distance_travelled)
 
             self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, self.current_location)
-            # F = getFVector(ind_F, self.grid.shape[0])
-
-            # self.knowledge.mu_cond, self.knowledge.Sigma_cond = update_GP_field(self.knowledge.mu_cond,
-            #                                                                     self.knowledge.Sigma_cond, F,
-            #                                                                     self.knowledge.R,
-            #                                                                     F @ self.knowledge.mu_truth)
-
             self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
             ind_min_cost = np.argmin(self.knowledge.cost_valley)
             ending_loc = self.get_location_from_ind(ind_min_cost)
 
             self.previous_location = self.current_location
             self.trajectory.append(self.current_location)
-            # break
-
 
     def get_route_home(self, stepsize=None):
         distance_remaining = get_distance_between_locations(self.current_location, self.goal_location)
@@ -407,26 +378,11 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    a = Simulator(steps=100, random_seed=2)
+    a = Simulator(steps=5, random_seed=2)
     a.plot_synthetic_field()
-    # a.run_2d()
+    a.run_2d()
     # a.run_lawn_mower()
-    a.run_rrtstar()
-#%%
-plt.plot(a.knowledge.expected_variance)
-plt.title('variance')
-plt.show()
+    # a.run_rrtstar()
 
-plt.plot(a.knowledge.integrated_bernoulli_variance)
-plt.title('ibv')
-plt.show()
-
-plt.plot(a.knowledge.distance_travelled)
-plt.title('distance')
-plt.show()
-
-plt.plot(a.knowledge.root_mean_squared_error)
-plt.title('rmse')
-plt.show()
 
 
