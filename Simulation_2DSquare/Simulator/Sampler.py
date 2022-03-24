@@ -41,7 +41,7 @@ class Sampler:
                                                                          squared=False))
         self.knowledge.expected_variance.append(np.sum(np.diag(self.knowledge.Sigma_cond)))
         self.knowledge.integrated_bernoulli_variance.append(eibv)
-        self.knowledge.distance_travelled.append(dist[0] + self.knowledge.distance_travelled[-1])
+        self.knowledge.distance_travelled.append(dist + self.knowledge.distance_travelled[-1])
 
     def getDistanceTravelled(self):
         dist_x = self.knowledge.grid[self.knowledge.ind_now, 0] - self.knowledge.grid[self.knowledge.ind_prev, 0]

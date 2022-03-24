@@ -29,6 +29,16 @@ class RRTStar:
 
         self.counter_fig = 0
 
+    def get_next_waypoint(self):
+        self.expand_trees()
+        self.get_shortest_trajectory()
+        self.path_minimum_cost = self.trajectory
+        if len(self.trajectory) <= 2:
+            self.maximum_iteration = MAXITER_HARD
+            self.expand_trees()
+            self.get_shortest_trajectory()
+        return Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
+
     def expand_trees(self):
         self.nodes.append(self.starting_node)
         for i in range(self.maximum_iteration):
@@ -36,7 +46,6 @@ class RRTStar:
                 new_location = self.knowledge.ending_location
             else:
                 if self.knowledge.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
-                    # print("Here comes new sampling distribution!")
                     new_location = self.get_new_location_within_budget_ellipse()
                 else:
                     new_location = self.get_new_location()
@@ -133,29 +142,20 @@ class RRTStar:
             else:
                 distance_between_nodes.append(self.get_distance_between_nodes(self.nodes[i], node_current))
         ind_neighbours = np.where(np.array(distance_between_nodes) <= self.distance_neighbour_radar)[0]
-        print("distance neighbour nodes: ", distance_between_nodes)
-        print("Neighbour nodes:  ")
-        for i in range(len(ind_neighbours)):
-            self.print_node(self.nodes[ind_neighbours[i]])
         return ind_neighbours
-
-    def print_node(self, node):
-        print("Node location: ", node.location.x, node.location.y)
-        print("Node cost: ", node.cost)
-        print("Node parent: ", node.parent)
-        print("Node knowledge: ", node.knowledge)
 
     def get_cost_between_nodes(self, node1, node2):
         cost = (node1.cost +
-                self.get_distance_between_nodes(node1, node2))
+                self.get_distance_between_nodes(node1, node2) +
+                self.get_cost_from_cost_valley(node1, node2))
                 # self.get_cost_from_cost_valley(node1, node2))
         return cost
 
     def get_cost_from_cost_valley(self, node1, node2):
-        F1 = self.knowledge.get_ind_F(node1.location)
-        F2 = self.knowledge.get_ind_F(node2.location)
-        cost1 = self.knowledge.cost_valley[F1]
-        cost2 = self.knowledge.cost_valley[F2]
+        indF1 = get_ind_at_location2d_xy(self.knowledge.grid, node1.location)
+        indF2 = get_ind_at_location2d_xy(self.knowledge.grid, node2.location)
+        cost1 = self.knowledge.cost_valley[indF1]
+        cost2 = self.knowledge.cost_valley[indF2]
         cost_total = ((cost1 + cost2) / 2 * self.get_distance_between_nodes(node1, node2))
         return cost_total
 
@@ -200,10 +200,11 @@ class RRTStar:
 
     def plot_tree(self):
         # plt.figure()
-        # if np.any(self.obstacles):
-        #     for i in range(len(self.obstacles)):
-        #         obstacle = np.append(self.obstacles[i], self.obstacles[i][0, :].reshape(1, -1), axis=0)
-        #         plt.plot(obstacle[:, 0], obstacle[:, 1], 'r-.')
+        if np.any(self.knowledge.polygon_obstacles):
+            for i in range(len(self.knowledge.polygon_obstacles)):
+                obstacle = np.append(self.knowledge.polygon_obstacles[i],
+                                     self.knowledge.polygon_obstacles[i][0, :].reshape(1, -1), axis=0)
+                plt.plot(obstacle[:, 0], obstacle[:, 1], 'r-.')
 
         for node in self.nodes:
             if node.parent is not None:
