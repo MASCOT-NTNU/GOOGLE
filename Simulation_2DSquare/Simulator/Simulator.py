@@ -50,7 +50,7 @@ class Simulator:
                                    polygon_obstacles=self.polygon_obstacles,
                                    goal_sample_rate=GOAL_SAMPLE_RATE, step_size=STEPSIZE,
                                    step_size_lawnmower=STEPSIZE_LAWNMOWER, maximum_iteration=MAXITER_EASY,
-                                   distance_neighbour_radar=DISTANCE_NEIGHBOUR+.02,
+                                   distance_neighbour_radar=DISTANCE_NEIGHBOUR_RADAR,
                                    distance_tolerance=DISTANCE_TOLERANCE, budget=self.budget, threshold=THRESHOLD)
         self.knowledge.mu_prior = self.mu_prior
         self.gp = GPKernel(self.knowledge)
@@ -269,24 +269,34 @@ class Simulator:
         ind_min_cost = np.argmin(self.gp.cost_valley)
         ending_loc = self.get_location_from_ind(ind_min_cost)
 
+        self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, self.current_location)
+
         for i in range(NUM_STEPS):
             print("Step: ", i)
             t1 = time.time()
+            self.knowledge = Sampler(self.knowledge, self.knowledge.mu_truth, self.ind_sample).Knowledge
+
             if not self.knowledge.gohome:
                 self.knowledge.ending_location = ending_loc
                 self.knowledge.starting_location = self.current_location
+                # self.knowledge.starting_location = Location(.75, .1)
+                # self.knowledge.ending_location = Location(.1, .75)
+                # self.rrtstar = RRTStar(self.knowledge)
+                # self.rrtstar.expand_trees()
+                # self.rrtstar.get_shortest_trajectory()
+                # self.rrtstar.plot_tree()
+                # plt.scatter(self.knowledge.grid[:, 0], self.knowledge.grid[:, 1], c=self.knowledge.cost_valley,
+                #             cmap=CMAP,
+                #             vmin=0, vmax=4)
+                # plt.show()
+                # break
                 self.rrtstar = RRTStar(self.knowledge)
-                self.rrtstar.expand_trees()
-                self.rrtstar.get_shortest_trajectory()
-                if len(self.rrtstar.trajectory) <= 2:
-                    self.rrtstar.maximum_iteration = MAXITER_HARD
-                    self.rrtstar.expand_trees()
-                    self.rrtstar.get_shortest_trajectory()
-                self.path_minimum_cost = self.rrtstar.trajectory
+                self.next_location = self.rrtstar.get_next_waypoint()
+                # self.path_minimum_cost = self.rrtstar.trajectory
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
                 self.plot_knowledge(i, foldername)
-                self.next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
+                # self.next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
             else:
                 if self.waypoint_return_counter == 0:
                     print("Compute route home only here once!")
@@ -308,12 +318,13 @@ class Simulator:
             print("Budget left: ", self.budget)
             print("Distance travelled: ", self.distance_travelled)
 
-            ind_F = get_ind_at_location2d_xy(self.knowledge.grid, self.current_location)
-            F = getFVector(ind_F, self.grid.shape[0])
-            self.knowledge.mu_cond, self.knowledge.Sigma_cond = update_GP_field(self.knowledge.mu_cond,
-                                                                                self.knowledge.Sigma_cond, F,
-                                                                                self.knowledge.R,
-                                                                                F @ self.knowledge.mu_truth)
+            self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, self.current_location)
+            # F = getFVector(ind_F, self.grid.shape[0])
+
+            # self.knowledge.mu_cond, self.knowledge.Sigma_cond = update_GP_field(self.knowledge.mu_cond,
+            #                                                                     self.knowledge.Sigma_cond, F,
+            #                                                                     self.knowledge.R,
+            #                                                                     F @ self.knowledge.mu_truth)
 
             self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
             ind_min_cost = np.argmin(self.knowledge.cost_valley)
@@ -321,7 +332,7 @@ class Simulator:
 
             self.previous_location = self.current_location
             self.trajectory.append(self.current_location)
-            break
+            # break
 
 
     def get_route_home(self, stepsize=None):
@@ -375,13 +386,13 @@ class Simulator:
         self.rrtstar.plot_tree()
         cost_valley = self.knowledge.cost_valley
         # cost_valley[cost_valley == np.inf] = PENALTY # To avoid plotting interpolation
-        plotf_vector_triangulated(self.knowledge.grid, cost_valley, "COST VALLEY", cmap=CMAP, vmin=-.2, vmax=4, cbar_title="Cost",
-                     colorbar=True, knowledge=self.knowledge, stepsize=.1)
+        # plotf_vector_triangulated(self.knowledge.grid, cost_valley, "COST VALLEY", cmap=CMAP, vmin=-.2, vmax=4, cbar_title="Cost",
+        #              colorbar=True, knowledge=self.knowledge, stepsize=.1)
 
-        # plt.scatter(self.knowledge.grid[:, 1],
-        #             self.knowledge.grid[:, 0],
-        #             c=self.knowledge.cost_valley, cmap=CMAP,
-        #             vmin=0, vmax=4, alpha=.6, s=105)
+        plt.scatter(self.knowledge.grid[:, 1],
+                    self.knowledge.grid[:, 0],
+                    c=self.knowledge.cost_valley, cmap=CMAP,
+                    vmin=0, vmax=4, alpha=.6, s=105)
         plt.plot(self.knowledge.polygon_border[:, 0], self.knowledge.polygon_border[:, 1], 'k-', linewidth=1)
         for i in range(len(self.knowledge.polygon_obstacles)):
             plt.plot(self.knowledge.polygon_obstacles[:, 0], self.knowledge.polygon_obstacles[:, 1], 'k-', linewidth=1)
@@ -396,7 +407,7 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    a = Simulator(steps=100, random_seed=1)
+    a = Simulator(steps=100, random_seed=2)
     a.plot_synthetic_field()
     # a.run_2d()
     # a.run_lawn_mower()

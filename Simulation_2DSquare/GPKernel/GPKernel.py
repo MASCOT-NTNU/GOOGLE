@@ -16,12 +16,12 @@ class GPKernel:
         self.grid = self.knowledge.grid
         self.x_vector = vectorise(self.grid[:, 0])
         self.y_vector = vectorise(self.grid[:, 1])
-        self.mu_prior = self.knowledge.mu_prior
         self.polygon_obstacles_shapely = self.knowledge.polygon_obstacles_shapely
         self.get_Sigma_prior()
         self.get_ground_truth()
         self.knowledge.mu_cond = self.knowledge.mu_prior
         self.knowledge.Sigma_cond = self.knowledge.Sigma_prior
+        self.knowledge.R = self.R
         self.get_obstacle_field()
         self.cost_direction = None
         self.cost_vr = None
@@ -83,10 +83,10 @@ class GPKernel:
         t1 = time.time()
         self.cost_eibv = []
         for i in range(self.grid.shape[0]):
-            F = np.zeros([1, self.grid.shape[0]])
-            F[0, i] = True
+            F = getFVector(i, self.grid.shape[0])
             self.cost_eibv.append(get_eibv_1d(self.knowledge.threshold, self.knowledge.mu_cond,
                                               self.knowledge.Sigma_cond, F, self.R))
+        print(self.cost_eibv)
         self.cost_eibv = normalise(np.array(self.cost_eibv))
         t2 = time.time()
         print("EIBV field takes: ", t2 - t1)
