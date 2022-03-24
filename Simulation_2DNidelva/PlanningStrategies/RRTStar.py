@@ -221,14 +221,14 @@ class RRTStar:
 
     def is_node_within_obstacle(self, node):
         point = Point(node.location.x, node.location.y)
-        return self.knowledge.polygon_obstacle_shapely.contains(point)
+        return self.knowledge.polygon_obstacles_shapely.contains(point)
 
     def is_path_intersect_with_obstacles(self, node1, node2):
         line = LineString([(node1.location.x, node1.location.y),
                            (node2.location.x, node2.location.y)])
         intersect = False
         # if self.knowledge.polygon_obstacle_shapely.intersects(line):
-        if (self.knowledge.polygon_obstacle_shapely.intersects(line) or
+        if (self.knowledge.polygon_obstacles_shapely.intersects(line) or
                 self.knowledge.polygon_borderline_shapely.intersects(line)):
             intersect = True
         return intersect
