@@ -1,40 +1,42 @@
 import matplotlib.pyplot as plt
 
-from GOOGLE.Simulation_2DNidelva.PlanningStrategies.Lawnmower import LawnMowerPlanning
-from GOOGLE.Simulation_2DNidelva.Plotting.plotting_func import *
-from GOOGLE.Simulation_2DNidelva.GPKernel.GPKernel import *
-from GOOGLE.Simulation_2DNidelva.Tree.Location import *
-from GOOGLE.Simulation_2DNidelva.Config.Config import *
-from GOOGLE.Simulation_2DNidelva.Tree.Knowledge import Knowledge
+from GOOGLE.Simulation_2DSquare.PlanningStrategies.Lawnmower import LawnMowerPlanning
+from GOOGLE.Simulation_2DSquare.Plotting.plotting_func import *
+from GOOGLE.Simulation_2DSquare.GPKernel.GPKernel import *
+from GOOGLE.Simulation_2DSquare.Tree.Location import *
+from GOOGLE.Simulation_2DSquare.Config.Config import *
+from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
 
 
 foldername = PATH_REPLICATES + "R_{:03d}/lawnmower/".format(0)
 checkfolder(foldername)
 
 
-starting_location = LocationWGS(63.440887, 10.354804)
-ending_location = LocationWGS(63.455674, 10.429927)
-polygon_border = pd.read_csv(PATH_BORDER).to_numpy()
-polygon_obstacle = pd.read_csv(PATH_OBSTACLE).to_numpy()
+starting_location = Location(0, 0)
+ending_location = Location(0, 1)
+polygon_border = np.array(BORDER)
+polygon_obstacles = np.array(OBSTACLES)
 budget = BUDGET
 # stepsizes = np.arange(200, 2500, 200)
-stepsizes = [1400]
+stepsizes = [.2]
 
 for stepsize in stepsizes:
     knowledge = Knowledge(starting_location=starting_location, ending_location=ending_location,
-                          polygon_border_xy=polygon_border, polygon_obstacle_xy=polygon_obstacle, budget=budget,
+                          polygon_border=polygon_border, polygon_obstacles=polygon_obstacles, budget=budget,
                           step_size_lawnmower=stepsize)
     t = LawnMowerPlanning(knowledge=knowledge)
     t.get_lawnmower_path()
     dist = t.get_distance_of_trajectory()
-
+    t.get_refined_trajectory(stepsize=DISTANCE_NEIGHBOUR)
     path = np.array(t.lawnmower_trajectory)
-    plt.plot(path[:, 1], path[:, 0],'k.-')
-    plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'r-')
-    plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'r-')
-    plt.title("Lawnmower with step size {:d}m".format(stepsize))
+    plt.plot(path[:, 0], path[:, 1],'k.-')
+    path = np.array(t.lawnmower_refined_trajectory)
+    plt.plot(path[:, 0], path[:, 1], 'g.-')
+    plt.plot(polygon_obstacles[0][:, 0], polygon_obstacles[0][:, 1], 'r-')
+    plt.plot(polygon_border[:, 0], polygon_border[:, 1], 'r-')
+    plt.title("Lawnmower with step size {:.2f}m".format(stepsize))
     plt.gcf().text(0.15, 0.8, "Distance: {:.1f}m".format(dist), fontsize=14)
-    plt.savefig(foldername+"lawnmower_{:d}".format(stepsize))
+    plt.savefig(foldername+"lawnmower_{:d}".format(int(stepsize * 100)))
     plt.show()
     plt.close("all")
 

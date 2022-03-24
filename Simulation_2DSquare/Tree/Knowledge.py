@@ -9,17 +9,17 @@ from shapely.geometry import Polygon, LineString
 
 class Knowledge:
 
-    def __init__(self, coordinates=None, starting_location=None, ending_location=None, goal_location=None,
-                 goal_sample_rate=None, polygon_border=None, polygon_obstacle=None, step_size=None,
+    def __init__(self, grid=None, starting_location=None, ending_location=None, goal_location=None,
+                 goal_sample_rate=None, polygon_border=None, polygon_obstacles=None, step_size=None,
                  step_size_lawnmower=None, maximum_iteration=1000, distance_neighbour_radar=None,
                  distance_tolerance=None, budget=None, threshold=None):
-        self.coordinates = coordinates
+        self.grid = grid
         self.starting_location = starting_location
         self.ending_location = ending_location
         self.goal_location = goal_location
         self.goal_sample_rate = goal_sample_rate
         self.polygon_border = polygon_border
-        self.polygon_obstacle = polygon_obstacle
+        self.polygon_obstacles = polygon_obstacles
         self.step_size = step_size
         self.step_size_lawnmower = step_size_lawnmower
         self.maximum_iteration = maximum_iteration
@@ -31,7 +31,9 @@ class Knowledge:
         # computed
         self.polygon_border_shapely = Polygon(self.polygon_border)
         self.polygon_borderline_shapely = LineString(self.polygon_border)
-        self.polygon_obstacle_shapely = Polygon(self.polygon_obstacle)
+        self.polygon_obstacles_shapely = []
+        for i in range(len(self.polygon_obstacles)):
+            self.polygon_obstacles_shapely.append(Polygon(list(map(tuple, self.polygon_obstacles[i]))))
         self.excursion_prob = None
         self.excursion_set = None
         self.ind_prev = 0
@@ -39,6 +41,7 @@ class Knowledge:
         self.mu_prior = None
         self.mu_truth = None
         self.mu_cond = None
+        self.R = None
         self.Sigma_prior = None
         self.Sigma_cond = None
         self.cost_valley = None
@@ -61,13 +64,11 @@ class Knowledge:
         self.step_no = 0
 
         # criteria
-        self.integratedBernoulliVariance = []
-        self.rootMeanSquaredError = []
-        self.expectedVariance = []
+        self.integrated_bernoulli_variance = []
+        self.root_mean_squared_error = []
+        self.expected_variance = []
         self.distance_travelled = [0]
 
         # signal
         self.gohome = False
 
-if __name__ == "__main__":
-    pass

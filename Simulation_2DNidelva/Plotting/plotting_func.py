@@ -36,15 +36,16 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
     # print("levels: ", levels)
 
     if np.any(levels):
+        linewidths = np.ones_like(levels) * .3
+        colors = np.ones_like(levels) * ['black']
         if threshold:
-            linewidths = np.ones_like(levels) * .3
             dist = np.abs(threshold - levels)
             ind = np.where(dist == np.amin(dist))[0]
             linewidths[ind] = 3
-        else:
-            linewidths = np.ones_like(levels) * .3
+            colors[ind] = 'red'
         contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap, alpha=alpha)
-        ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths, alpha=alpha)
+        ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths, colors=colors,
+                      alpha=alpha)
     else:
         contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap, alpha=alpha)
         ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
@@ -93,7 +94,7 @@ def plotf_vector_scatter(grid, values, title=None, alpha=None, cmap="Paired", cb
 def is_masked(lat, lon, kernel):
     point = Point(lat, lon)
     masked = False
-    if kernel.polygon_obstacle_shapely.contains(point) or not kernel.polygon_border_shapely.contains(point):
+    if kernel.polygon_obstacles_shapely.contains(point) or not kernel.polygon_border_shapely.contains(point):
         masked = True
     return masked
 

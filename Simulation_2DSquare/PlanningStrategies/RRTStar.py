@@ -14,44 +14,42 @@ from GOOGLE.Simulation_2DSquare.Tree.Location import *
 class RRTStar:
 
     def __init__(self, knowledge=None):
+        self.knowledge = knowledge
         self.nodes = []
         self.trajectory = []
-        self.maxiter = MAXITER_EASY
-        self.radius_neighbour = RADIUS_NEIGHBOUR
-        self.knowledge = knowledge
+        self.maximum_iteration = self.knowledge.maximum_iteration
+        self.distance_neighbour_radar = self.knowledge.distance_neighbour_radar
 
-        self.obstacles = np.array(OBSTACLES)
-        self.polygon_obstacles = []
-        self.set_obstacles()
-
-        self.starting_node = TreeNode(self.knowledge.starting_location, None, 0, self.knowledge)
-        self.ending_node = TreeNode(self.knowledge.ending_location, None, 0, self.knowledge)
-        self.goal_node = TreeNode(self.knowledge.goal_location, None, 0, self.knowledge)
+        self.starting_node = TreeNode(location=self.knowledge.starting_location, parent=None, 
+                                      cost=0, knowledge=self.knowledge)
+        self.ending_node = TreeNode(location=self.knowledge.ending_location, parent=None, 
+                                    cost=0, knowledge=self.knowledge)
+        self.goal_node = TreeNode(location=self.knowledge.goal_location, parent=None, 
+                                  cost=0, knowledge=self.knowledge)
 
         self.counter_fig = 0
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
-        for i in range(self.maxiter):
+        for i in range(self.maximum_iteration):
             if np.random.rand() <= self.knowledge.goal_sample_rate:
                 new_location = self.knowledge.ending_location
             else:
-                # if self.knowledge.gp_kernel.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
-                #     # print("Here comes new sampling distribution!")
-                #     new_location = self.get_new_location_within_budget_ellipse()
-                #     self.radius_neighbour = RADIUS_NEIGHBOUR
-                # else:
-                new_location = self.get_new_location()
+                if self.knowledge.budget_ellipse_b < BUDGET_ELLIPSE_B_MARGIN_Tree:
+                    # print("Here comes new sampling distribution!")
+                    new_location = self.get_new_location_within_budget_ellipse()
+                else:
+                    new_location = self.get_new_location()
 
             nearest_node = self.get_nearest_node(self.nodes, new_location)
             next_node = self.get_next_node(nearest_node, new_location)
 
-            if self.isWithin(next_node):
+            if self.is_location_within_obstacles(next_node):
                 continue
 
             next_node, nearest_node = self.rewire_tree(next_node, nearest_node)
 
-            if self.isIntersect(nearest_node, next_node):
+            if self.is_path_intersects_with_obstacles(nearest_node, next_node):
                 continue
 
             if self.isarrived(next_node):
@@ -70,14 +68,14 @@ class RRTStar:
         # t1 = time.time()
         theta = np.random.uniform(0, 2 * np.pi)
         module = np.sqrt(np.random.rand())
-        x_usr = self.knowledge.gp_kernel.budget_ellipse_a * module * np.cos(theta)
-        y_usr = self.knowledge.gp_kernel.budget_ellipse_b * module * np.sin(theta)
-        x_wgs = (self.knowledge.gp_kernel.budget_middle_location.x +
-                 x_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle) -
-                 y_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle))
-        y_wgs = (self.knowledge.gp_kernel.budget_middle_location.y +
-                 x_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle) +
-                 y_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle))
+        x_usr = self.knowledge.budget_ellipse_a * module * np.cos(theta)
+        y_usr = self.knowledge.budget_ellipse_b * module * np.sin(theta)
+        x_wgs = (self.knowledge.budget_middle_location.x +
+                 x_usr * np.cos(self.knowledge.budget_ellipse_angle) -
+                 y_usr * np.sin(self.knowledge.budget_ellipse_angle))
+        y_wgs = (self.knowledge.budget_middle_location.y +
+                 x_usr * np.sin(self.knowledge.budget_ellipse_angle) +
+                 y_usr * np.cos(self.knowledge.budget_ellipse_angle))
         # t2 = time.time()
         # print("Generating location takes: ", t2 - t1)
         return Location(x_wgs, y_wgs)
@@ -92,13 +90,13 @@ class RRTStar:
     def get_next_node(self, node, location):
         node_temp = TreeNode(location)
         if self.get_distance_between_nodes(node, node_temp) <= self.knowledge.step_size:
-            return TreeNode(location, node, knowledge=self.knowledge)
+            return TreeNode(location=location, parent=node, knowledge=self.knowledge)
         else:
             angle = np.math.atan2(location.y - node.location.y, location.x - node.location.x)
             x = node.location.x + self.knowledge.step_size * np.cos(angle)
             y = node.location.y + self.knowledge.step_size * np.sin(angle)
             location_next = Location(x, y)
-        return TreeNode(location_next, node, knowledge=self.knowledge)
+        return TreeNode(location=location_next, parent=node, knowledge=self.knowledge)
 
     @staticmethod
     def get_distance_between_nodes(node1, node2):
@@ -130,12 +128,22 @@ class RRTStar:
     def get_neighbour_nodes(self, node_current):
         distance_between_nodes = []
         for i in range(len(self.nodes)):
-            if self.isIntersect(self.nodes[i], node_current):
+            if self.is_path_intersects_with_obstacles(self.nodes[i], node_current):
                 distance_between_nodes.append(np.inf)
             else:
                 distance_between_nodes.append(self.get_distance_between_nodes(self.nodes[i], node_current))
-        ind_neighbours = np.where(np.array(distance_between_nodes) <= self.radius_neighbour)[0]
+        ind_neighbours = np.where(np.array(distance_between_nodes) <= self.distance_neighbour_radar)[0]
+        print("distance neighbour nodes: ", distance_between_nodes)
+        print("Neighbour nodes:  ")
+        for i in range(len(ind_neighbours)):
+            self.print_node(self.nodes[ind_neighbours[i]])
         return ind_neighbours
+
+    def print_node(self, node):
+        print("Node location: ", node.location.x, node.location.y)
+        print("Node cost: ", node.cost)
+        print("Node parent: ", node.parent)
+        print("Node knowledge: ", node.knowledge)
 
     def get_cost_between_nodes(self, node1, node2):
         cost = (node1.cost +
@@ -144,10 +152,10 @@ class RRTStar:
         return cost
 
     def get_cost_from_cost_valley(self, node1, node2):
-        F1 = self.knowledge.gp_kernel.get_ind_F(node1.location)
-        F2 = self.knowledge.gp_kernel.get_ind_F(node2.location)
-        cost1 = self.knowledge.gp_kernel.cost_valley[F1]
-        cost2 = self.knowledge.gp_kernel.cost_valley[F2]
+        F1 = self.knowledge.get_ind_F(node1.location)
+        F2 = self.knowledge.get_ind_F(node2.location)
+        cost1 = self.knowledge.cost_valley[F1]
+        cost2 = self.knowledge.cost_valley[F2]
         cost_total = ((cost1 + cost2) / 2 * self.get_distance_between_nodes(node1, node2))
         return cost_total
 
@@ -158,27 +166,23 @@ class RRTStar:
         else:
             return False
 
-    def set_obstacles(self):
-        for i in range(self.obstacles.shape[0]):
-            self.polygon_obstacles.append(Polygon(list(map(tuple, self.obstacles[i]))))
-
     '''
     Collision detection
     '''
-    def isWithin(self, node):
+    def is_location_within_obstacles(self, node):
         point = Point(node.location.x, node.location.y)
         within = False
-        for i in range(len(self.polygon_obstacles)):
-            if self.polygon_obstacles[i].contains(point):
+        for i in range(len(self.knowledge.polygon_obstacles_shapely)):
+            if self.knowledge.polygon_obstacles_shapely[i].contains(point):
                 within = True
         return within
 
-    def isIntersect(self, node1, node2):
+    def is_path_intersects_with_obstacles(self, node1, node2):
         line = LineString([(node1.location.x, node1.location.y),
                            (node2.location.x, node2.location.y)])
         intersect = False
-        for i in range(len(self.polygon_obstacles)):
-            if self.polygon_obstacles[i].intersects(line):
+        for i in range(len(self.knowledge.polygon_obstacles_shapely)):
+            if self.knowledge.polygon_obstacles_shapely[i].intersects(line):
                 intersect = True
         return intersect
     '''
@@ -196,10 +200,10 @@ class RRTStar:
 
     def plot_tree(self):
         # plt.figure()
-        if np.any(self.obstacles):
-            for i in range(len(self.obstacles)):
-                obstacle = np.append(self.obstacles[i], self.obstacles[i][0, :].reshape(1, -1), axis=0)
-                plt.plot(obstacle[:, 0], obstacle[:, 1], 'r-.')
+        # if np.any(self.obstacles):
+        #     for i in range(len(self.obstacles)):
+        #         obstacle = np.append(self.obstacles[i], self.obstacles[i][0, :].reshape(1, -1), axis=0)
+        #         plt.plot(obstacle[:, 0], obstacle[:, 1], 'r-.')
 
         for node in self.nodes:
             if node.parent is not None:

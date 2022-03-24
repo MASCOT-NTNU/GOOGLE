@@ -21,17 +21,20 @@ class PathPlanner:
     trajectory = []
 
     def __init__(self, starting_location=None, ending_location=None):
-        # self.gp = GPKernel()
-        # self.gp.get_eibv_field()
+        self.grid = pd.read_csv(FILEPATH + "Field/Grid/Grid.csv").to_numpy()
+        self.mu_prior = vectorise(pd.read_csv(FILEPATH + "Field/Data/mu_prior.csv")['mu_prior'].to_numpy())
         self.starting_location = starting_location
         self.ending_location = ending_location
-        # self.knowledge = Knowledge()
-        # self.knowledge = Knowledge(self.gp.mu_prior_vector, self.gp.Sigma_prior)
+        self.knowledge = Knowledge(grid=self.grid,
+                                   starting_location=self.starting_location, ending_location=self.ending_location,
+                                   polygon_border=np.array(BORDER), polygon_obstacles=np.array(OBSTACLES),
+                                   goal_sample_rate=GOAL_SAMPLE_RATE, step_size=STEPSIZE, budget=BUDGET)
+        self.knowledge.mu_prior = self.mu_prior
+        self.gp = GPKernel(self.knowledge)
+        self.gp.get_cost_valley(self.starting_location, self.starting_location, self.ending_location, BUDGET)
         pass
 
     def run(self):
-        self.knowledge = Knowledge(starting_location=self.starting_location, ending_location=self.ending_location,
-                              goal_sample_rate=GOAL_SAMPLE_RATE, step_size=STEPSIZE, budget=BUDGET)
         self.rrt = RRTStar(self.knowledge)
         t1 = time.time()
         self.rrt.expand_trees()

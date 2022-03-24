@@ -57,7 +57,7 @@ class PathPlanner:
                 self.rrtstar.expand_trees()
                 self.rrtstar.get_shortest_trajectory()
                 if len(self.rrtstar.trajectory) <= 2:
-                    self.rrtstar.maxiter = MAXITER_HARD
+                    self.rrtstar.maximum_iteration = MAXITER_HARD
                     self.rrtstar.expand_trees()
                     self.rrtstar.get_shortest_trajectory()
                 self.path_minimum_cost = self.rrtstar.trajectory

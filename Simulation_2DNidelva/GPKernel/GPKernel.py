@@ -183,7 +183,7 @@ class GPKernel:
     def is_within_obstacles(self, location):
         point = Point(location.x, location.y)
         within = False
-        if self.knowledge.polygon_obstacle_shapely.contains(point):
+        if self.knowledge.polygon_obstacles_shapely.contains(point):
             within = True
         return within
 

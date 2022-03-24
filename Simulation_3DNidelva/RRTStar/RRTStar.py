@@ -149,7 +149,7 @@ class RRTStar:
         line = LineString([(node.parent.location.lat, node.parent.location.lon),
                            (node.location.lat, node.location.lon)])
         collision = False
-        if self.config.polygon_obstacle_shapely.contains(point) or self.config.polygon_obstacle_shapely.intersects(line):
+        if self.config.polygon_obstacles_shapely.contains(point) or self.config.polygon_obstacles_shapely.intersects(line):
             collision = True
         return collision
 
