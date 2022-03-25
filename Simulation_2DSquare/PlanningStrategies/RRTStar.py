@@ -32,12 +32,22 @@ class RRTStar:
     def get_next_waypoint(self):
         self.expand_trees()
         self.get_shortest_trajectory()
-        self.path_minimum_cost = self.trajectory
         if len(self.trajectory) <= 2:
             self.maximum_iteration = MAXITER_HARD
             self.expand_trees()
             self.get_shortest_trajectory()
-        return Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
+        self.path_minimum_cost = np.array(self.trajectory)
+        if len(self.path_minimum_cost) <= 2:
+            next_location = self.knowledge.ending_location
+        else:
+            next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
+        angle = np.math.atan2(next_location.y - self.knowledge.current_location.y,
+                              next_location.x - self.knowledge.current_location.x)
+        # if get_distance_between_locations(self.knowledge.current_location, next_location) < self.knowledge.step_size:
+        x = self.knowledge.current_location.x + self.knowledge.step_size * np.cos(angle)
+        y = self.knowledge.current_location.y + self.knowledge.step_size * np.sin(angle)
+        next_location = Location(x, y)
+        return next_location
 
     def expand_trees(self):
         self.nodes.append(self.starting_node)
@@ -196,7 +206,7 @@ class RRTStar:
             node = pointer_node.parent
             self.trajectory.append([node.location.x, node.location.y])
             pointer_node = node
-        self.trajectory = np.array(self.trajectory)
+        # self.trajectory = np.array(self.trajectory)
 
     def plot_tree(self):
         # plt.figure()

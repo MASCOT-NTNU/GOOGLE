@@ -23,10 +23,14 @@ class Sampler:
         eibv = get_eibv_1d(self.knowledge.threshold, self.knowledge.mu_cond, self.knowledge.Sigma_cond,
                            F, self.knowledge.R)
         dist = self.getDistanceTravelled()
+        y_sampled = self.ground_truth[self.ind_sample]
+        self.knowledge.continuous_ranked_probability_score.append(np.sum(get_crps_1d(y_sampled,
+                                                                                     self.knowledge.mu_cond,
+                                                                                     self.knowledge.Sigma_cond)))
 
         self.knowledge.mu_cond, self.knowledge.Sigma_cond = \
             update_GP_field(mu_cond=self.knowledge.mu_cond, Sigma_cond=self.knowledge.Sigma_cond, F=F,
-                            R=self.knowledge.R, y_sampled=self.ground_truth[self.ind_sample])
+                            R=self.knowledge.R, y_sampled=y_sampled)
         self.knowledge.excursion_prob = get_excursion_prob_1d(self.knowledge.mu_cond,
                                                               self.knowledge.Sigma_cond,
                                                               self.knowledge.threshold)

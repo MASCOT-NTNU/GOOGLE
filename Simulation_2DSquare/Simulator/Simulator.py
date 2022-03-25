@@ -19,17 +19,16 @@ from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
 
 class Simulator:
 
-    trajectory = []
-    distance_travelled = 0
-    waypoint_return_counter = 0
-    knowledge = None
-
-
-    def __init__(self, steps=10, random_seed=0, replicates=False):
+    def __init__(self, steps=10, random_seed=0, replicates=False, mute=False):
         print("Random seed: ", random_seed)
+        self.trajectory = []
+        self.distance_travelled = 0
+        self.waypoint_return_counter = 0
+
         self.seed = random_seed
         self.steps = steps
         self.replicates = replicates
+        self.mute = mute
         np.random.seed(self.seed)
 
         # == setup path planner
@@ -264,6 +263,8 @@ class Simulator:
         # for i in range(NUM_STEPS):
             print("Step: ", i)
             t1 = time.time()
+            self.knowledge.current_location = self.current_location
+
             self.knowledge = Sampler(self.knowledge, self.knowledge.mu_truth, self.ind_sample).Knowledge
 
             if not self.knowledge.gohome:
@@ -378,11 +379,11 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    a = Simulator(steps=5, random_seed=2)
+    a = Simulator(steps=20, random_seed=3, replicates=False)
     a.plot_synthetic_field()
-    a.run_2d()
+    # a.run_2d()
     # a.run_lawn_mower()
-    # a.run_rrtstar()
+    a.run_rrtstar()
 
 
 
