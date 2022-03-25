@@ -30,6 +30,9 @@ class Knowledge:
         self.threshold = threshold
 
         # computed
+        self.current_location = None
+        self.previous_location = None
+        self.next_location = None
         self.polygon_border_shapely = Polygon(self.polygon_border)
         self.polygon_borderline_shapely = LineString(self.polygon_border)
         self.polygon_obstacles_shapely = []
@@ -69,6 +72,7 @@ class Knowledge:
         self.root_mean_squared_error = []
         self.expected_variance = []
         self.distance_travelled = [0]
+        self.continuous_ranked_probability_score = []
 
         # signal
         self.gohome = False
