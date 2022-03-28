@@ -75,6 +75,7 @@ class RRTStar:
                 self.ending_node.parent = next_node
             else:
                 self.nodes.append(next_node)
+            pass
 
     @staticmethod
     def get_new_location():
