@@ -1,0 +1,12 @@
+FROM python:3
+
+ADD docker_test.py /
+
+RUN pip install netCDF4
+RUN pip install gmplot
+RUN pip install scikit-gstat
+RUN pip install plotly
+RUN pip install scikit-sparse
+RUN pip install rpy2
+
+CMD [ "python", "./docker_test.py" ]
