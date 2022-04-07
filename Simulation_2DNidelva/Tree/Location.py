@@ -15,7 +15,6 @@ class LocationWGS:
     def __init__(self, lat=None, lon=None):
         self.lat = lat
         self.lon = lon
-        self.x, self.y = latlon2xy(self.lat, self.lon, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
 
 
 class LocationXY:
