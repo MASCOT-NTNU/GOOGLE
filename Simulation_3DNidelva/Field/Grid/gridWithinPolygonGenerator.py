@@ -7,7 +7,7 @@ Date: 2022-02-23
 
 '''
 Drawback of this algorithm is when the field gets larger, it will produce overlapping nodes, or nodes that 
-are closely located with each other, see also the updated version using HexagonalGrid2D.py
+are closely located with each other, see also the updated version using HexagonalWaypoint2D.py
 '''
 
 
@@ -29,7 +29,7 @@ class GridGenerator:
         if distance_neighbour == 0:
             raise ValueError("Neighbour distance cannot be 0, please check it again")
         if no_children != 6:
-            warnings.warn("Grid to be generated may not be regular")
+            warnings.warn("WaypointGraph to be generated may not be regular")
         self.polygon = polygon
         self.depth = depth
         self.distance_neighbour = distance_neighbour

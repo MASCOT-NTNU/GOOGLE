@@ -4,11 +4,11 @@ from GOOGLE.Simulation_2DSquare.GPKernel.GPKernel import *
 from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
 
 
-filepath_grid = FILEPATH + "Field/Grid/Grid.csv"
+filepath_grid = FILEPATH + "PreConfig/WaypointGraph/WaypointGraph.csv"
 grid = pd.read_csv(filepath_grid).to_numpy()
 x_vector = vectorise(grid[:, 0])
 y_vector = vectorise(grid[:, 1])
-filepath_mu_prior = FILEPATH + "Field/Data/mu_prior.csv"
+filepath_mu_prior = FILEPATH + "PreConfig/Data/mu_prior.csv"
 mu_prior = vectorise(pd.read_csv(filepath_mu_prior)['mu_prior'].to_numpy())
 polygon_border = np.array(BORDER)
 polygon_obstacles = np.array(OBSTACLES)

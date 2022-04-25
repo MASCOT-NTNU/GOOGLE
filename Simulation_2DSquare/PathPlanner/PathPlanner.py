@@ -102,15 +102,15 @@ class PathPlanner:
 
     def get_route_home(self):
         distance_remaining = get_distance_between_locations(self.current_location, self.goal_location)
-        angle = np.math.atan2(self.goal_location.y - self.current_location.y,
-                              self.goal_location.x - self.current_location.x)
+        angle = np.math.atan2(self.goal_location.Y_START - self.current_location.Y_START,
+                              self.goal_location.X_START - self.current_location.X_START)
         gaps = np.arange(0, distance_remaining, STEPSIZE)
         self.num_waypoints_return_home = len(gaps)
         distance_gaps = np.linspace(0, distance_remaining, self.num_waypoints_return_home)
         waypoints_location = []
         for i in range(self.num_waypoints_return_home):
-            x = self.current_location.x + distance_gaps[i] * np.cos(angle)
-            y = self.current_location.y + distance_gaps[i] * np.sin(angle)
+            x = self.current_location.X_START + distance_gaps[i] * np.cos(angle)
+            y = self.current_location.Y_START + distance_gaps[i] * np.sin(angle)
             waypoints_location.append(Location(x, y))
         return waypoints_location
 

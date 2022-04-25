@@ -58,8 +58,8 @@ def plotf_vector(grid, values, title=None, alpha=None, cmap="Paired", cbar_title
 
     plt.plot(knowledge.polygon_border_xy[:, 1], knowledge.polygon_border_xy[:, 0], 'k-', linewidth=1)
     plt.plot(knowledge.polygon_obstacle_xy[:, 1], knowledge.polygon_obstacle_xy[:, 0], 'k-', linewidth=1)
-    plt.plot(knowledge.starting_location.y, knowledge.starting_location.x, 'kv', ms=10)
-    plt.plot(knowledge.goal_location.y, knowledge.goal_location.x, 'rv', ms=10)
+    plt.plot(knowledge.starting_location.Y_START, knowledge.starting_location.X_START, 'kv', ms=10)
+    plt.plot(knowledge.goal_location.Y_START, knowledge.goal_location.X_START, 'rv', ms=10)
     plt.xlim([np.amin(y), np.amax(y)])
     plt.ylim([np.amin(x), np.amax(x)])
     # plt.show()
@@ -111,7 +111,7 @@ def plotf_budget_radar(centre, radius):
 def plotf_trajectory(trajectory):
     path = []
     for location in trajectory:
-        path.append([location.y, location.x])
+        path.append([location.Y_START, location.X_START])
     path = np.array(path)
     plt.plot(path[:, 0], path[:, 1], 'y.-')
     plt.plot(path[:, 0], path[:, 1], 'y-')

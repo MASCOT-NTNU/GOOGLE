@@ -19,7 +19,7 @@ class Sampler:
         self.sample()
 
     def sample(self):
-        F = getFVector(self.ind_sample, self.knowledge.grid.shape[0])
+        F = getFVector(self.ind_sample, self.knowledge.xyz.shape[0])
         eibv = get_eibv_1d(self.knowledge.threshold, self.knowledge.mu_cond, self.knowledge.Sigma_cond,
                            F, self.knowledge.R)
         dist = self.getDistanceTravelled()
@@ -34,8 +34,8 @@ class Sampler:
         self.knowledge.excursion_prob = get_excursion_prob_1d(self.knowledge.mu_cond,
                                                               self.knowledge.Sigma_cond,
                                                               self.knowledge.threshold)
-        self.knowledge.trajectory.append([self.knowledge.grid[self.knowledge.ind_now, 0],
-                                          self.knowledge.grid[self.knowledge.ind_now, 1]])
+        self.knowledge.trajectory.append([self.knowledge.xyz[self.knowledge.ind_now, 0],
+                                          self.knowledge.xyz[self.knowledge.ind_now, 1]])
         self.knowledge.ind_visited.append(self.knowledge.ind_now)
         self.knowledge.ind_prev = self.knowledge.ind_now
         self.knowledge.ind_now = self.ind_sample
@@ -48,8 +48,8 @@ class Sampler:
         self.knowledge.distance_travelled.append(dist + self.knowledge.distance_travelled[-1])
 
     def getDistanceTravelled(self):
-        dist_x = self.knowledge.grid[self.knowledge.ind_now, 0] - self.knowledge.grid[self.knowledge.ind_prev, 0]
-        dist_y = self.knowledge.grid[self.knowledge.ind_now, 1] - self.knowledge.grid[self.knowledge.ind_prev, 1]
+        dist_x = self.knowledge.xyz[self.knowledge.ind_now, 0] - self.knowledge.xyz[self.knowledge.ind_prev, 0]
+        dist_y = self.knowledge.xyz[self.knowledge.ind_now, 1] - self.knowledge.xyz[self.knowledge.ind_prev, 1]
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
         return dist
 

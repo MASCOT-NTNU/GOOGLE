@@ -136,15 +136,15 @@ class PathPlanner:
 
     def get_route_home(self):
         distance_remaining = get_distance_between_xy_locations(self.current_location, self.goal_location)
-        angle = np.math.atan2(self.goal_location.x - self.current_location.x,
-                              self.goal_location.y - self.current_location.y)
+        angle = np.math.atan2(self.goal_location.X_START - self.current_location.X_START,
+                              self.goal_location.Y_START - self.current_location.Y_START)
         gaps = np.arange(0, distance_remaining, STEPSIZE)
         self.num_waypoints_return_home = len(gaps)
         distance_gaps = np.linspace(0, distance_remaining, self.num_waypoints_return_home)
         waypoints_location = []
         for i in range(self.num_waypoints_return_home):
-            x = self.current_location.x + distance_gaps[i] * np.sin(angle)
-            y = self.current_location.y + distance_gaps[i] * np.cos(angle)
+            x = self.current_location.X_START + distance_gaps[i] * np.sin(angle)
+            y = self.current_location.Y_START + distance_gaps[i] * np.cos(angle)
             waypoints_location.append(LocationXY(x, y))
         return waypoints_location
 
@@ -193,8 +193,8 @@ class PathPlanner:
         #             vmin=0, vmax=4, alpha=.6, s=105)
         plt.plot(self.knowledge.polygon_border_xy[:, 1], self.knowledge.polygon_border_xy[:, 0], 'k-', linewidth=1)
         plt.plot(self.knowledge.polygon_obstacle_xy[:, 1], self.knowledge.polygon_obstacle_xy[:, 0], 'k-', linewidth=1)
-        plt.plot(self.knowledge.starting_location.y, self.knowledge.starting_location.x, 'kv', ms=10)
-        plt.plot(self.knowledge.goal_location.y, self.knowledge.goal_location.x, 'rv', ms=10)
+        plt.plot(self.knowledge.starting_location.Y_START, self.knowledge.starting_location.X_START, 'kv', ms=10)
+        plt.plot(self.knowledge.goal_location.Y_START, self.knowledge.goal_location.X_START, 'rv', ms=10)
         plt.xlim([np.amin(self.knowledge.coordinates_xy[:, 1]), np.amax(self.knowledge.coordinates_xy[:, 1])])
         plt.ylim([np.amin(self.knowledge.coordinates_xy[:, 0]), np.amax(self.knowledge.coordinates_xy[:, 0])])
         # plt.colorbar()
