@@ -17,9 +17,6 @@ LONGITUDE_ORIGIN = 10.3969375
 # ==
 
 # == GP kernel
-SIGMA = .6
-LATERAL_RANGE = 1600
-NUGGET = .1 # .03
 THRESHOLD = 27
 # ==
 
