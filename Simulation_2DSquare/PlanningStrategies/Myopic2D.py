@@ -38,14 +38,14 @@ class MyopicPlanning2D:
                 ind_next = self.search_for_new_location()
                 if not ind_next in self.knowledge.ind_visited:
                     # print("Found new: ", ind_next)
-                    self.knowledge.ind_next = ind_next
+                    self.knowledge.ind_sample_waypoint = ind_next
                     break
         else:
-            self.knowledge.ind_next = self.knowledge.ind_cand_filtered[np.argmin(np.array(cost_from_cost_valley))]
+            self.knowledge.ind_sample_waypoint = self.knowledge.ind_cand_filtered[np.argmin(np.array(cost_from_cost_valley))]
 
     def find_candidates_loc(self):
-        delta_x = self.knowledge.grid[:, 0] - self.knowledge.grid[self.knowledge.ind_now, 0]
-        delta_y = self.knowledge.grid[:, 1] - self.knowledge.grid[self.knowledge.ind_now, 1]
+        delta_x = self.knowledge.xyz[:, 0] - self.knowledge.xyz[self.knowledge.ind_now, 0]
+        delta_y = self.knowledge.xyz[:, 1] - self.knowledge.xyz[self.knowledge.ind_now, 1]
         distance_vector = np.sqrt(delta_x ** 2 + delta_y ** 2)
         self.knowledge.ind_cand = np.where((distance_vector <= self.knowledge.distance_neighbour_radar_myopic2d))[0]
 
@@ -72,13 +72,13 @@ class MyopicPlanning2D:
         t2 = time.time()
 
     def search_for_new_location(self):
-        ind_next = np.random.randint(len(self.knowledge.grid))
+        ind_next = np.random.randint(len(self.knowledge.xyz))
         return ind_next
 
     @property
     def next_waypoint(self):
-        return Location(self.knowledge.grid[self.knowledge.ind_next, 0],
-                        self.knowledge.grid[self.knowledge.ind_next, 1])
+        return Location(self.knowledge.xyz[self.knowledge.ind_sample_waypoint, 0],
+                        self.knowledge.xyz[self.knowledge.ind_sample_waypoint, 1])
 
 
 

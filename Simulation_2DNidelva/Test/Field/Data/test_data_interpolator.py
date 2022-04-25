@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# from GOOGLE.Field.Grid.gridWithinPolygonGenerator import GridGenerator
-# from GOOGLE.Field.Grid.HexagonalGrid2D import HexgonalGrid2DGenerator
+# from GOOGLE.PreConfig.WaypointGraph.gridWithinPolygonGenerator import GridGenerator
+# from GOOGLE.PreConfig.WaypointGraph.HexagonalGrid2D import HexgonalGrid2DGenerator
 from GOOGLE.Simulation_2DNidelva.Field.Grid.HexagonalGrid3D import HexgonalGrid3DGenerator
 from DataHandler.SINMOD import SINMOD
 from usr_func import *

@@ -41,11 +41,11 @@ class RRTStar:
             next_location = self.knowledge.ending_location
         else:
             next_location = Location(self.path_minimum_cost[-2, 0], self.path_minimum_cost[-2, 1])
-        angle = np.math.atan2(next_location.y - self.knowledge.current_location.y,
-                              next_location.x - self.knowledge.current_location.x)
+        angle = np.math.atan2(next_location.y - self.knowledge.current_location.Y_START,
+                              next_location.x - self.knowledge.current_location.X_START)
         # if get_distance_between_locations(self.knowledge.current_location, next_location) < self.knowledge.step_size:
-        x = self.knowledge.current_location.x + self.knowledge.step_size * np.cos(angle)
-        y = self.knowledge.current_location.y + self.knowledge.step_size * np.sin(angle)
+        x = self.knowledge.current_location.X_START + self.knowledge.step_size * np.cos(angle)
+        y = self.knowledge.current_location.Y_START + self.knowledge.step_size * np.sin(angle)
         next_location = Location(x, y)
         return next_location
 
@@ -90,10 +90,10 @@ class RRTStar:
         module = np.sqrt(np.random.rand())
         x_usr = self.knowledge.budget_ellipse_a * module * np.cos(theta)
         y_usr = self.knowledge.budget_ellipse_b * module * np.sin(theta)
-        x_wgs = (self.knowledge.budget_middle_location.x +
+        x_wgs = (self.knowledge.budget_middle_location.X_START +
                  x_usr * np.cos(self.knowledge.budget_ellipse_angle) -
                  y_usr * np.sin(self.knowledge.budget_ellipse_angle))
-        y_wgs = (self.knowledge.budget_middle_location.y +
+        y_wgs = (self.knowledge.budget_middle_location.Y_START +
                  x_usr * np.sin(self.knowledge.budget_ellipse_angle) +
                  y_usr * np.cos(self.knowledge.budget_ellipse_angle))
         # t2 = time.time()
@@ -112,16 +112,16 @@ class RRTStar:
         if self.get_distance_between_nodes(node, node_temp) <= self.knowledge.step_size:
             return TreeNode(location=location, parent=node, knowledge=self.knowledge)
         else:
-            angle = np.math.atan2(location.y - node.location.y, location.x - node.location.x)
-            x = node.location.x + self.knowledge.step_size * np.cos(angle)
-            y = node.location.y + self.knowledge.step_size * np.sin(angle)
+            angle = np.math.atan2(location.Y_START - node.location.Y_START, location.X_START - node.location.X_START)
+            x = node.location.X_START + self.knowledge.step_size * np.cos(angle)
+            y = node.location.Y_START + self.knowledge.step_size * np.sin(angle)
             location_next = Location(x, y)
         return TreeNode(location=location_next, parent=node, knowledge=self.knowledge)
 
     @staticmethod
     def get_distance_between_nodes(node1, node2):
-        dist_x = node1.location.x - node2.location.x
-        dist_y = node1.location.y - node2.location.y
+        dist_x = node1.location.X_START - node2.location.X_START
+        dist_y = node1.location.Y_START - node2.location.Y_START
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
         return dist
 
@@ -163,8 +163,8 @@ class RRTStar:
         return cost
 
     def get_cost_from_cost_valley(self, node1, node2):
-        indF1 = get_ind_at_location2d_xy(self.knowledge.grid, node1.location)
-        indF2 = get_ind_at_location2d_xy(self.knowledge.grid, node2.location)
+        indF1 = get_ind_at_location2d_xy(self.knowledge.xyz, node1.location)
+        indF2 = get_ind_at_location2d_xy(self.knowledge.xyz, node2.location)
         cost1 = self.knowledge.cost_valley[indF1]
         cost2 = self.knowledge.cost_valley[indF2]
         cost_total = ((cost1 + cost2) / 2 * self.get_distance_between_nodes(node1, node2))
@@ -181,7 +181,7 @@ class RRTStar:
     Collision detection
     '''
     def is_location_within_obstacles(self, node):
-        point = Point(node.location.x, node.location.y)
+        point = Point(node.location.X_START, node.location.Y_START)
         within = False
         for i in range(len(self.knowledge.polygon_obstacles_shapely)):
             if self.knowledge.polygon_obstacles_shapely[i].contains(point):
@@ -189,8 +189,8 @@ class RRTStar:
         return within
 
     def is_path_intersects_with_obstacles(self, node1, node2):
-        line = LineString([(node1.location.x, node1.location.y),
-                           (node2.location.x, node2.location.y)])
+        line = LineString([(node1.location.X_START, node1.location.Y_START),
+                           (node2.location.X_START, node2.location.Y_START)])
         intersect = False
         for i in range(len(self.knowledge.polygon_obstacles_shapely)):
             if self.knowledge.polygon_obstacles_shapely[i].intersects(line):
@@ -201,11 +201,11 @@ class RRTStar:
     '''
 
     def get_shortest_trajectory(self):
-        self.trajectory.append([self.ending_node.location.x, self.ending_node.location.y])
+        self.trajectory.append([self.ending_node.location.X_START, self.ending_node.location.Y_START])
         pointer_node = self.ending_node
         while pointer_node.parent is not None:
             node = pointer_node.parent
-            self.trajectory.append([node.location.x, node.location.y])
+            self.trajectory.append([node.location.X_START, node.location.Y_START])
             pointer_node = node
         # self.trajectory = np.array(self.trajectory)
 
@@ -219,13 +219,13 @@ class RRTStar:
 
         for node in self.nodes:
             if node.parent is not None:
-                plt.plot([node.location.x, node.parent.location.x],
-                         [node.location.y, node.parent.location.y], "-g")
+                plt.plot([node.location.X_START, node.parent.location.X_START],
+                         [node.location.Y_START, node.parent.location.Y_START], "-g")
 
         trajectory = np.array(self.trajectory)
         plt.plot(trajectory[:, 0], trajectory[:, 1], "-r")
-        plt.plot(self.knowledge.starting_location.x, self.knowledge.starting_location.y, 'kv', ms=10)
-        plt.plot(self.knowledge.ending_location.x, self.knowledge.ending_location.y, 'bx', ms=10)
+        plt.plot(self.knowledge.starting_location.X_START, self.knowledge.starting_location.Y_START, 'kv', ms=10)
+        plt.plot(self.knowledge.ending_location.X_START, self.knowledge.ending_location.Y_START, 'bx', ms=10)
         # middle_location = self.get_middle_location(self.starting_node, self.goal_node)
         # ellipse = Ellipse(xy=(middle_location.x, middle_location.y), width=2*self.budget_ellipse_a,
         #                   height=2*self.budget_ellipse_b, angle=math.degrees(self.budget_ellipse_angle),

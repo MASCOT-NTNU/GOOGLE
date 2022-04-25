@@ -86,8 +86,8 @@ def plotf_vector_triangulated(grid, values, title=None, alpha=None, cmap="Paired
     plt.plot(knowledge.polygon_border[:, 0], knowledge.polygon_border[:, 1], 'k-', linewidth=1)
     for i in range(len(knowledge.polygon_obstacles)):
         plt.plot(knowledge.polygon_obstacles[i][:, 0], knowledge.polygon_obstacles[i][:, 1], 'k-', linewidth=1)
-    plt.plot(knowledge.starting_location.x, knowledge.starting_location.y, 'kv', ms=10)
-    plt.plot(knowledge.goal_location.x, knowledge.goal_location.y, 'rv', ms=10)
+    plt.plot(knowledge.starting_location.X_START, knowledge.starting_location.Y_START, 'kv', ms=10)
+    plt.plot(knowledge.goal_location.X_START, knowledge.goal_location.Y_START, 'rv', ms=10)
     plt.xlim([np.amin(x), np.amax(x)])
     plt.ylim([np.amin(y), np.amax(y)])
 
@@ -118,7 +118,7 @@ def plotf_budget_radar(centre, radius):
 def plotf_trajectory(trajectory):
     path = []
     for location in trajectory:
-        path.append([location.x, location.y])
+        path.append([location.X_START, location.Y_START])
     path = np.array(path)
     plt.plot(path[:, 0], path[:, 1], 'y.-')
     plt.plot(path[:, 0], path[:, 1], 'y-')

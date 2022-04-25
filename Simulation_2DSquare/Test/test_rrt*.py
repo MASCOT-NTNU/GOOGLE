@@ -21,8 +21,8 @@ class PathPlanner:
     trajectory = []
 
     def __init__(self, starting_location=None, ending_location=None):
-        self.grid = pd.read_csv(FILEPATH + "Field/Grid/Grid.csv").to_numpy()
-        self.mu_prior = vectorise(pd.read_csv(FILEPATH + "Field/Data/mu_prior.csv")['mu_prior'].to_numpy())
+        self.grid = pd.read_csv(FILEPATH + "PreConfig/WaypointGraph/WaypointGraph.csv").to_numpy()
+        self.mu_prior = vectorise(pd.read_csv(FILEPATH + "PreConfig/Data/mu_prior.csv")['mu_prior'].to_numpy())
         self.starting_location = starting_location
         self.ending_location = ending_location
         self.knowledge = Knowledge(grid=self.grid,

@@ -32,8 +32,8 @@ class Simulator:
         np.random.seed(self.seed)
 
         # == setup path planner
-        filepath_grid = FILEPATH + "Field/Grid/Grid.csv"
-        filepath_mu_prior = FILEPATH + "Field/Data/mu_prior.csv"
+        filepath_grid = FILEPATH + "PreConfig/WaypointGraph/WaypointGraph.csv"
+        filepath_mu_prior = FILEPATH + "PreConfig/Data/mu_prior.csv"
         self.grid = pd.read_csv(filepath_grid).to_numpy()
         self.mu_prior = vectorise(pd.read_csv(filepath_mu_prior)['mu_prior'].to_numpy())
 
@@ -115,7 +115,7 @@ class Simulator:
                     print("Home already! Mission complete")
                     # self.plot_knowledge(i)
                     break
-            self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, 
+            self.ind_sample = get_ind_at_location2d_xy(self.knowledge.xyz,
                                                        Location(self.next_location.x, self.next_location.y))
             self.knowledge.step_no = i
             if not self.replicates:
@@ -202,7 +202,7 @@ class Simulator:
         plt.plot(self.knowledge.grid[self.knowledge.ind_next, 0],
                  self.knowledge.grid[self.knowledge.ind_next, 1], 'y.')
         if self.knowledge.budget_middle_location:
-            ellipse = Ellipse(xy=(self.knowledge.budget_middle_location.x, self.knowledge.budget_middle_location.y),
+            ellipse = Ellipse(xy=(self.knowledge.budget_middle_location.X_START, self.knowledge.budget_middle_location.Y_START),
                               width=self.knowledge.budget_ellipse_a, height=self.knowledge.budget_ellipse_b,
                               angle=math.degrees(self.knowledge.budget_ellipse_angle),
                               edgecolor='r', fc='None', lw=2)
@@ -234,7 +234,7 @@ class Simulator:
             print("Distance travelled: ", self.distance_travelled)
 
             self.next_location = Location(self.lawnmower_trajectory[i, 0], self.lawnmower_trajectory[i, 1])
-            ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, self.next_location)
+            ind_sample = get_ind_at_location2d_xy(self.knowledge.xyz, self.next_location)
 
             self.knowledge.step_no = i
             self.knowledge = Sampler(self.knowledge, self.knowledge.mu_truth, ind_sample).Knowledge
@@ -299,7 +299,7 @@ class Simulator:
             print("Budget left: ", self.budget)
             print("Distance travelled: ", self.distance_travelled)
 
-            self.ind_sample = get_ind_at_location2d_xy(self.knowledge.grid, self.current_location)
+            self.ind_sample = get_ind_at_location2d_xy(self.knowledge.xyz, self.current_location)
             self.gp.get_cost_valley(self.current_location, self.previous_location, self.goal_location, self.budget)
             ind_min_cost = np.argmin(self.knowledge.cost_valley)
             ending_loc = self.get_location_from_ind(ind_min_cost)
@@ -368,8 +368,8 @@ class Simulator:
         plt.plot(self.knowledge.polygon_border[:, 0], self.knowledge.polygon_border[:, 1], 'k-', linewidth=1)
         for i in range(len(self.knowledge.polygon_obstacles)):
             plt.plot(self.knowledge.polygon_obstacles[:, 0], self.knowledge.polygon_obstacles[:, 1], 'k-', linewidth=1)
-        plt.plot(self.knowledge.starting_location.x, self.knowledge.starting_location.y, 'kv', ms=10)
-        plt.plot(self.knowledge.goal_location.x, self.knowledge.goal_location.y, 'rv', ms=10)
+        plt.plot(self.knowledge.starting_location.X_START, self.knowledge.starting_location.Y_START, 'kv', ms=10)
+        plt.plot(self.knowledge.goal_location.X_START, self.knowledge.goal_location.Y_START, 'rv', ms=10)
         plt.xlim([np.amin(self.knowledge.grid[:, 0]), np.amax(self.knowledge.grid[:, 0])])
         plt.ylim([np.amin(self.knowledge.grid[:, 0]), np.amax(self.knowledge.grid[:, 1])])
 

@@ -32,8 +32,8 @@ def WGS2XY(loc_wgs):
 
 
 def XY2WGS(loc_xy):
-    x = loc_xy.x
-    y = loc_xy.y
+    x = loc_xy.X_START
+    y = loc_xy.Y_START
     lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
     return LocationWGS(lat, lon)
 
@@ -44,8 +44,8 @@ def get_distance_between_wgs_locations(loc1, loc2):
 
 
 def get_distance_between_xy_locations(loc1, loc2):
-    dist_x = loc1.x - loc2.x
-    dist_y = loc1.y - loc2.y
+    dist_x = loc1.X_START - loc2.X_START
+    dist_y = loc1.Y_START - loc2.Y_START
     return np.sqrt(dist_x ** 2 + dist_y ** 2)
 
 
