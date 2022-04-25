@@ -17,7 +17,7 @@ box = np.array([[63.4441527, 10.3296626],
 x, y = latlon2xy(box[:, 0], box[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
 box_sinmod = np.vstack((x, y)).T
 
-df = pd.DataFrame(box_sinmod, columns=['x', 'y'])
+df = pd.DataFrame(box, columns=['lat', 'lon'])
 
 df.to_csv(FILEPATH+"PreConfig/SINMOD_Data_Region.csv", index=False)
 
@@ -26,7 +26,6 @@ import matplotlib.pyplot as plt
 plt.plot(box[:, 1], box[:, 0])
 plt.show()
 
-#%% check with qgis
-import os
-os.system('qgis')
+#TODO: check with qgis
+
 
