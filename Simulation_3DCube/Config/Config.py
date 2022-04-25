@@ -25,7 +25,7 @@ RADIUS_NEIGHBOUR = .22
 DISTANCE_TOLERANCE = .05
 # ==
 
-# == Field
+# == PreConfig
 XLIM = [0, 1]
 YLIM = [0, 1]
 ZLIM = [0, 1]

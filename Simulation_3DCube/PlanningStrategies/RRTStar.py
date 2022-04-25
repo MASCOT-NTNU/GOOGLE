@@ -138,10 +138,10 @@ class RRTStar:
         module = np.sqrt(np.random.rand())
         x_usr = self.knowledge.gp_kernel.budget_ellipse_a * module * np.cos(theta)
         y_usr = self.knowledge.gp_kernel.budget_ellipse_b * module * np.sin(theta)
-        x_wgs = (self.knowledge.gp_kernel.budget_middle_location.x +
+        x_wgs = (self.knowledge.gp_kernel.budget_middle_location.X_START +
                  x_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle) -
                  y_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle))
-        y_wgs = (self.knowledge.gp_kernel.budget_middle_location.y +
+        y_wgs = (self.knowledge.gp_kernel.budget_middle_location.Y_START +
                  x_usr * np.sin(self.knowledge.gp_kernel.budget_ellipse_angle) +
                  y_usr * np.cos(self.knowledge.gp_kernel.budget_ellipse_angle))
         # t2 = time.time()
@@ -162,20 +162,20 @@ class RRTStar:
             return TreeNode(location, node, knowledge=self.knowledge)
         else:
             ratio = self.knowledge.step_size / dist_xyz
-            dist_x = location.x - node.location.x
-            dist_y = location.y - node.location.y
-            dist_z = location.z - node.location.z
-            x = node.location.x + ratio * dist_x
-            y = node.location.y + ratio * dist_y
-            z = node.location.z + ratio * dist_z
+            dist_x = location.X_START - node.location.X_START
+            dist_y = location.Y_START - node.location.Y_START
+            dist_z = location.Z_START - node.location.Z_START
+            x = node.location.X_START + ratio * dist_x
+            y = node.location.Y_START + ratio * dist_y
+            z = node.location.Z_START + ratio * dist_z
             location_next = Location(x, y, z)
         return TreeNode(location_next, node, knowledge=self.knowledge)
 
     @staticmethod
     def get_distance_between_nodes(node1, node2):
-        dist_x = node1.location.x - node2.location.x
-        dist_y = node1.location.y - node2.location.y
-        dist_z = node1.location.z - node2.location.z
+        dist_x = node1.location.X_START - node2.location.X_START
+        dist_y = node1.location.Y_START - node2.location.Y_START
+        dist_z = node1.location.Z_START - node2.location.Z_START
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2 + dist_z ** 2)
         return dist
 
@@ -238,7 +238,7 @@ class RRTStar:
     Collision detection
     '''
     def isWithin(self, node):
-        point = Point(node.location.x, node.location.y, node.location.z)
+        point = Point(node.location.X_START, node.location.Y_START, node.location.Z_START)
         within = False
         for i in range(len(self.polygon_obstacles)):
             if self.polygon_obstacles[i].contains(point):
@@ -246,8 +246,8 @@ class RRTStar:
         return within
 
     def isIntersect(self, node1, node2):
-        line = LineString([(node1.location.x, node1.location.y, node1.location.z),
-                           (node2.location.x, node2.location.y, node2.location.z)])
+        line = LineString([(node1.location.X_START, node1.location.Y_START, node1.location.Z_START),
+                           (node2.location.X_START, node2.location.Y_START, node2.location.Z_START)])
         intersect = False
         for i in range(len(self.polygon_obstacles)):
             if self.polygon_obstacles[i].intersects(line):
@@ -258,11 +258,11 @@ class RRTStar:
     '''
 
     def get_shortest_trajectory(self):
-        self.trajectory.append([self.ending_node.location.x, self.ending_node.location.y, self.ending_node.location.z])
+        self.trajectory.append([self.ending_node.location.X_START, self.ending_node.location.Y_START, self.ending_node.location.Z_START])
         pointer_node = self.ending_node
         while pointer_node.parent is not None:
             node = pointer_node.parent
-            self.trajectory.append([node.location.x, node.location.y, node.location.z])
+            self.trajectory.append([node.location.X_START, node.location.Y_START, node.location.Z_START])
             pointer_node = node
         self.trajectory = np.array(self.trajectory)
 
@@ -284,9 +284,9 @@ class RRTStar:
         for node in self.nodes:
             if node.parent is not None:
                 fig.add_trace(go.Scatter3d(
-                    x=[node.location.x, node.parent.location.x],
-                    y=[node.location.y, node.parent.location.y],
-                    z=[node.location.z, node.parent.location.z],
+                    x=[node.location.X_START, node.parent.location.X_START],
+                    y=[node.location.Y_START, node.parent.location.Y_START],
+                    z=[node.location.Z_START, node.parent.location.Z_START],
                     mode='lines',
                     line=dict(
                         color="green",
@@ -298,9 +298,9 @@ class RRTStar:
                 )
 
         fig.add_trace(go.Scatter3d(
-            x=[self.knowledge.starting_location.x],
-            y=[self.knowledge.starting_location.y],
-            z=[self.knowledge.starting_location.z],
+            x=[self.knowledge.starting_location.X_START],
+            y=[self.knowledge.starting_location.Y_START],
+            z=[self.knowledge.starting_location.Z_START],
             mode='markers',
             marker=dict(
                 size=5,
@@ -312,9 +312,9 @@ class RRTStar:
         )
 
         fig.add_trace(go.Scatter3d(
-            x=[self.knowledge.ending_location.x],
-            y=[self.knowledge.ending_location.y],
-            z=[self.knowledge.ending_location.z],
+            x=[self.knowledge.ending_location.X_START],
+            y=[self.knowledge.ending_location.Y_START],
+            z=[self.knowledge.ending_location.Z_START],
             mode='markers',
             marker=dict(
                 size=5,

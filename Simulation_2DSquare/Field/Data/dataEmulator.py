@@ -9,7 +9,7 @@ from GOOGLE.Simulation_2DSquare.Config.Config import *
 from GOOGLE.Simulation_2DSquare.Tree.Location import *
 from usr_func import *
 
-filepath_grid = FILEPATH + "Field/Grid/Grid.csv"
+filepath_grid = FILEPATH + "PreConfig/WaypointGraph/WaypointGraph.csv"
 grid = pd.read_csv(filepath_grid).to_numpy()
 x = grid[:, 0]
 y = grid[:, 1]
@@ -27,7 +27,7 @@ plt.show()
 x, y, mu_prior = map(vectorise, [x, y, mu_prior])
 
 df = pd.DataFrame(np.hstack((x, y, mu_prior)), columns=['x', 'y', 'mu_prior'])
-df.to_csv(FILEPATH + "Field/Data/mu_prior.csv", index=False)
+df.to_csv(FILEPATH + "PreConfig/Data/mu_prior.csv", index=False)
 
 
 

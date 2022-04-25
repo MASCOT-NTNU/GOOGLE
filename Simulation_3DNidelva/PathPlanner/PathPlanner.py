@@ -130,7 +130,7 @@ class PathPlanner:
 
     @staticmethod
     def get_distance_between_locations(loc1, loc2):
-        return np.sqrt((loc1.x - loc2.x) ** 2 + (loc1.y - loc2.y) ** 2)
+        return np.sqrt((loc1.X_START - loc2.X_START) ** 2 + (loc1.Y_START - loc2.Y_START) ** 2)
 
     def plot_knowledge(self, i):
 

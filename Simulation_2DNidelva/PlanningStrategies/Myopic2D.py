@@ -37,10 +37,10 @@ class MyopicPlanning_2D:
                 ind_next = self.search_for_new_location()
                 if not ind_next in self.knowledge.ind_visited:
                     # print("Found new: ", ind_next)
-                    self.knowledge.ind_next = ind_next
+                    self.knowledge.ind_sample_waypoint = ind_next
                     break
         else:
-            self.knowledge.ind_next = self.knowledge.ind_cand_filtered[np.argmin(np.array(eibv))]
+            self.knowledge.ind_sample_waypoint = self.knowledge.ind_cand_filtered[np.argmin(np.array(eibv))]
 
     def find_candidates_loc(self):
         delta_x, delta_y = latlon2xy(self.knowledge.coordinates_wgs[:, 0], self.knowledge.coordinates_wgs[:, 1],
@@ -78,8 +78,8 @@ class MyopicPlanning_2D:
 
     @property
     def next_waypoint(self):
-        return LocationWGS(self.knowledge.coordinates_wgs[self.knowledge.ind_next, 0],
-                           self.knowledge.coordinates_wgs[self.knowledge.ind_next, 1])
+        return LocationWGS(self.knowledge.coordinates_wgs[self.knowledge.ind_sample_waypoint, 0],
+                           self.knowledge.coordinates_wgs[self.knowledge.ind_sample_waypoint, 1])
 
 
 

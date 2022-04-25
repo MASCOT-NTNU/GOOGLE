@@ -18,7 +18,7 @@ grid = HexgonalGrid2DGenerator(polygon_border=polygon_border, polygon_obstacle=p
 coordinates = grid.grid_xy
 
 df = pd.DataFrame(coordinates, columns=["x", 'y'])
-df.to_csv(FILEPATH + "Field/Grid/Grid.csv", index=False)
+df.to_csv(FILEPATH + "PreConfig/WaypointGraph/WaypointGraph.csv", index=False)
 
 plt.plot(coordinates[:, 0], coordinates[:, 1], 'k.')
 plt.plot(polygon_border[:, 0], polygon_border[:,1], 'r-')

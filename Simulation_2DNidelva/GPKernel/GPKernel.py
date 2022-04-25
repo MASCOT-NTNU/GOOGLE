@@ -149,14 +149,14 @@ class GPKernel:
 
     @staticmethod
     def get_middle_location(location1, location2):
-        x_middle = (location1.x + location2.x) / 2
-        y_middle = (location1.y + location2.y) / 2
+        x_middle = (location1.X_START + location2.X_START) / 2
+        y_middle = (location1.Y_START + location2.Y_START) / 2
         return LocationXY(x_middle, y_middle)
 
     @staticmethod
     def get_angle_between_locations(location1, location2):
-        delta_y = location2.y - location1.y
-        delta_x = location2.x - location1.x
+        delta_y = location2.Y_START - location1.Y_START
+        delta_x = location2.X_START - location1.X_START
         angle = np.math.atan2(delta_x, delta_y)
         return angle
 
@@ -181,7 +181,7 @@ class GPKernel:
         return vr
 
     def is_within_obstacles(self, location):
-        point = Point(location.x, location.y)
+        point = Point(location.X_START, location.Y_START)
         within = False
         if self.knowledge.polygon_obstacles_shapely.contains(point):
             within = True
@@ -189,13 +189,13 @@ class GPKernel:
 
     def get_direction_field(self, current_location, previous_location):
         t1 = time.time()
-        dx = current_location.x - previous_location.x
-        dy = current_location.y - previous_location.y
+        dx = current_location.X_START - previous_location.X_START
+        dy = current_location.Y_START - previous_location.Y_START
         vec1 = np.array([[dx, dy]])
         self.cost_direction = []
         for i in range(self.coordinates_xyz.shape[0]):
-            dx = self.coordinates_xyz[i, 0] - current_location.x
-            dy = self.coordinates_xyz[i, 1] - current_location.y
+            dx = self.coordinates_xyz[i, 0] - current_location.X_START
+            dy = self.coordinates_xyz[i, 1] - current_location.Y_START
             vec2 = np.array([[dx, dy]])
             if np.dot(vec1, vec2.T) >= 0:
                 self.cost_direction.append(0)

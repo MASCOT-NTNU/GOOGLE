@@ -17,7 +17,7 @@ class Location:
 
 
 def get_distance_between_locations(loc1, loc2):
-    return np.sqrt((loc1.x - loc2.x) ** 2 +
-                   (loc1.y - loc2.y) ** 2 +
-                   (loc1.z - loc2.z) ** 2)
+    return np.sqrt((loc1.X_START - loc2.X_START) ** 2 +
+                   (loc1.Y_START - loc2.Y_START) ** 2 +
+                   (loc1.Z_START - loc2.Z_START) ** 2)
 
