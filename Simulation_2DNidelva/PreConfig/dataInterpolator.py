@@ -4,12 +4,16 @@ Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
 Date: 2022-03-16
 """
+import numpy as np
 import pandas as pd
 from DataHandler.SINMOD import SINMOD
+from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from usr_func import xy2latlon
 
-PATH_FILE = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/"
-dataset_coordinates = pd.read_csv(PATH_FILE+"PreConfig/WaypointGraph/WaypointGraph.csv").to_numpy()
-coordinates = dataset_coordinates[:, :3]
+grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
+
+lat, lon = xy2latlon(grf_grid[:, 0], grf_grid[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+coordinates = np.vstack((lat, lon, np.ones_like(lat))).T
 
 sinmod = SINMOD()
 sinmod.load_sinmod_data(raw_data=True)
