@@ -11,8 +11,8 @@ import pandas as pd
 from usr_func import *
 from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from rdp import rdp # used to smooth path
-BUFFER_SIZE_BORDER = -100 # [m]
-BUFFER_SIZE_MUNKHOLMEN = 50 # [m]
+BUFFER_SIZE_BORDER = -120 # [m]
+BUFFER_SIZE_MUNKHOLMEN = 100 # [m]
 
 '''
 Path
