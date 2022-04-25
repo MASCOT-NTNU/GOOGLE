@@ -6,8 +6,10 @@ Date: 2022-02-23
 """
 
 import geopandas
+import pandas as pd
+
 from usr_func import *
-from GOOGLE.Simulation_2DNidelva.Config.Config import LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from rdp import rdp # used to smooth path
 BUFFER_SIZE_BORDER = -100 # [m]
 BUFFER_SIZE_MUNKHOLMEN = 50 # [m]
@@ -15,12 +17,12 @@ BUFFER_SIZE_MUNKHOLMEN = 50 # [m]
 '''
 Path
 '''
-PATH_SHAPE_FILE = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/GIS/Munkholmen.shp"
-SINMOD_SHAPE_FILE = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/SINMOD_Data_Region.csv"
-
-FILEPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Simulation_2DNidelva/Config/"
-PATH_OPERATION_AREA = FILEPATH + "OpArea.csv"
-PATH_MUNKHOLMEN = FILEPATH + "Munkholmen.csv"
+INPUT_PATH_MUNKHOLMEN_SHAPE_FILE = FILEPATH + "../GIS/Munkholmen.shp"
+INPUT_PATH_SINMOD_SHAPE_FILE = FILEPATH + "PreConfig/SINMOD_Data_Region.csv"
+OUTPUT_PATH_BORDER = FILEPATH + "PreConfig/Polygon_border.csv"
+OUTPUT_PATH_MUNKHOLMEN = FILEPATH + "PreConfig/Polygon_munkholmen.csv"
+OUTPUT_PATH_POLYGON_BORDER = FILEPATH + "Config/Polygon_border.csv"
+OUTPUT_PATH_POLYGON_OBSTACLE = FILEPATH + "Config/Polygon_obstacle.csv"
 
 
 class OpArea:
@@ -31,8 +33,8 @@ class OpArea:
         pass
 
     def get_operational_area(self):
-        self.munkholmen_shape_file = geopandas.read_file(PATH_SHAPE_FILE)
-        self.sinmod_shape_file = np.fliplr(pd.read_csv(SINMOD_SHAPE_FILE))
+        self.munkholmen_shape_file = geopandas.read_file(INPUT_PATH_MUNKHOLMEN_SHAPE_FILE)
+        self.sinmod_shape_file = np.fliplr(pd.read_csv(INPUT_PATH_SINMOD_SHAPE_FILE))
         self.polygon_sinmod = Polygon(self.sinmod_shape_file)
 
         self.Trondheimsfjord = self.munkholmen_shape_file[self.munkholmen_shape_file['name'] == "Trondheimsfjorden"]['geometry']
@@ -85,8 +87,8 @@ class OpArea:
         x, y = latlon2xy(polygon_wgs_obstacle_shorten[:, 0], polygon_wgs_obstacle_shorten[:, 1],
                          LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         x, y = map(vectorise, [x, y])
-        df = pd.DataFrame(np.hstack((polygon_wgs_obstacle_shorten, x, y)), columns=["lat", "lon", "x", "y"])
-        df.to_csv(FILEPATH+"Polygon_obstacle.csv", index=False)
+        df = pd.DataFrame(np.hstack((x, y)), columns=["x", "y"])
+        df.to_csv(OUTPUT_PATH_POLYGON_OBSTACLE, index=False)
         plt.plot(y, x, 'r.-')
         plt.show()
 
@@ -96,8 +98,8 @@ class OpArea:
         x, y = latlon2xy(polygon_wgs_border_shorten[:, 0], polygon_wgs_border_shorten[:, 1],
                          LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         x, y = map(vectorise, [x, y])
-        df = pd.DataFrame(np.hstack((polygon_wgs_border_shorten, x, y)), columns=["lat", "lon", "x", "y"])
-        df.to_csv(FILEPATH + "Polygon_border.csv", index=False)
+        df = pd.DataFrame(np.hstack((x, y)), columns=["x", "y"])
+        df.to_csv(OUTPUT_PATH_POLYGON_BORDER, index=False)
 
         plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-')
         plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-')
@@ -108,6 +110,12 @@ class OpArea:
         plt.show()
         plt.plot(y, x, 'r.-')
         plt.show()
+
+        df = pd.DataFrame(polygon_wgs_border_shorten, columns=['lat', 'lon'])
+        df.to_csv(FILEPATH+"Test/polygon_border.csv", index=False)
+
+        df = pd.DataFrame(polygon_wgs_obstacle_shorten, columns=['lat', 'lon'])
+        df.to_csv(FILEPATH + "Test/polygon_obstacle.csv", index=False)
 
     def get_buffered_polygon(self, polygon, buffer_size):
         x, y = latlon2xy(polygon[:, 0], polygon[:, 1], 0, 0)
@@ -131,12 +139,11 @@ class OpArea:
         lat_operational_area = vectorise(self.operational_areas[0].exterior.xy[1])
         OpArea = np.hstack((lat_operational_area, lon_operational_area))
         df_OpArea = pd.DataFrame(OpArea, columns=['lat', 'lon'])
-        df_OpArea.to_csv(PATH_OPERATION_AREA, index=False)
+        df_OpArea.to_csv(OUTPUT_PATH_BORDER, index=False)
 
         OpMunkholmen = np.hstack((vectorise(self.lat_munkholmen), vectorise(self.lon_munkholmen)))
         df_munkholmen = pd.DataFrame(OpMunkholmen, columns=['lat', 'lon'])
-        df_munkholmen.to_csv(PATH_MUNKHOLMEN, index=False)
-
+        df_munkholmen.to_csv(OUTPUT_PATH_MUNKHOLMEN, index=False)
         pass
 
 
