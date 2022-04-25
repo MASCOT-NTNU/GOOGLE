@@ -25,7 +25,7 @@ class LawnMowerPlanning:
         self.get_bigger_box()
         self.discretise_the_grid()
         self.lawnmower_trajectory = []
-        self.lawnmower_trajectory.append([self.starting_location.x, self.starting_location.y])
+        self.lawnmower_trajectory.append([self.starting_location.X_START, self.starting_location.Y_START])
         for j in range(len(self.y)):
             if not isEven(j):
                 for i in range(len(self.x)):
@@ -39,7 +39,7 @@ class LawnMowerPlanning:
                     point = Point(x_temp, y_temp)
                     if self.polygon_border_shapely.contains(point) and not self.is_within_obstacles(point):
                         self.lawnmower_trajectory.append([x_temp, y_temp])
-        self.lawnmower_trajectory.append([self.ending_location.x, self.ending_location.y])
+        self.lawnmower_trajectory.append([self.ending_location.X_START, self.ending_location.Y_START])
 
     def is_within_obstacles(self, point):
         within = False

@@ -84,12 +84,12 @@ class RRTStar:
                      linewidth=1)
             for node in self.nodes:
                 if node.parent is not None:
-                    plt.plot([node.location.y, node.parent.location.y],
-                             [node.location.x, node.parent.location.x], "-g")
+                    plt.plot([node.location.Y_START, node.parent.location.Y_START],
+                             [node.location.X_START, node.parent.location.X_START], "-g")
             # trajectory = np.array(self.trajectory)
             # plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
-            plt.plot(self.knowledge.starting_location.y, self.knowledge.starting_location.x, 'kv', ms=10)
-            plt.plot(self.knowledge.ending_location.y, self.knowledge.ending_location.x, 'bx', ms=10)
+            plt.plot(self.knowledge.starting_location.Y_START, self.knowledge.starting_location.X_START, 'kv', ms=10)
+            plt.plot(self.knowledge.ending_location.Y_START, self.knowledge.ending_location.X_START, 'bx', ms=10)
             plt.savefig(foldername + "P_{:03d}.png".format(self.counter_fig))
             self.counter_fig += 1
             plt.close("all")
@@ -147,16 +147,16 @@ class RRTStar:
         if self.get_distance_between_nodes(node, node_temp) <= self.knowledge.step_size:
             location_next = location
         else:
-            angle = np.math.atan2(location.y - node.location.y, location.x - node.location.x)
-            y_new = node.location.y + self.knowledge.step_size * np.cos(angle)
-            x_new = node.location.x + self.knowledge.step_size * np.sin(angle)
+            angle = np.math.atan2(location.Y_START - node.location.Y_START, location.X_START - node.location.X_START)
+            y_new = node.location.Y_START + self.knowledge.step_size * np.cos(angle)
+            x_new = node.location.X_START + self.knowledge.step_size * np.sin(angle)
             location_next = LocationXY(x_new, y_new)
         return TreeNode(location=location_next, parent=node, knowledge=self.knowledge)
 
     @staticmethod
     def get_distance_between_nodes(node1, node2):
-        dist_x = node1.location.x - node2.location.x
-        dist_y = node1.location.y - node2.location.y
+        dist_x = node1.location.X_START - node2.location.X_START
+        dist_y = node1.location.Y_START - node2.location.Y_START
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
         return dist
 
@@ -216,16 +216,16 @@ class RRTStar:
     Collision detection
     '''
     def is_location_within_border(self, location):
-        point = Point(location.x, location.y)
+        point = Point(location.X_START, location.Y_START)
         return self.knowledge.polygon_border_shapely.contains(point)
 
     def is_node_within_obstacle(self, node):
-        point = Point(node.location.x, node.location.y)
+        point = Point(node.location.X_START, node.location.Y_START)
         return self.knowledge.polygon_obstacles_shapely.contains(point)
 
     def is_path_intersect_with_obstacles(self, node1, node2):
-        line = LineString([(node1.location.x, node1.location.y),
-                           (node2.location.x, node2.location.y)])
+        line = LineString([(node1.location.X_START, node1.location.Y_START),
+                           (node2.location.X_START, node2.location.Y_START)])
         intersect = False
         # if self.knowledge.polygon_obstacle_shapely.intersects(line):
         if (self.knowledge.polygon_obstacles_shapely.intersects(line) or
@@ -237,13 +237,13 @@ class RRTStar:
     '''
 
     def get_shortest_trajectory(self):
-        self.trajectory.append([self.ending_node.location.x,
-                                self.ending_node.location.y])
+        self.trajectory.append([self.ending_node.location.X_START,
+                                self.ending_node.location.Y_START])
         pointer_node = self.ending_node
         while pointer_node.parent is not None:
             node = pointer_node.parent
-            self.trajectory.append([node.location.x,
-                                    node.location.y])
+            self.trajectory.append([node.location.X_START,
+                                    node.location.Y_START])
             pointer_node = node
         self.trajectory = np.array(self.trajectory)
 
@@ -253,12 +253,12 @@ class RRTStar:
         plt.plot(self.knowledge.polygon_obstacle_xy[:, 1], self.knowledge.polygon_obstacle_xy[:, 0], 'k-', linewidth=1)
         for node in self.nodes:
             if node.parent is not None:
-                plt.plot([node.location.y, node.parent.location.y],
-                         [node.location.x, node.parent.location.x], "-g")
+                plt.plot([node.location.Y_START, node.parent.location.Y_START],
+                         [node.location.X_START, node.parent.location.X_START], "-g")
         trajectory = np.array(self.trajectory)
         plt.plot(trajectory[:, 1], trajectory[:, 0], "-r")
-        plt.plot(self.knowledge.starting_location.y, self.knowledge.starting_location.x, 'kv', ms=10)
-        plt.plot(self.knowledge.ending_location.y, self.knowledge.ending_location.x, 'bv', ms=10)
+        plt.plot(self.knowledge.starting_location.Y_START, self.knowledge.starting_location.X_START, 'kv', ms=10)
+        plt.plot(self.knowledge.ending_location.Y_START, self.knowledge.ending_location.X_START, 'bv', ms=10)
 
         # budget_ellipse_lat_max, budget_ellipse_lon_max = xy2latlon(self.knowledge.budget_ellipse_b,
         #                                                            self.knowledge.budget_ellipse_a,

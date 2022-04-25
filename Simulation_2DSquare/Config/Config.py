@@ -24,7 +24,7 @@ DISTANCE_NEIGHBOUR_RADAR = .12
 DISTANCE_TOLERANCE = .05
 # ==
 
-# == Field
+# == PreConfig
 XLIM = [0, 1]
 YLIM = [0, 1]
 NX = 25

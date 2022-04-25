@@ -36,7 +36,7 @@ class GPKernel:
         self.x_vector = self.grid_vector[:, 0].reshape(-1, 1)
         self.y_vector = self.grid_vector[:, 1].reshape(-1, 1)
         self.num_nodes = len(self.grid_vector)
-        print("Grid is built successfully!")
+        print("WaypointGraph is built successfully!")
 
     def set_coef(self):
         self.sigma = SIGMA
@@ -55,7 +55,7 @@ class GPKernel:
                 # 1 - np.exp(- ((x - .99) ** 2 + (y - .1) ** 2) / .1))
 
     def get_ind_F(self, location):
-        x, y = map(vectorise, [location.x, location.y])
+        x, y = map(vectorise, [location.X_START, location.Y_START])
         DM_x = x @ np.ones([1, len(self.x_vector)]) - np.ones([len(x), 1]) @ self.x_vector.T
         DM_y = y @ np.ones([1, len(self.y_vector)]) - np.ones([len(y), 1]) @ self.y_vector.T
         DM = DM_x ** 2 + DM_y ** 2
@@ -165,14 +165,14 @@ class GPKernel:
 
     @staticmethod
     def get_middle_location(location1, location2):
-        x_middle = (location1.x + location2.x) / 2
-        y_middle = (location1.y + location2.y) / 2
+        x_middle = (location1.X_START + location2.X_START) / 2
+        y_middle = (location1.Y_START + location2.Y_START) / 2
         return Location(x_middle, y_middle)
 
     @staticmethod
     def get_angle_between_locations(location1, location2):
-        delta_y = location2.y - location1.y
-        delta_x = location2.x - location1.x
+        delta_y = location2.Y_START - location1.Y_START
+        delta_x = location2.X_START - location1.X_START
         angle = np.math.atan2(delta_y, delta_x)
         return angle
 
@@ -222,7 +222,7 @@ class GPKernel:
         self.cost_obstacle = np.array(self.cost_obstacle)
 
     def is_within_obstacles(self, location):
-        point = Point(location.x, location.y)
+        point = Point(location.X_START, location.Y_START)
         within = False
         for i in range(len(self.polygon_obstacles)):
             if self.polygon_obstacles[i].contains(point):
@@ -231,13 +231,13 @@ class GPKernel:
 
     def get_direction_field(self, current_loc, previous_loc):
         t1 = time.time()
-        dx = current_loc.x - previous_loc.x
-        dy = current_loc.y - previous_loc.y
+        dx = current_loc.X_START - previous_loc.X_START
+        dy = current_loc.Y_START - previous_loc.Y_START
         vec1 = np.array([[dx, dy]])
         self.cost_direction = []
         for i in range(len(self.grid_vector)):
-            dx = self.grid_vector[i, 0] - current_loc.x
-            dy = self.grid_vector[i, 1] - current_loc.y
+            dx = self.grid_vector[i, 0] - current_loc.X_START
+            dy = self.grid_vector[i, 1] - current_loc.Y_START
             vec2 = np.array([[dx, dy]])
             if np.dot(vec1, vec2.T) >= 0:
                 self.cost_direction.append(0)
