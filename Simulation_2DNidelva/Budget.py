@@ -9,6 +9,8 @@ from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, BUDGET, X_HOME, 
 import numpy as np
 import pandas as pd
 from numba import vectorize
+import time
+
 
 @vectorize(['float32(float32, float32, float32, float32, float32, float32, float32)'])
 def get_utility_ellipse(x, y, xm, ym, ellipse_a, ellipse_b, angle):
@@ -44,7 +46,8 @@ class Budget:
         self.ellipse_b = np.sqrt(self.ellipse_a**2 - self.ellipse_c**2)
 
     def get_budget_field(self):
-        self.budget_field = np.zeros([self.grf_grid.shape[0], 1])
+        t1 = time.time()
+        self.budget_field = np.zeros_like(self.grf_grid[:, 0])
         xm = self.x_middle
         ym = self.y_middle
         ea = self.ellipse_a
@@ -56,6 +59,8 @@ class Budget:
 
         ind_inf_penalty = np.where(self.u>1)[0]
         self.budget_field[ind_inf_penalty] = np.inf
+        t2 = time.time()
+        print("Budget filed takes: ", t2 - t1)
 
     def check_budget(self):
         x_prev = 1000

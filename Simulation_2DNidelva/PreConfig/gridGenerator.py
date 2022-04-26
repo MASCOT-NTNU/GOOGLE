@@ -10,8 +10,9 @@ from GOOGLE.Simulation_2DNidelva.PreConfig.HexagonalGrid2D import HexgonalGrid2D
 from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from usr_func import *
 
+# == Setup
 DISTANCE_NEIGHBOUR = 120
-
+# ==
 
 polygon_border = FILEPATH + "Config/polygon_border.csv"
 polygon_obstacle = FILEPATH + "Config/polygon_obstacle.csv"
