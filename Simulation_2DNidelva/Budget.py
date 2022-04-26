@@ -54,7 +54,6 @@ class Budget:
                                                        xm, ym, ea, eb, angle])
         self.u = get_utility_ellipse(x, y, xm, ym, ea, eb, angle)
 
-
         ind_inf_penalty = np.where(self.u>1)[0]
         self.budget_field[ind_inf_penalty] = np.inf
 
@@ -120,7 +119,7 @@ class Budget:
 
 if __name__ == "__main__":
     b = Budget()
-    b.check_budget()
+    # b.check_budget()
     # b.update_budget()
 
 
