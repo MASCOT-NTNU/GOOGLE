@@ -5,6 +5,7 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-03-16
 """
 import os
+from usr_func import latlon2xy
 
 
 # == sys
@@ -19,6 +20,15 @@ LONGITUDE_ORIGIN = 10.3969375
 # == GP kernel
 THRESHOLD = 27
 # ==
+
+# == Path planner
+BUDGET = 8000 # [m]
+LATITUDE_HOME = 63.440618
+LONGITUDE_HOME = 10.355851
+X_HOME, Y_HOME = latlon2xy(LATITUDE_HOME, LONGITUDE_HOME, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+# ==
+
+
 
 # == RRTStar
 MAXITER_EASY = 1000
@@ -42,8 +52,7 @@ BUDGET_ELLIPSE_B_MARGIN_Tree = 1000
 # == Penalty
 PENALTY = 10
 
-# == Path planner
-BUDGET = 8000 # [m]
+
 NUM_STEPS = 80
 FIGPATH = os.getcwd() + "/GOOGLE/fig/Sim_2DNidelva/"
 
