@@ -10,13 +10,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from scipy.spatial.distance import cdist
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH
+from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, NUGGET
 
 
 # == Parameters
 SIGMA = .6
 LATERAL_RANGE = 1600
-NUGGET = .1  # .03
 # ==
 
 
