@@ -69,6 +69,7 @@ class Budget:
         self.budget_field[ind_inf_penalty] = np.inf
         t2 = time.time()
         print("Budget filed takes: ", t2 - t1)
+        print("Budget remaining: ", self.budget_left)
 
     def check_budget(self):
         x_prev = 1000
