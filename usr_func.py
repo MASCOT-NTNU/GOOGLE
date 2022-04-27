@@ -48,7 +48,7 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib.cm import get_cmap
 import matplotlib.path as mplPath  # used to determine whether a point is inside the grid or not
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams.update({'font.size': 20})
+plt.rcParams.search_path_from_trees({'font.size': 20})
 # plt.rcParams.update({'font.style': 'oblique'})
 import plotly
 plotly.io.orca.config.save()
