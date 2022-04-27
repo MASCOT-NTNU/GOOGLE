@@ -8,6 +8,9 @@ Date: 2022-04-26
 from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, BUDGET, X_HOME, Y_HOME
 import numpy as np
 import pandas as pd
+import math
+from matplotlib.patches import Ellipse
+from usr_func import Polygon, LineString
 from numba import vectorize
 import time
 
@@ -44,6 +47,11 @@ class Budget:
         self.ellipse_a = self.budget_left / 2
         self.ellipse_c = np.sqrt(dx**2 + dy**2) / 2
         self.ellipse_b = np.sqrt(self.ellipse_a**2 - self.ellipse_c**2)
+        self.ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2 * self.ellipse_a,
+                               height=2 * self.ellipse_b, angle=math.degrees(self.angle))
+        self.vertices = self.ellipse.get_verts() #TODO: different x, y from grf grid
+        self.polygon_budget_ellipse = Polygon(np.fliplr(self.vertices))
+        self.line_budget_ellipse = LineString(np.fliplr(self.vertices))
 
     def get_budget_field(self):
         t1 = time.time()
@@ -82,11 +90,10 @@ class Budget:
         plt.plot(y_prev, x_prev, 'ro', ms=10)
         plt.plot(y_now, x_now, 'cs', ms=10)
         plt.plot(Y_HOME, X_HOME, 'b^', ms=10)
-
-        ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2*self.ellipse_a,
-                          height=2*self.ellipse_b, angle=math.degrees(self.angle),
-                          edgecolor='r', fc='None', lw=2)
-        plt.gca().add_patch(ellipse)
+        # ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2*self.ellipse_a,
+        #                   height=2*self.ellipse_b, angle=math.degrees(self.angle),
+        #                   edgecolor='r', fc='None', lw=2)
+        plt.gca().add_patch(self.ellipse)
         plt.colorbar()
         plt.xlim([np.min(self.grf_grid[:, 1]), np.max(self.grf_grid[:, 1])])
         plt.ylim([np.min(self.grf_grid[:, 0]), np.max(self.grf_grid[:, 0])])
@@ -124,7 +131,7 @@ class Budget:
 
 if __name__ == "__main__":
     b = Budget()
-    # b.check_budget()
+    b.check_budget()
     # b.update_budget()
 
 

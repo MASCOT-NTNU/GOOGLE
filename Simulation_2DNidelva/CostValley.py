@@ -29,7 +29,7 @@ class CostValley:
         self.grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
         print("CV1: GRF Grid is loaded successfullyQ")
 
-    def update(self, mu, Sigma, x_current, y_current, x_previous, y_previous):
+    def update_cost_valley(self, mu, Sigma, x_current, y_current, x_previous, y_previous):
         self.budget.update_budget(x_current, y_current, x_previous, y_previous)
         self.mu = mu
         self.Sigma = Sigma
@@ -38,6 +38,7 @@ class CostValley:
         self.x_azimuth = x_current - x_previous
         self.y_azimuth = y_current - y_previous
         self.vector_azimuth = vectorise([self.x_azimuth, self.y_azimuth])
+        self.get_cost_valley()
 
     def get_cost_valley(self):
         t1 = time.time()
@@ -91,8 +92,8 @@ class CostValley:
         xn = 1990
         yn = -1900
         self.budget.budget_left = 4000
-        self.update(self.mu, Sigma, xn, yn, xp, yp)
-        self.get_cost_valley()
+        self.update_cost_valley(self.mu, Sigma, xn, yn, xp, yp)
+        # self.get_cost_valley()
 
         # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu, cmap=get_cmap("BrBG", 10), vmin=15, vmax=30)
         plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, cmap=get_cmap("BrBG", 10), vmin=0, vmax=4)
