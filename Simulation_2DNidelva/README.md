@@ -7,3 +7,4 @@
 - run `python3 PreConfig/gridGenerator.py` to get GRF grid.
 - run `python3 dataInterpolator.py` to get SINMOD prior data
 - run `python3 RandomLocationGenerator.py` to get pre-generated random locations for the tree.
+- run `python3 RandomIndexGenerator.py` to generate random integer indices for the tree.

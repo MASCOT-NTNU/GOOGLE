@@ -19,6 +19,7 @@ Path
 '''
 INPUT_PATH_MUNKHOLMEN_SHAPE_FILE = FILEPATH + "../GIS/Munkholmen.shp"
 INPUT_PATH_SINMOD_SHAPE_FILE = FILEPATH + "PreConfig/SINMOD_Data_Region.csv"
+INPUT_PATH_MUNKHOLMEN_POLYGON_FILE = FILEPATH + "../GIS/Munkholmen.csv"
 OUTPUT_PATH_BORDER = FILEPATH + "PreConfig/Polygon_border.csv"
 OUTPUT_PATH_MUNKHOLMEN = FILEPATH + "PreConfig/Polygon_munkholmen.csv"
 OUTPUT_PATH_POLYGON_BORDER = FILEPATH + "Config/Polygon_border.csv"
@@ -144,10 +145,19 @@ class OpArea:
         OpMunkholmen = np.hstack((vectorise(self.lat_munkholmen), vectorise(self.lon_munkholmen)))
         df_munkholmen = pd.DataFrame(OpMunkholmen, columns=['lat', 'lon'])
         df_munkholmen.to_csv(OUTPUT_PATH_MUNKHOLMEN, index=False)
-        pass
+
+
+    def expand_munkholmen_area(self):
+        polygon_obstacle = pd.read_csv(INPUT_PATH_MUNKHOLMEN_POLYGON_FILE).to_numpy()
+        x, y = latlon2xy(polygon_obstacle[:, 0], polygon_obstacle[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        x, y = map(vectorise, [x, y])
+        df = pd.DataFrame(np.hstack((x, y)), columns=['x', 'y'])
+        df.to_csv(OUTPUT_PATH_POLYGON_OBSTACLE, index=False)
+        df = pd.DataFrame(polygon_obstacle, columns=['lat', 'lon'])
+        df.to_csv(FILEPATH + "Test/polygon_obstacle.csv", index=False)
 
 
 if __name__ == "__main__":
     op = OpArea()
-    op.get_buffered_area()
-
+    # op.get_buffered_area()
+    op.expand_munkholmen_area()
