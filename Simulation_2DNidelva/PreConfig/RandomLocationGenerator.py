@@ -6,8 +6,7 @@ Date: 2022-03-23
 """
 
 
-from GOOGLE.Simulation_2DNidelva.Tree.Location import *
-from GOOGLE.Simulation_2DNidelva.Config.Config import *
+from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH
 from usr_func import *
 
 filepath_polygon_border = FILEPATH + "/Config/Polygon_border.csv"
