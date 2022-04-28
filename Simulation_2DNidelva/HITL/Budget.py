@@ -5,7 +5,7 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-04-26
 """
 
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, BUDGET, X_HOME, Y_HOME
+from Config.Config import FILEPATH, BUDGET, X_HOME, Y_HOME
 import numpy as np
 import pandas as pd
 import math
