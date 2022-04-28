@@ -6,7 +6,8 @@ Date: 2022-04-26
 """
 import matplotlib.pyplot as plt
 
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH
+from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, X_HOME, Y_HOME
+from GOOGLE.Simulation_2DNidelva.RRTStarHome import RRTStarHome
 from usr_func import Polygon, Point, LineString
 import pandas as pd
 import numpy as np
@@ -36,6 +37,8 @@ class RRTStarCV:
         self.load_grf_grid()
         self.load_random_locations()
         self.load_polygon_border_obstacle()
+        self.rrthome = RRTStarHome() # emergency go home
+        self.GOHOME = False
 
     def load_grf_grid(self):
         self.grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
@@ -76,7 +79,6 @@ class RRTStarCV:
         x_random = self.random_locations[ind_selected, 0]
         y_random = self.random_locations[ind_selected, 1]
         goal_indices = self.goal_random_indices[ind_selected]
-        #TODO: add ellipse corresponded locations
 
         self.tree_nodes = []
         self.tree_nodes.append(start_node)
@@ -166,7 +168,7 @@ class RRTStarCV:
             # print("finished waypoint generation")
             if not self.is_location_legal(self.x_next, self.y_next):
                 # get legal location next
-                pass
+                self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
 
         t2 = time.time()
         print("RRTStarCV takes: ", t2 - t1)
@@ -194,6 +196,29 @@ class RRTStarCV:
         dy = node1.y - node2.y
         dist = np.sqrt(dx**2 + dy**2)
         return dist
+
+    def get_legal_location(self, x, y):
+        angles = np.linspace(0, 2*np.pi, 60)
+        for angle in angles:
+            y_next = y + STEPSIZE * np.cos(angle)
+            x_next = x + STEPSIZE * np.sin(angle)
+            if self.is_location_legal(x_next, y_next):
+                return x_next, y_next
+        else:
+            # self.GOHOME = True
+            self.rrthome.search_path_from_trees(x, y, X_HOME, Y_HOME)
+            return self.rrthome.x_next, self.rrthome.y_next
+
+    def get_route_home(self, x, y):
+        distance = np.sqrt((X_HOME - x)**2 + (Y_HOME - y)**2)
+        if distance > STEPSIZE:
+            angle = np.math.atan2(X_HOME - x, Y_HOME - y)
+            y_next = y + STEPSIZE * np.cos(angle)
+            x_next = x + STEPSIZE * np.sin(angle)
+        else:
+            x_next = X_HOME
+            y_next = Y_HOME
+        return x_next, y_next
 
     def get_neighbour_node_ind(self):
         ind = np.where(self.distance_from_location_to_nodes <= NEIGHBOUR_RADIUS)[0]

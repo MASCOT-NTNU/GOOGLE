@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import math
 from matplotlib.patches import Ellipse
-from usr_func import Polygon, LineString
+from usr_func import Polygon, LineString, Point
 from numba import vectorize
 import time
 
@@ -46,12 +46,20 @@ class Budget:
         self.angle = np.math.atan2(dx, dy)
         self.ellipse_a = self.budget_left / 2
         self.ellipse_c = np.sqrt(dx**2 + dy**2) / 2
-        self.ellipse_b = np.sqrt(self.ellipse_a**2 - self.ellipse_c**2)
-        self.ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2 * self.ellipse_a,
-                               height=2 * self.ellipse_b, angle=math.degrees(self.angle))
-        self.vertices = self.ellipse.get_verts() #TODO: different x, y from grf grid
-        self.polygon_budget_ellipse = Polygon(np.fliplr(self.vertices))
-        self.line_budget_ellipse = LineString(np.fliplr(self.vertices))
+        if self.ellipse_a > self.ellipse_c:
+            self.ellipse_b = np.sqrt(self.ellipse_a**2 - self.ellipse_c**2)
+            self.ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2 * self.ellipse_a,
+                                   height=2 * self.ellipse_b, angle=math.degrees(self.angle))
+            self.vertices = self.ellipse.get_verts() #TODO: different x, y from grf grid
+            self.polygon_budget_ellipse = Polygon(np.fliplr(self.vertices))
+            self.line_budget_ellipse = LineString(np.fliplr(self.vertices))
+        else:
+            self.ellipse_b = 0
+            self.ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2 * self.ellipse_a,
+                                   height=2 * self.ellipse_b, angle=math.degrees(self.angle))
+            self.vertices = self.ellipse.get_verts()
+            self.polygon_budget_ellipse = Polygon([])
+            self.line_budget_ellipse = LineString([])
 
     def get_budget_field(self):
         t1 = time.time()
@@ -63,13 +71,22 @@ class Budget:
         angle = self.angle
         x, y, xm, ym, ea, eb, angle = map(np.float32, [self.grf_grid[:, 0], self.grf_grid[:, 1],
                                                        xm, ym, ea, eb, angle])
-        self.u = get_utility_ellipse(x, y, xm, ym, ea, eb, angle)
+        # self.u = get_utility_ellipse(x, y, xm, ym, ea, eb, angle)
+        self.u = self.get_ind_penalty()
 
-        ind_inf_penalty = np.where(self.u>1)[0]
+        ind_inf_penalty = np.where(self.u==True)[0]
         self.budget_field[ind_inf_penalty] = np.inf
         t2 = time.time()
         print("Budget filed takes: ", t2 - t1)
         print("Budget remaining: ", self.budget_left)
+
+    def get_ind_penalty(self):
+        ind = np.ones(len(self.grf_grid))
+        for i in range(len(self.grf_grid)):
+            point = Point(self.grf_grid[i, 0], self.grf_grid[i, 1])
+            if self.polygon_budget_ellipse.contains(point):
+                ind[i] = 0
+        return ind
 
     def check_budget(self):
         x_prev = 1000
