@@ -8,6 +8,7 @@ Date: 2022-04-27
 
 from usr_func import *
 from Config.Config import *
+from Config.AdaframeConfig import * # !!!! ROSPY important
 from grf_model import GRF
 from CostValley import CostValley
 from RRTStarCV import RRTStarCV, STEPSIZE
