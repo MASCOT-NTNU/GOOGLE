@@ -14,8 +14,10 @@ from GOOGLE.Simulation_2DNidelva.RRTStarCV import RRTStarCV, STEPSIZE
 
 
 # == Set up
-LAT_START = 63.463019
-LON_START = 10.397630
+# LAT_START = 63.449664
+# LON_START = 10.363366
+LAT_START = 63.456232
+LON_START = 10.435198
 X_START, Y_START = latlon2xy(LAT_START, LON_START, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
 NUM_STEPS = 50
 # ==
@@ -49,7 +51,6 @@ class Simulator:
 
         for j in range(NUM_STEPS):
             print("Step: ", j)
-            print("x_next, y_next", x_current, y_current)
             trajectory.append([x_current, y_current])
 
             ind_measured = self.grf_model.get_ind_from_location(x_current, y_current)
@@ -57,14 +58,11 @@ class Simulator:
             mu = self.grf_model.mu_cond
             Sigma = self.grf_model.Sigma_cond
             self.CV.update_cost_valley(mu, Sigma, x_current, y_current, x_previous, y_previous)
-            if self.CV.budget.budget_left >= 3 * STEPSIZE:
-                self.rrtstar.search_path_from_trees(self.CV.cost_valley, self.CV.budget.polygon_budget_ellipse,
-                                                    self.CV.budget.line_budget_ellipse, x_current, y_current)
-                x_next = self.rrtstar.x_next
-                y_next = self.rrtstar.y_next
-            else:
-                x_next = X_HOME
-                y_next = Y_HOME
+            self.rrtstar.search_path_from_trees(self.CV.cost_valley, self.CV.budget.polygon_budget_ellipse,
+                                                self.CV.budget.line_budget_ellipse, x_current, y_current)
+            x_next = self.rrtstar.x_next
+            y_next = self.rrtstar.y_next
+            print("x_next, y_next", x_next, y_next)
 
             fig = plt.figure(figsize=(30, 10))
             gs = GridSpec(nrows=1, ncols=2)
@@ -158,6 +156,7 @@ class Simulator:
             y_previous = y_current
             x_current = x_next
             y_current = y_next
+
 
 
     def is_masked(self, x, y):
