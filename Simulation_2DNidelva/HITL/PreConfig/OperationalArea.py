@@ -22,8 +22,8 @@ INPUT_PATH_SINMOD_SHAPE_FILE = FILEPATH + "PreConfig/SINMOD_Data_Region.csv"
 INPUT_PATH_MUNKHOLMEN_POLYGON_FILE = FILEPATH + "../GIS/Munkholmen.csv"
 OUTPUT_PATH_BORDER = FILEPATH + "PreConfig/Polygon_border.csv"
 OUTPUT_PATH_MUNKHOLMEN = FILEPATH + "PreConfig/Polygon_munkholmen.csv"
-OUTPUT_PATH_POLYGON_BORDER = FILEPATH + "Config/Polygon_border.csv"
-OUTPUT_PATH_POLYGON_OBSTACLE = FILEPATH + "Config/Polygon_obstacle.csv"
+OUTPUT_PATH_POLYGON_BORDER = FILEPATH + "Config/polygon_border.csv"
+OUTPUT_PATH_POLYGON_OBSTACLE = FILEPATH + "Config/polygon_obstacle.csv"
 
 
 class OpArea:
