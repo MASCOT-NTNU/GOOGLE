@@ -30,6 +30,7 @@ class GOOGLELauncher:
         self.load_grf_model()
         self.load_cost_valley()
         self.load_rrtstar()
+        self.setup_AUV()
 
     def load_grf_model(self):
         self.grf_model = GRF()
