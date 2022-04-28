@@ -114,7 +114,7 @@ class GOOGLELauncher:
                         rospy.signal_shutdown("Mission completed!!!")
                         break
                     else:
-                        lat_waypoint, lon_waypoint = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+                        lat_waypoint, lon_waypoint = xy2latlon(x_current, y_current, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
                         self.auv.auv_handler.setWaypoint(deg2rad(lat_waypoint), deg2rad(lon_waypoint), .5,
                                                          speed=self.auv.speed)
 
