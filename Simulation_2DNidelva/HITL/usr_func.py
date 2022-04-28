@@ -8,7 +8,7 @@ Date: 2022-02-23
 '''
 SYSTEM config
 '''
-import os, time, pathlib, re, math
+import os, time, pathlib, re, math, sys
 from datetime import datetime
 
 '''
@@ -35,7 +35,8 @@ from scipy.interpolate import NearestNDInterpolator
 '''
 GEOMETRY
 '''
-from shapely.geometry import Point, Polygon, LineString
+from shapely.geometry import Point, Polygon, LineString, GeometryCollection
+import shapely
 
 '''
 Plotting
@@ -48,7 +49,7 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib.cm import get_cmap
 import matplotlib.path as mplPath  # used to determine whether a point is inside the grid or not
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams.search_path_from_trees({'font.size': 20})
+plt.rcParams["font.size"] = 20
 # plt.rcParams.update({'font.style': 'oblique'})
 import plotly
 plotly.io.orca.config.save()
@@ -63,6 +64,12 @@ SINMOD_MAX_DEPTH_LAYER: down to which layer should the data be used
 '''
 CIRCUMFERENCE = 40075000 # [m], circumference
 SINMOD_MAX_DEPTH_LAYER = 8
+
+
+'''
+GPU framework
+'''
+from numba import jit, vectorize
 
 
 def deg2rad(deg):
@@ -99,10 +106,35 @@ def xyz2latlondepth(x, y, z, lat_origin, lon_origin, depth_origin):
     return lat, lon, depth
 
 
-def get_ind_at_location(coordinates, location):
+def get_ind_at_location3d_wgs(coordinates, location):
     dist_x, dist_y, dist_z = latlondepth2xyz(coordinates[:, 0], coordinates[:, 1], coordinates[:, 2],
                                              location.lat, location.lon, location.depth)
     dist = dist_x ** 2 + dist_y ** 2 + dist_z ** 2
+    ind = np.where(dist == np.amin(dist))[0]
+    return ind
+
+
+def get_ind_at_location2d_wgs(coordinates, location):
+    dist_x, dist_y = latlon2xy(coordinates[:, 0], coordinates[:, 1], location.lat, location.lon)
+    dist = dist_x ** 2 + dist_y ** 2
+    ind = np.where(dist == np.amin(dist))[0]
+    return ind
+
+
+@jit(nopython=True)
+def get_ind_at_location3d_xyz(coordinates, x, y, z):
+    dist_x = coordinates[:, 0] - x
+    dist_y = coordinates[:, 1] - y
+    dist_z = coordinates[:, 2] - z
+    dist = dist_x ** 2 + dist_y ** 2 + dist_z ** 2
+    ind = np.argmin(dist)
+    return ind
+
+
+def get_ind_at_location2d_xy(coordinates, location):
+    dist_x = coordinates[:, 0] - location.X_START
+    dist_y = coordinates[:, 1] - location.Y_START
+    dist = dist_x ** 2 + dist_y ** 2
     ind = np.where(dist == np.amin(dist))[0]
     return ind
 
@@ -138,7 +170,15 @@ def get_eibv_1d(threshold, mu, Sigma, F, R):
     return EIBV
 
 
+def get_ibv(mu, sigma_diag, threshold): # usually fast, sigma_diag needs to be precomputed.
+  p = norm.cdf(threshold, mu, sigma_diag)
+  bv = p * (1 - p)
+  ibv = np.sum(bv)
+  return ibv
+
+
 def get_excursion_prob_1d(mu, Sigma, threshold):
+    # print("shape mu: ", mu.shape)
     excursion_prob = np.zeros_like(mu)
     for i in range(excursion_prob.shape[0]):
         excursion_prob[i] = norm.cdf(threshold, mu[i], Sigma[i, i])
@@ -246,13 +286,28 @@ def get_indices_equal2value(array, value):
     return np.where(array == value)[0]
 
 
+def get_crps_1d(y_measurement, mu, Sigma):
+    '''
+    continous ranked probability score
+    '''
+    sigma = vectorise(np.sqrt(np.diag(Sigma)))
+    normalized_values = (y_measurement - mu) / sigma
+    crps_vector = sigma * (1 / np.sqrt(2) - 2 * norm.cdf(normalized_values) -
+                           normalized_values * (2 * norm.pdf(normalized_values) - 1))
+    return crps_vector
 
 
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
 
 
+def enablePrint():
+    sys.stdout = sys.__stdout__
 
 
-
+def save_file2csv(data, filename, index=None, columns=None):
+    df = pd.DataFrame(data, columns=columns, index=index)
+    df.to_csv(filename)
 
 
 
