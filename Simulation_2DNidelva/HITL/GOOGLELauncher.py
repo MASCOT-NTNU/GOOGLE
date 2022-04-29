@@ -32,6 +32,8 @@ class GOOGLELauncher:
         self.load_cost_valley()
         self.load_rrtstar()
         self.setup_AUV()
+        self.just_updated = False
+        self.update_time = rospy.get_time()
 
     def load_grf_model(self):
         self.grf_model = GRF()
@@ -79,8 +81,9 @@ class GOOGLELauncher:
                                            iridium_dest=self.auv.iridium_destination)  # self.ada_state = "surfacing"
                     t_start = time.time()
 
-                if self.auv.auv_handler.getState() == "waiting":
+                if self.auv.auv_handler.getState() == "waiting" and rospy.get_time() -self.update_time > 5.0:
                     print("Arrived the current location")
+                    print(rospy.get_time()-self.update_time)
 
                     self.salinity_measured = np.mean(self.salinity[-10:])
 
@@ -117,7 +120,11 @@ class GOOGLELauncher:
                         lat_waypoint, lon_waypoint = xy2latlon(x_current, y_current, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
                         self.auv.auv_handler.setWaypoint(deg2rad(lat_waypoint), deg2rad(lon_waypoint), .5,
                                                          speed=self.auv.speed)
+                        self.just_updated = True
+                        self.update_time = rospy.get_time()
 
+                else:
+                  self.just_updated=False
                 self.auv.last_state = self.auv.auv_handler.getState()
                 self.auv.auv_handler.spin()
             self.auv.rate.sleep()
@@ -126,6 +133,7 @@ class GOOGLELauncher:
         lat_waypoint, lon_waypoint = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
         self.auv.auv_handler.setWaypoint(deg2rad(lat_waypoint), deg2rad(lon_waypoint), .5, speed=self.auv.speed)
         print("Set waypoint successfully!")
+        self.just_updated = True 
 
 
 if __name__ == "__main__":
