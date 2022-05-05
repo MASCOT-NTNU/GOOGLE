@@ -14,10 +14,10 @@ import time
 
 # == Setup
 GOAL_SAMPLE_RATE = .01
-MAX_ITERATION = 500
-STEPSIZE = 200
-NEIGHBOUR_RADIUS = 250
-HOME_RADIUS = 100
+MAX_ITERATION = 3000
+STEPSIZE = 90
+NEIGHBOUR_RADIUS = 120
+TARGET_RADIUS = 100
 # ==
 
 
@@ -75,7 +75,7 @@ class RRTStarHome:
         self.tree_nodes.append(start_node)
 
         for i in range(MAX_ITERATION):
-            # print(i)
+            print(i)
             # get random location
             if goal_indices[i] <= GOAL_SAMPLE_RATE:
                 x_new = x_target
@@ -125,7 +125,7 @@ class RRTStarHome:
                 continue
 
             # check home criteria
-            if np.sqrt((new_node.x - x_target)**2 + (new_node.y - y_target)**2) <= HOME_RADIUS:
+            if np.sqrt((new_node.x - x_target)**2 + (new_node.y - y_target)**2) <= TARGET_RADIUS:
                 target_node.parent = new_node
             else:
                 self.tree_nodes.append(new_node)
@@ -166,10 +166,10 @@ class RRTStarHome:
         # for node in self.tree_nodes:
         #     if node.parent is not None:
         #         plt.plot([node.y, node.parent.y],
-        #                  [node.x, node.parent.x], "g-")
-        plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
-        plt.plot(y_target, x_target, 'g*')
-        plt.plot(self.y_next, self.x_next, 'y*')
+        #                  [node.x, node.parent.x], "g-", alpha=.5)
+        # plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
+        # plt.plot(y_target, x_target, 'g*')
+        # plt.plot(self.y_next, self.x_next, 'y*')
 
     def get_nearest_node(self, x, y):
         self.distance_from_location_to_nodes = np.zeros(len(self.tree_nodes))

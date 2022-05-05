@@ -15,10 +15,10 @@ import time
 
 # == Setup
 GOAL_SAMPLE_RATE = .01
-MAX_ITERATION = 500
-STEPSIZE = 200
-NEIGHBOUR_RADIUS = 250
-HOME_RADIUS = 100
+MAX_ITERATION = 3000
+STEPSIZE = 90
+NEIGHBOUR_RADIUS = 120
+TARGET_RADIUS = 100
 # ==
 
 
@@ -134,7 +134,7 @@ class RRTStarCV:
                 continue
 
             # check home criteria
-            if np.sqrt((new_node.x - x_target)**2 + (new_node.y - y_target)**2) <= HOME_RADIUS:
+            if np.sqrt((new_node.x - x_target)**2 + (new_node.y - y_target)**2) <= TARGET_RADIUS:
                 target_node.parent = new_node
             else:
                 self.tree_nodes.append(new_node)
@@ -204,10 +204,9 @@ class RRTStarCV:
             x_next = x + STEPSIZE * np.sin(angle)
             if self.is_location_legal(x_next, y_next):
                 return x_next, y_next
-        else:
-            # self.GOHOME = True
-            self.rrthome.search_path_from_trees(x, y, X_HOME, Y_HOME)
-            return self.rrthome.x_next, self.rrthome.y_next
+        # self.GOHOME = True
+        self.rrthome.search_path_from_trees(x, y, X_HOME, Y_HOME)
+        return self.rrthome.x_next, self.rrthome.y_next
 
     def get_route_home(self, x, y):
         distance = np.sqrt((X_HOME - x)**2 + (Y_HOME - y)**2)
