@@ -14,10 +14,10 @@ from GOOGLE.Simulation_2DNidelva.RRTStarCV import RRTStarCV, STEPSIZE
 
 
 # == Set up
-# LAT_START = 63.449664
-# LON_START = 10.363366
-LAT_START = 63.456232
-LON_START = 10.435198
+LAT_START = 63.449664
+LON_START = 10.363366
+# LAT_START = 63.456232
+# LON_START = 10.435198
 X_START, Y_START = latlon2xy(LAT_START, LON_START, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
 NUM_STEPS = 50
 # ==
@@ -71,11 +71,18 @@ class Simulator:
             ax.plot(self.rrtstar.polygon_border[:, 1], self.rrtstar.polygon_border[:, 0], 'k-.')
             ax.plot(self.rrtstar.polygon_obstacle[:, 1], self.rrtstar.polygon_obstacle[:, 0], 'k-.')
 
-            for node in self.rrtstar.tree_nodes:
-                if node.parent is not None:
-                    plt.plot([node.y, node.parent.y],
-                             [node.x, node.parent.x], "g-")
-            ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
+            if len(self.rrtstar.tree_nodes)>1:
+                for node in self.rrtstar.tree_nodes:
+                    if node.parent is not None:
+                        plt.plot([node.y, node.parent.y],
+                                 [node.x, node.parent.x], "g-")
+                ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
+            else:
+                for node in self.rrtstar.rrthome.tree_nodes:
+                    if node.parent is not None:
+                        plt.plot([node.y, node.parent.y],
+                                 [node.x, node.parent.x], "g-")
+                ax.plot(self.rrtstar.rrthome.path_to_target[:, 1], self.rrtstar.rrthome.path_to_target[:, 0], 'r')
 
             # plt.scatter(self.grf_model.grf_grid[:, 1], self.grf_model.grf_grid[:, 0], c=mu, cmap=get_cmap('RdBu', 15),
             #             vmin=10, vmax=30, alpha=.5)
@@ -144,7 +151,6 @@ class Simulator:
 
             plt.xlabel("East")
             plt.ylabel("North")
-
 
 
             plt.title("Updated mean after step: " + str(j))

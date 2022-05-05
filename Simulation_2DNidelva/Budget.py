@@ -69,8 +69,8 @@ class Budget:
         ea = self.ellipse_a
         eb = self.ellipse_b
         angle = self.angle
-        x, y, xm, ym, ea, eb, angle = map(np.float32, [self.grf_grid[:, 0], self.grf_grid[:, 1],
-                                                       xm, ym, ea, eb, angle])
+        # x, y, xm, ym, ea, eb, angle = map(np.float32, [self.grf_grid[:, 0], self.grf_grid[:, 1],
+        #                                                xm, ym, ea, eb, angle])
         # self.u = get_utility_ellipse(x, y, xm, ym, ea, eb, angle)
         self.u = self.get_ind_penalty()
 
@@ -81,12 +81,12 @@ class Budget:
         print("Budget remaining: ", self.budget_left)
 
     def get_ind_penalty(self):
-        ind = np.ones(len(self.grf_grid))
+        penalty = np.ones(len(self.grf_grid))
         for i in range(len(self.grf_grid)):
             point = Point(self.grf_grid[i, 0], self.grf_grid[i, 1])
             if self.polygon_budget_ellipse.contains(point):
-                ind[i] = 0
-        return ind
+                penalty[i] = 0
+        return penalty
 
     def check_budget(self):
         x_prev = 1000
@@ -151,5 +151,32 @@ if __name__ == "__main__":
     b = Budget()
     b.check_budget()
     # b.update_budget()
+
+# #%%
+# import matplotlib.pyplot as plt
+# from matplotlib.patches import Ellipse
+# from matplotlib.cm import get_cmap
+#
+# xv = np.linspace(0, 1, 25)
+# yv = np.linspace(0, 1, 25)
+# xx, yy = np.meshgrid(xv, yv)
+# x = xx.reshape(-1, 1).astype(np.float32)
+# y = yy.reshape(-1, 1).astype(np.float32)
+# u = get_utility_ellipse(x, y, .5, .5, .5, .1, 0)
+# # xu = x - .5
+# # yu = y - .5
+# # u = (yu/.5)**2 + (xu/.1)**2
+#
+# ellipse = Ellipse(xy=(.5, .5), width=.5, height=.1, angle=0, edgecolor='r', fc='None', lw=2)
+#
+# plt.gca().add_patch(ellipse)
+# plt.scatter(y, x, c=u, s=50, cmap=get_cmap('BrBG', 10), vmin=0, vmax=3)
+# plt.colorbar()
+# plt.show()
+#
+# plt.plot(u)
+# plt.show()
+
+
 
 

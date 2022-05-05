@@ -79,7 +79,7 @@ class GRF:
         plt.show()
 
     def check_update(self):
-        self.update_grf_model(10, 100)
+        self.update_grf_model(400, 30)
         plt.figure(figsize=(20, 10))
         plt.subplot(121)
         plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu_cond,
@@ -95,6 +95,6 @@ class GRF:
 if __name__ == "__main__":
     grf = GRF()
     # grf.check_prior()
-    # grf.check_update()
+    grf.check_update()
 
 

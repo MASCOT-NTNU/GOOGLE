@@ -14,7 +14,7 @@ from usr_func import get_ibv, normalise, vectorise
 import time
 
 # == Setting
-PENALTY_AZIMUTH = 10
+PENALTY_AZIMUTH = 2
 # ==
 
 
