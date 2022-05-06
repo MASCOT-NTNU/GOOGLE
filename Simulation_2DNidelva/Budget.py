@@ -15,6 +15,9 @@ from numba import vectorize
 import time
 
 
+BUDGET_GOHOME_MARGIN = 50
+
+
 @vectorize(['float32(float32, float32, float32, float32, float32, float32, float32)'])
 def get_utility_ellipse(x, y, xm, ym, ellipse_a, ellipse_b, angle):
     xn = x - xm
@@ -30,6 +33,7 @@ class Budget:
     def __init__(self):
         self.budget_left = BUDGET
         self.load_grf_grid()
+        self.gohome_alert = False
 
     def load_grf_grid(self):
         self.grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
@@ -46,7 +50,7 @@ class Budget:
         self.angle = np.math.atan2(dx, dy)
         self.ellipse_a = self.budget_left / 2
         self.ellipse_c = np.sqrt(dx**2 + dy**2) / 2
-        if self.ellipse_a > self.ellipse_c:
+        if self.ellipse_a > self.ellipse_c + BUDGET_GOHOME_MARGIN:
             self.ellipse_b = np.sqrt(self.ellipse_a**2 - self.ellipse_c**2)
             self.ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2 * self.ellipse_a,
                                    height=2 * self.ellipse_b, angle=math.degrees(self.angle))
@@ -60,6 +64,7 @@ class Budget:
             self.vertices = self.ellipse.get_verts()
             self.polygon_budget_ellipse = Polygon([])
             self.line_budget_ellipse = LineString([])
+            self.gohome_alert = True
 
     def get_budget_field(self):
         t1 = time.time()
@@ -69,13 +74,15 @@ class Budget:
         ea = self.ellipse_a
         eb = self.ellipse_b
         angle = self.angle
-        # x, y, xm, ym, ea, eb, angle = map(np.float32, [self.grf_grid[:, 0], self.grf_grid[:, 1],
-        #                                                xm, ym, ea, eb, angle])
-        # self.u = get_utility_ellipse(x, y, xm, ym, ea, eb, angle)
-        self.u = self.get_ind_penalty()
-
-        ind_inf_penalty = np.where(self.u==True)[0]
-        self.budget_field[ind_inf_penalty] = np.inf
+        x, y, xm, ym, ea, eb, angle = map(np.float32, [self.grf_grid[:, 0], self.grf_grid[:, 1],
+                                                       xm, ym, ea, eb, angle])
+        if not self.gohome_alert:
+            self.u = get_utility_ellipse(x, y, xm, ym, ea, eb, angle)
+            ind_penalty = self.get_ind_penalty()
+            ind_penalty = np.where(ind_penalty == True)[0]
+            self.budget_field[ind_penalty] = self.u[ind_penalty] ** 2
+        else:
+            self.budget_field = np.ones_like(x) * np.inf
         t2 = time.time()
         print("Budget filed takes: ", t2 - t1)
         print("Budget remaining: ", self.budget_left)
@@ -93,7 +100,7 @@ class Budget:
         y_prev = -2000
         x_now = 2000
         y_now = -300
-        self.budget_left = self.budget_left - 4000
+        self.budget_left = self.budget_left - 4150
         print("Budget left: ", self.budget_left)
         self.update_budget(x_now, y_now, x_prev, y_prev)
         print("Budget left: ", self.budget_left)
@@ -104,18 +111,21 @@ class Budget:
         from matplotlib.patches import Ellipse
         import math
         # plt.plot(b.grf_grid[:, 1], b.grf_grid[:, 0], 'k.')
-        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.budget_field, vmin=0, vmax=10, alpha=.5)
-        plt.plot(y_prev, x_prev, 'ro', ms=10)
-        plt.plot(y_now, x_now, 'cs', ms=10)
-        plt.plot(Y_HOME, X_HOME, 'b^', ms=10)
-        # ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2*self.ellipse_a,
-        #                   height=2*self.ellipse_b, angle=math.degrees(self.angle),
-        #                   edgecolor='r', fc='None', lw=2)
-        plt.gca().add_patch(self.ellipse)
+        from matplotlib.cm import get_cmap
+        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.budget_field, cmap=get_cmap("BrBG", 7),
+                    vmin=1, vmax=10, alpha=.5)
+        plt.plot(y_prev, x_prev, 'ro', ms=10, label='previous waypoint')
+        plt.plot(y_now, x_now, 'cs', ms=10, label='current waypoint')
+        plt.plot(Y_HOME, X_HOME, 'b^', ms=10, label='home')
+        ellipse = Ellipse(xy=(self.y_middle, self.x_middle), width=2*self.ellipse_a,
+                          height=2*self.ellipse_b, angle=math.degrees(self.angle),
+                          edgecolor='r', fc='None', lw=2)
+        plt.gca().add_patch(ellipse)
         plt.colorbar()
         plt.xlim([np.min(self.grf_grid[:, 1]), np.max(self.grf_grid[:, 1])])
         plt.ylim([np.min(self.grf_grid[:, 0]), np.max(self.grf_grid[:, 0])])
         plt.show()
+        print("GOHOME: ", self.gohome_alert)
     # def get_budget_field(self, current_location, goal_location, budget):
     #     t1 = time.time()
     #     if budget >= BUDGET_MARGIN:

@@ -14,9 +14,9 @@ import time
 
 # == Setup
 GOAL_SAMPLE_RATE = .01
-MAX_ITERATION = 3000
-STEPSIZE = 90
-NEIGHBOUR_RADIUS = 120
+MAX_ITERATION = 1000
+STEPSIZE = 200
+NEIGHBOUR_RADIUS = 250
 TARGET_RADIUS = 100
 # ==
 
@@ -75,7 +75,7 @@ class RRTStarHome:
         self.tree_nodes.append(start_node)
 
         for i in range(MAX_ITERATION):
-            print(i)
+            # print(i)
             # get random location
             if goal_indices[i] <= GOAL_SAMPLE_RATE:
                 x_new = x_target
@@ -131,35 +131,35 @@ class RRTStarHome:
                 self.tree_nodes.append(new_node)
             # print("s4: finished home checking")
 
-            # produce trajectory
-            self.path_to_target = []
-            self.path_to_target.append([target_node.x, target_node.y])
-            pointer_node = target_node
-            checker = 0
-            while pointer_node.parent is not None:
-                checker += 1
-                node = pointer_node.parent
-                self.path_to_target.append([node.x, node.y])
-                pointer_node = node
-                if checker > MAX_ITERATION:
-                    break
-            self.path_to_target = np.flipud(np.array(self.path_to_target))
-            # print("s5: finished path generation")
+        # produce trajectory
+        self.path_to_target = []
+        self.path_to_target.append([target_node.x, target_node.y])
+        pointer_node = target_node
+        checker = 0
+        while pointer_node.parent is not None:
+            checker += 1
+            node = pointer_node.parent
+            self.path_to_target.append([node.x, node.y])
+            pointer_node = node
+            if checker > MAX_ITERATION:
+                break
+        self.path_to_target = np.flipud(np.array(self.path_to_target))
+        # print("s5: finished path generation")
 
-            if len(self.path_to_target)>2:
-                angle = np.math.atan2(self.path_to_target[1, 0] - x_current,
-                                      self.path_to_target[1, 1] - y_current)
-                self.y_next = y_current + STEPSIZE * np.cos(angle)
-                self.x_next = x_current + STEPSIZE * np.sin(angle)
-            else:
-                angle = np.math.atan2(x_target - x_current,
-                                      y_target - y_current)
-                self.y_next = y_current + STEPSIZE * np.cos(angle)
-                self.x_next = x_current + STEPSIZE * np.sin(angle)
-            # print("finished waypoint generation")
-            if not self.is_location_legal(self.x_next, self.y_next):
-                # get legal location next
-                self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
+        if len(self.path_to_target)>2:
+            angle = np.math.atan2(self.path_to_target[1, 0] - x_current,
+                                  self.path_to_target[1, 1] - y_current)
+            self.y_next = y_current + STEPSIZE * np.cos(angle)
+            self.x_next = x_current + STEPSIZE * np.sin(angle)
+        else:
+            angle = np.math.atan2(x_target - x_current,
+                                  y_target - y_current)
+            self.y_next = y_current + STEPSIZE * np.cos(angle)
+            self.x_next = x_current + STEPSIZE * np.sin(angle)
+        # print("finished waypoint generation")
+        if not self.is_location_legal(self.x_next, self.y_next):
+            # get legal location next
+            self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
 
         t2 = time.time()
         print("RRTStarHome takes: ", t2 - t1)

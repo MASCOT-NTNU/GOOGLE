@@ -13,9 +13,9 @@ import numpy as np
 from usr_func import get_ibv, normalise, vectorise
 import time
 
-# == Setting
-PENALTY_AZIMUTH = 2
-# ==
+# # == Setting
+# PENALTY_AZIMUTH = 0
+# # ==
 
 
 class CostValley:
@@ -43,9 +43,10 @@ class CostValley:
     def get_cost_valley(self):
         t1 = time.time()
         self.budget.get_budget_field()
-        self.get_directional_field()
+        # self.get_directional_field()
         self.get_exploration_exploitation_field()
-        self.cost_valley = self.azimuth_field + self.ee_field + self.budget.budget_field
+        self.cost_valley = self.ee_field + self.budget.budget_field
+        # self.cost_valley = self.azimuth_field + self.ee_field + self.budget.budget_field
         t2 = time.time()
         print("Cost valley takes: ", t2 - t1)
 
@@ -65,17 +66,17 @@ class CostValley:
         self.ee_field = normalise(self.eibv_field) + 1 - normalise(self.vr_field)
         print("EE field takes: ", t2 - t1)
 
-    def get_directional_field(self):
-        t1 = time.time()
-        self.azimuth_field = np.zeros_like(self.grf_grid[:, 0])
-        dx1 = self.grf_grid[:, 0] - self.x_current
-        dy1 = self.grf_grid[:, 1] - self.y_current
-        vec1 = np.vstack((dx1, dy1)).T
-        res = vec1 @ self.vector_azimuth
-        ind = np.where(res < 0)[0]
-        self.azimuth_field[ind] = PENALTY_AZIMUTH
-        t2 = time.time()
-        print("Azimuth field takes: ", t2 - t1)
+    # def get_directional_field(self):
+    #     t1 = time.time()
+    #     self.azimuth_field = np.zeros_like(self.grf_grid[:, 0])
+    #     dx1 = self.grf_grid[:, 0] - self.x_current
+    #     dy1 = self.grf_grid[:, 1] - self.y_current
+    #     vec1 = np.vstack((dx1, dy1)).T
+    #     res = vec1 @ self.vector_azimuth
+    #     ind = np.where(res < 0)[0]
+    #     self.azimuth_field[ind] = PENALTY_AZIMUTH
+    #     t2 = time.time()
+    #     print("Azimuth field takes: ", t2 - t1)
 
     def check_cost_valley(self):
         from scipy.spatial.distance import cdist
