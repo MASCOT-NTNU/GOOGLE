@@ -15,7 +15,7 @@ from numba import vectorize
 import time
 
 
-BUDGET_GOHOME_MARGIN = 50
+BUDGET_GOHOME_MARGIN = 150
 
 
 @vectorize(['float32(float32, float32, float32, float32, float32, float32, float32)'])
