@@ -91,6 +91,29 @@ class GRF:
         plt.colorbar()
         plt.show()
 
+        self.update_grf_model(100, 30)
+        plt.figure(figsize=(20, 10))
+        plt.subplot(121)
+        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu_cond,
+                    cmap=get_cmap("BrBG", 10), s=150, vmin=20, vmax=30)
+        plt.colorbar()
+        plt.subplot(122)
+        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=np.diag(self.Sigma_cond),
+                    cmap=get_cmap("RdBu", 10), s=150)
+        plt.colorbar()
+        plt.show()
+
+        self.update_grf_model(10, 30)
+        plt.figure(figsize=(20, 10))
+        plt.subplot(121)
+        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu_cond,
+                    cmap=get_cmap("BrBG", 10), s=150, vmin=20, vmax=30)
+        plt.colorbar()
+        plt.subplot(122)
+        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=np.diag(self.Sigma_cond),
+                    cmap=get_cmap("RdBu", 10), s=150)
+        plt.colorbar()
+        plt.show()
 
 if __name__ == "__main__":
     grf = GRF()

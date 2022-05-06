@@ -7,7 +7,6 @@ Date: 2022-04-26
 import matplotlib.pyplot as plt
 
 from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, X_HOME, Y_HOME
-from GOOGLE.Simulation_2DNidelva.RRTStarHome import RRTStarHome
 from usr_func import Polygon, Point, LineString
 import pandas as pd
 import numpy as np
@@ -15,9 +14,9 @@ import time
 
 # == Setup
 GOAL_SAMPLE_RATE = .01
-MAX_ITERATION = 3000
-STEPSIZE = 90
-NEIGHBOUR_RADIUS = 120
+MAX_ITERATION = 1000
+STEPSIZE = 200
+NEIGHBOUR_RADIUS = 250
 TARGET_RADIUS = 100
 # ==
 
@@ -37,8 +36,6 @@ class RRTStarCV:
         self.load_grf_grid()
         self.load_random_locations()
         self.load_polygon_border_obstacle()
-        self.rrthome = RRTStarHome() # emergency go home
-        self.GOHOME = False
 
     def load_grf_grid(self):
         self.grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
@@ -140,48 +137,48 @@ class RRTStarCV:
                 self.tree_nodes.append(new_node)
             # print("s4: finished home checking")
 
-            # produce trajectory
-            self.path_to_target = []
-            self.path_to_target.append([target_node.x, target_node.y])
-            pointer_node = target_node
-            checker = 0
-            while pointer_node.parent is not None:
-                checker += 1
-                node = pointer_node.parent
-                self.path_to_target.append([node.x, node.y])
-                pointer_node = node
-                if checker > MAX_ITERATION:
-                    break
-            self.path_to_target = np.flipud(np.array(self.path_to_target))
-            # print("s5: finished path generation")
+        # produce trajectory
+        self.path_to_target = []
+        self.path_to_target.append([target_node.x, target_node.y])
+        pointer_node = target_node
+        checker = 0
+        while pointer_node.parent is not None:
+            checker += 1
+            node = pointer_node.parent
+            self.path_to_target.append([node.x, node.y])
+            pointer_node = node
+            if checker > MAX_ITERATION:
+                break
+        self.path_to_target = np.flipud(np.array(self.path_to_target))
+        # print("s5: finished path generation")
 
-            if len(self.path_to_target)>2:
-                angle = np.math.atan2(self.path_to_target[1, 0] - x_current,
-                                      self.path_to_target[1, 1] - y_current)
-                self.y_next = y_current + STEPSIZE * np.cos(angle)
-                self.x_next = x_current + STEPSIZE * np.sin(angle)
-            else:
-                angle = np.math.atan2(x_target - x_current,
-                                      y_target - y_current)
-                self.y_next = y_current + STEPSIZE * np.cos(angle)
-                self.x_next = x_current + STEPSIZE * np.sin(angle)
-            # print("finished waypoint generation")
-            if not self.is_location_legal(self.x_next, self.y_next):
-                # get legal location next
-                self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
+        if len(self.path_to_target)>2:
+            angle = np.math.atan2(self.path_to_target[1, 0] - x_current,
+                                  self.path_to_target[1, 1] - y_current)
+            self.y_next = y_current + STEPSIZE * np.cos(angle)
+            self.x_next = x_current + STEPSIZE * np.sin(angle)
+        else:
+            angle = np.math.atan2(x_target - x_current,
+                                  y_target - y_current)
+            self.y_next = y_current + STEPSIZE * np.cos(angle)
+            self.x_next = x_current + STEPSIZE * np.sin(angle)
+        # print("finished waypoint generation")
+        if not self.is_location_legal(self.x_next, self.y_next):
+            # get legal location next
+            self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
 
         t2 = time.time()
         print("RRTStarCV takes: ", t2 - t1)
-        # for node in self.tree_nodes:
-        #     if node.parent is not None:
-        #         plt.plot([node.y, node.parent.y],
-        #                  [node.x, node.parent.x], "g-")
-        #         # plt.plot(node.y, node.x, 'k.', alpha=.5)
-        # plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
-        # from matplotlib.cm import get_cmap
-        # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, s=50, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
-        # plt.colorbar()
-        # plt.plot(y_target, x_target, 'g*')
+        for node in self.tree_nodes:
+            if node.parent is not None:
+                plt.plot([node.y, node.parent.y],
+                         [node.x, node.parent.x], "g-")
+                # plt.plot(node.y, node.x, 'k.', alpha=.5)
+        plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
+        from matplotlib.cm import get_cmap
+        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, s=50, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
+        plt.colorbar()
+        plt.plot(y_target, x_target, 'g*')
 
     def get_nearest_node(self, x, y):
         self.distance_from_location_to_nodes = np.zeros(len(self.tree_nodes))
@@ -202,11 +199,8 @@ class RRTStarCV:
         for angle in angles:
             y_next = y + STEPSIZE * np.cos(angle)
             x_next = x + STEPSIZE * np.sin(angle)
-            if self.is_location_legal(x_next, y_next):
+            if self.is_location_legal(x_next, y_next) and self.is_path_legal(x, y, x_next, y_next):
                 return x_next, y_next
-        # self.GOHOME = True
-        self.rrthome.search_path_from_trees(x, y, X_HOME, Y_HOME)
-        return self.rrthome.x_next, self.rrthome.y_next
 
     def get_route_home(self, x, y):
         distance = np.sqrt((X_HOME - x)**2 + (Y_HOME - y)**2)
@@ -279,11 +273,11 @@ class RRTStarCV:
 
         cv = CostValley()
 
-        xp = 2000
-        yp = -2000
-        xn = 2000
-        yn = -1900
-        cv.budget.budget_left = 4000
+        xp = 2900
+        yp = -10
+        xn = 3000
+        yn = 0
+        cv.budget.budget_left = 2700
         cv.update_cost_valley(self.mu, Sigma, xn, yn, xp, yp)
         cv.get_cost_valley()
         plt.figure()
