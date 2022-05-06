@@ -18,6 +18,7 @@ from usr_func import vectorise
 # == Parameters
 SIGMA = .6
 LATERAL_RANGE = 1600
+AR1_COEF = .965
 # ==
 
 
@@ -43,7 +44,7 @@ class GRFAR:
         print("GRF2: Prior mean is loaded successfully!")
 
     def load_ar1_coef(self):
-        self.ar1_coef = 0.9
+        self.ar1_coef = AR1_COEF
         print("GRF3: AR1 coef is loaded successfully!")
 
     def get_covariance_matrix(self):
@@ -70,7 +71,6 @@ class GRFAR:
         for s in range(timestep):
             mts = self.mu_prior + self.ar1_coef * (mts - self.mu_prior)
             Sts = self.ar1_coef**2 * Sts + (1 - self.ar1_coef**2) * self.Sigma_prior
-        # print("mts: ", mts.shape)
         # update
         msamples = salinity_measured.shape[0]
         F = np.zeros([msamples, self.N])

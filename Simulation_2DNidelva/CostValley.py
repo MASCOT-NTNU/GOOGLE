@@ -33,6 +33,8 @@ class CostValley:
         self.budget.update_budget(x_current, y_current, x_previous, y_previous)
         self.mu = mu
         self.Sigma = Sigma
+        print("mu: ", self.mu.shape)
+        print("Sigma: ", self.Sigma.shape)
         self.x_current = x_current
         self.y_current = y_current
         self.x_azimuth = x_current - x_previous

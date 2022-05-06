@@ -17,8 +17,8 @@ from GOOGLE.Simulation_2DNidelva.grfar_model import GRFAR
 
 # == Set up
 # 0, lade
-# LAT_START = 63.456232
-# LON_START = 10.435198
+LAT_START = 63.456232
+LON_START = 10.435198
 
 # 1, back munkhomen
 # LAT_START = 63.449664
@@ -33,8 +33,8 @@ from GOOGLE.Simulation_2DNidelva.grfar_model import GRFAR
 # LON_START = 10.381345
 
 # 4, skansen
-LAT_START = 63.436006
-LON_START = 10.381842
+# LAT_START = 63.436006
+# LON_START = 10.381842
 
 # 5, home
 # LAT_START = LATITUDE_HOME
@@ -92,10 +92,20 @@ class Simulator:
             print("Step: ", j)
             trajectory.append([x_current, y_current])
 
-            ind_measured = self.grf_model.get_ind_from_location(x_current, y_current)
-            self.grf_model.update_grf_model(ind_measured, self.grf_model.mu_truth[ind_measured])
-            mu = self.grf_model.mu_cond
-            Sigma = self.grf_model.Sigma_cond
+            # ind_measured = self.grf_model.get_ind_from_location(x_current, y_current)
+            # self.grf_model.update_grf_model(ind_measured, self.grf_model.mu_truth[ind_measured])
+            # mu = self.grf_model.mu_cond
+            # Sigma = self.grf_model.Sigma_cond
+            # print("mu: ", mu.shape)
+            # print("Sigma: ", Sigma.shape)
+
+            ind_measured = self.grfar_model.get_ind_from_location(x_current, y_current)
+            self.grfar_model.update_grfar_model(vectorise(ind_measured), vectorise(self.grf_model.mu_truth[ind_measured]), 1)
+            mu = self.grfar_model.mu_cond.flatten()
+            Sigma = self.grfar_model.Sigma_cond
+            print("mu: ", mu.shape)
+            print("Sigma: ", Sigma.shape)
+
             self.CV.update_cost_valley(mu, Sigma, x_current, y_current, x_previous, y_previous)
             self.gohome = self.CV.budget.gohome_alert
 
