@@ -14,9 +14,9 @@ import time
 
 # == Setup
 GOAL_SAMPLE_RATE = .01
-MAX_ITERATION = 1000
-STEPSIZE = 200
-NEIGHBOUR_RADIUS = 250
+MAX_ITERATION = 2000
+STEPSIZE = 120
+NEIGHBOUR_RADIUS = 180
 TARGET_RADIUS = 100
 # ==
 
@@ -163,22 +163,23 @@ class RRTStarCV:
             self.y_next = y_current + STEPSIZE * np.cos(angle)
             self.x_next = x_current + STEPSIZE * np.sin(angle)
         # print("finished waypoint generation")
-        if not self.is_location_legal(self.x_next, self.y_next):
+        if not self.is_location_legal(self.x_next, self.y_next) or not self.is_path_legal(x_current, y_current,
+                                                                                          self.x_next, self.y_next):
             # get legal location next
             self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
 
         t2 = time.time()
         print("RRTStarCV takes: ", t2 - t1)
-        for node in self.tree_nodes:
-            if node.parent is not None:
-                plt.plot([node.y, node.parent.y],
-                         [node.x, node.parent.x], "g-")
-                # plt.plot(node.y, node.x, 'k.', alpha=.5)
-        plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
-        from matplotlib.cm import get_cmap
-        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, s=50, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
-        plt.colorbar()
-        plt.plot(y_target, x_target, 'g*')
+        # for node in self.tree_nodes:
+        #     if node.parent is not None:
+        #         plt.plot([node.y, node.parent.y],
+        #                  [node.x, node.parent.x], "g-")
+        #         # plt.plot(node.y, node.x, 'k.', alpha=.5)
+        # plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
+        # from matplotlib.cm import get_cmap
+        # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, s=50, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
+        # plt.colorbar()
+        # plt.plot(y_target, x_target, 'g*')
 
     def get_nearest_node(self, x, y):
         self.distance_from_location_to_nodes = np.zeros(len(self.tree_nodes))
@@ -231,7 +232,6 @@ class RRTStarCV:
                 self.line_obstacle_shapely.intersects(line) or
                 self.line_budget_ellipse.intersects(line)):
             islegal = False
-
         return islegal
 
     def get_cost_along_path(self, x1, y1, x2, y2, cost0):

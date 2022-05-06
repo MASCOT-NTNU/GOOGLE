@@ -8,17 +8,10 @@ import matplotlib.pyplot as plt
 
 from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH
 from usr_func import Polygon, Point, LineString
+from GOOGLE.Simulation_2DNidelva.RRTStarCV import GOAL_SAMPLE_RATE, MAX_ITERATION, STEPSIZE, NEIGHBOUR_RADIUS, TARGET_RADIUS
 import pandas as pd
 import numpy as np
 import time
-
-# == Setup
-GOAL_SAMPLE_RATE = .01
-MAX_ITERATION = 1000
-STEPSIZE = 200
-NEIGHBOUR_RADIUS = 250
-TARGET_RADIUS = 100
-# ==
 
 
 class TreeNode:
@@ -157,7 +150,8 @@ class RRTStarHome:
             self.y_next = y_current + STEPSIZE * np.cos(angle)
             self.x_next = x_current + STEPSIZE * np.sin(angle)
         # print("finished waypoint generation")
-        if not self.is_location_legal(self.x_next, self.y_next):
+        if not self.is_location_legal(self.x_next, self.y_next) or not self.is_path_legal(x_current, y_current,
+                                                                                          self.x_next, self.y_next):
             # get legal location next
             self.x_next, self.y_next = self.get_legal_location(x_current, y_current)
 
