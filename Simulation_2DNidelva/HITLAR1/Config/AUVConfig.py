@@ -20,6 +20,7 @@ DEPTH_BOTTOM = 5.5
 
 # == Which depth CTD data needs to be discard
 MIN_DEPTH_FOR_DATA_ASSIMILATION = .25
+DEPTH_TOLERANCE = .5
 # ==
 
 # == Speed
