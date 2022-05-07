@@ -40,7 +40,9 @@ class GRFAR:
         print("GRF1: Grid is loaded successfully!")
 
     def load_prior_mean(self):
-        self.mu_prior = vectorise(pd.read_csv(FILEPATH + "Config/data_interpolated.csv")['salinity'].to_numpy())
+        self.beta1, self.beta0 = np.load(FILEPATH + "../../../MAFIA/HITL2reduced/models/Google_coef.npy")
+        self.mu_prior = (vectorise(pd.read_csv(FILEPATH + "Config/data_interpolated.csv")['salinity'].to_numpy()) *
+                         self.beta1 + self.beta0)
         print("GRF2: Prior mean is loaded successfully!")
 
     def load_ar1_coef(self):
