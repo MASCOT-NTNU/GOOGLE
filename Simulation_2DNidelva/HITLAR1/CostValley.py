@@ -6,7 +6,7 @@ Date: 2022-04-25
 """
 import matplotlib.pyplot as plt
 
-from Config.Config import FILEPATH, THRESHOLD, NUGGET
+from Config.Config import FILEPATH, NUGGET
 from Budget import Budget
 import pandas as pd
 import numpy as np
@@ -22,12 +22,20 @@ class CostValley:
 
     def __init__(self):
         self.load_grf_grid()
+        self.load_threshold()
         self.budget = Budget()
         self.cost_valley = np.zeros_like(self.grf_grid[:, 0])
 
     def load_grf_grid(self):
         self.grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
         print("CV1: GRF Grid is loaded successfullyQ")
+
+    def load_threshold(self):
+        self.threshold = 27
+        print("Default threshold: ", self.threshold)
+        self.threshold = np.load(FILEPATH + "../../../MAFIA/HITL2reduced/models/threshold.npy")
+        print("Updated threshold: ", self.threshold)
+        print("CV2: Threshold is loaded successfully!")
 
     def update_cost_valley(self, mu, Sigma, x_current, y_current, x_previous, y_previous):
         self.budget.update_budget(x_current, y_current, x_previous, y_previous)
@@ -59,7 +67,7 @@ class CostValley:
             self.VR = self.SF @ self.SF.T * self.MD
             self.SP = self.Sigma - self.VR
             self.sigma_diag = np.diag(self.SP)
-            self.eibv_field[i] = get_ibv(self.mu, self.sigma_diag, THRESHOLD)
+            self.eibv_field[i] = get_ibv(self.mu, self.sigma_diag, self.threshold)
             self.vr_field[i] = np.sum(np.diag(self.VR))
         t2 = time.time()
         self.ee_field = normalise(self.eibv_field) + 1 - normalise(self.vr_field)
