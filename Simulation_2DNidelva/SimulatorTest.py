@@ -5,6 +5,7 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-04-27
 """
 import matplotlib.pyplot as plt
+import numpy as np
 
 from usr_func import *
 from GOOGLE.Simulation_2DNidelva.Config.Config import *
@@ -41,14 +42,14 @@ LON_START = 10.435198
 # LON_START = LONGITUDE_HOME
 
 X_START, Y_START = latlon2xy(LAT_START, LON_START, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
-NUM_STEPS = 100
+NUM_STEPS = 120
 # ==
 
 
 class Simulator:
 
     def __init__(self):
-        self.load_grf_model()
+        # self.load_grf_model()
         self.load_grfar_model()
         self.load_cost_valley()
         self.load_rrtstar()
@@ -57,12 +58,14 @@ class Simulator:
         self.gohome = False
         self.obstacle_in_the_way = True
 
-    def load_grf_model(self):
-        self.grf_model = GRF()
-        print("S1: GRF model is loaded successfully!")
+    # def load_grf_model(self):
+    #     self.grf_model = GRF()
+    #     print("S1: GRF model is loaded successfully!")
 
     def load_grfar_model(self):
         self.grfar_model = GRFAR()
+        self.grf_grid = self.grfar_model.grf_grid
+        self.N_grf_grid = self.grf_grid.shape[0]
         print("S2: GRFAR model is loaded successfully!")
 
     def load_cost_valley(self):
@@ -88,6 +91,18 @@ class Simulator:
         y_previous = y_current
         trajectory = []
 
+        # get pioneer waypoint
+        mu = self.grfar_model.mu_cond.flatten()
+        Sigma = self.grfar_model.Sigma_cond
+        self.CV.update_cost_valley(mu=mu, Sigma=Sigma, x_current=x_current, y_current=y_current,
+                                   x_previous=x_previous, y_previous=y_previous)
+        self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+                                            polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+                                            line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+                                            x_current=x_current, y_current=y_current)
+        x_next = self.rrtstar.x_next
+        y_next = self.rrtstar.y_next
+
         for j in range(NUM_STEPS):
             print("Step: ", j)
             trajectory.append([x_current, y_current])
@@ -99,32 +114,37 @@ class Simulator:
             # print("mu: ", mu.shape)
             # print("Sigma: ", Sigma.shape)
 
-            ind_measured = self.grfar_model.get_ind_from_location(x_current, y_current)
-            self.grfar_model.update_grfar_model(vectorise(ind_measured), vectorise(self.grf_model.mu_truth[ind_measured]), 1)
+            # ind_measured = self.grfar_model.get_ind_from_location(x_current, y_current)
+            ind_measured = self.get_ind_sample(x1=x_previous, y1=y_previous, x2=x_current, y2=y_current)
+            self.grfar_model.update_grfar_model(ind_measured=vectorise(ind_measured),
+                                                salinity_measured=vectorise(self.grfar_model.mu_truth[ind_measured]),
+                                                timestep=1)
             mu = self.grfar_model.mu_cond.flatten()
             Sigma = self.grfar_model.Sigma_cond
-            print("mu: ", mu.shape)
-            print("Sigma: ", Sigma.shape)
-
-            self.CV.update_cost_valley(mu, Sigma, x_current, y_current, x_previous, y_previous)
+            self.CV.update_cost_valley(mu=mu, Sigma=Sigma, x_current=x_current, y_current=y_current,
+                                       x_previous=x_previous, y_previous=y_previous)
             self.gohome = self.CV.budget.gohome_alert
 
             if not self.gohome:
-                self.rrtstar.search_path_from_trees(self.CV.cost_valley, self.CV.budget.polygon_budget_ellipse,
-                                                    self.CV.budget.line_budget_ellipse, x_current, y_current)
-                x_next = self.rrtstar.x_next
-                y_next = self.rrtstar.y_next
+                self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+                                                    polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+                                                    line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+                                                    x_current=x_next, y_current=y_next)
+                x_pioneer = self.rrtstar.x_next
+                y_pioneer = self.rrtstar.y_next
             else:
-                self.obstacle_in_the_way = self.is_obstacle_in_the_way(x_current, y_current, X_HOME, Y_HOME)
+                self.obstacle_in_the_way = self.is_obstacle_in_the_way(x1=x_next, y1=y_next, x2=X_HOME, y2=Y_HOME)
                 if self.obstacle_in_the_way:
-                    self.rrthome.search_path_from_trees(x_current, y_current, X_HOME, Y_HOME)
-                    x_next = self.rrthome.x_next
-                    y_next = self.rrthome.y_next
+                    self.rrthome.search_path_from_trees(x_current=x_next, y_current=y_next,
+                                                        x_target=X_HOME, y_target=Y_HOME)
+                    x_pioneer = self.rrthome.x_next
+                    y_pioneer = self.rrthome.y_next
                 else:
-                    self.straight_line_planner.get_waypoint_from_straight_line(x_current, y_current, X_HOME, Y_HOME)
-                    x_next = self.straight_line_planner.x_next
-                    y_next = self.straight_line_planner.y_next
-            print("x_next, y_next", x_next, y_next)
+                    self.straight_line_planner.get_waypoint_from_straight_line(x_current=x_next, y_current=y_next,
+                                                                               x_target=X_HOME, y_target=Y_HOME)
+                    x_pioneer = self.straight_line_planner.x_next
+                    y_pioneer = self.straight_line_planner.y_next
+
 
             fig = plt.figure(figsize=(30, 10))
             gs = GridSpec(nrows=1, ncols=2)
@@ -134,25 +154,25 @@ class Simulator:
             ax.plot(self.rrtstar.polygon_obstacle[:, 1], self.rrtstar.polygon_obstacle[:, 0], 'k-.')
 
             if not self.gohome:
-                for node in self.rrtstar.tree_nodes:
-                    if node.parent is not None:
-                        plt.plot([node.y, node.parent.y],
-                                 [node.x, node.parent.x], "g-")
+                # for node in self.rrtstar.tree_nodes:
+                #     if node.parent is not None:
+                #         plt.plot([node.y, node.parent.y],
+                #                  [node.x, node.parent.x], "g-")
                 ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
             else:
                 if self.obstacle_in_the_way:
-                    for node in self.rrthome.tree_nodes:
-                        if node.parent is not None:
-                            plt.plot([node.y, node.parent.y],
-                                     [node.x, node.parent.x], "g-")
+                    # for node in self.rrthome.tree_nodes:
+                    #     if node.parent is not None:
+                    #         plt.plot([node.y, node.parent.y],
+                    #                  [node.x, node.parent.x], "g-")
                     ax.plot(self.rrthome.path_to_target[:, 1], self.rrthome.path_to_target[:, 0], 'r')
 
 
             # plt.scatter(self.grf_model.grf_grid[:, 1], self.grf_model.grf_grid[:, 0], c=mu, cmap=get_cmap('RdBu', 15),
             #             vmin=10, vmax=30, alpha=.5)
 
-            xplot = self.grf_model.grf_grid[:, 1]
-            yplot = self.grf_model.grf_grid[:, 0]
+            xplot = self.grf_grid[:, 1]
+            yplot = self.grf_grid[:, 0]
             if not self.gohome:
                 triangulated = tri.Triangulation(xplot, yplot)
                 x_triangulated = xplot[triangulated.triangles].mean(axis=1)
@@ -178,6 +198,7 @@ class Simulator:
             ax.plot(y_current, x_current, 'bs')
             ax.plot(y_previous, x_previous, 'y^')
             ax.plot(y_next, x_next, 'r*')
+            ax.plot(y_pioneer, x_pioneer, 'mP')
             ax.plot(Y_HOME, X_HOME, 'k*')
 
             p_traj = np.array(trajectory)
@@ -193,21 +214,21 @@ class Simulator:
             ax.plot(self.rrtstar.polygon_border[:, 1], self.rrtstar.polygon_border[:, 0], 'k-.')
             ax.plot(self.rrtstar.polygon_obstacle[:, 1], self.rrtstar.polygon_obstacle[:, 0], 'k-.')
             if not self.gohome:
-                for node in self.rrtstar.tree_nodes:
-                    if node.parent is not None:
-                        plt.plot([node.y, node.parent.y],
-                                 [node.x, node.parent.x], "g-")
+                # for node in self.rrtstar.tree_nodes:
+                #     if node.parent is not None:
+                #         plt.plot([node.y, node.parent.y],
+                #                  [node.x, node.parent.x], "g-")
                 ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
             else:
                 if self.obstacle_in_the_way:
-                    for node in self.rrthome.tree_nodes:
-                        if node.parent is not None:
-                            plt.plot([node.y, node.parent.y],
-                                     [node.x, node.parent.x], "g-")
+                    # for node in self.rrthome.tree_nodes:
+                    #     if node.parent is not None:
+                    #         plt.plot([node.y, node.parent.y],
+                    #                  [node.x, node.parent.x], "g-")
                     ax.plot(self.rrthome.path_to_target[:, 1], self.rrthome.path_to_target[:, 0], 'r')
 
-            xplot = self.grf_model.grf_grid[:, 1]
-            yplot = self.grf_model.grf_grid[:, 0]
+            xplot = self.grf_grid[:, 1]
+            yplot = self.grf_grid[:, 0]
             im = ax.scatter(xplot, yplot, c=self.rrtstar.cost_valley, s=200, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
             plt.colorbar(im)
             ellipse = Ellipse(xy=(self.CV.budget.y_middle, self.CV.budget.x_middle), width=2 * self.CV.budget.ellipse_a,
@@ -217,6 +238,7 @@ class Simulator:
             ax.plot(y_current, x_current, 'bs')
             ax.plot(y_previous, x_previous, 'y^')
             ax.plot(y_next, x_next, 'r*')
+            ax.plot(y_pioneer, x_pioneer, 'mP')
             ax.plot(Y_HOME, X_HOME, 'k*')
 
             p_traj = np.array(trajectory)
@@ -227,20 +249,20 @@ class Simulator:
             plt.xlabel("East")
             plt.ylabel("North")
 
-
             plt.title("Updated cost valley after step: " + str(j))
             plt.savefig(FILEPATH+"fig/rrtstar/P_{:03d}.jpg".format(j))
             plt.close("all")
 
+            if np.sqrt((X_HOME-x_current)**2 + (Y_HOME-y_current)**2)<=TARGET_RADIUS:
+                print("I am home, mission complete!")
+                break
 
             x_previous = x_current
             y_previous = y_current
             x_current = x_next
             y_current = y_next
-
-            if np.sqrt((X_HOME-x_current)**2 + (Y_HOME-y_current)**2)<=TARGET_RADIUS:
-                print("I am home, mission complete!")
-                break
+            x_next = x_pioneer
+            y_next = y_pioneer
 
     def is_obstacle_in_the_way(self, x1, y1, x2, y2):
         line = LineString([(x1, y1), (x2, y2)])
@@ -258,11 +280,54 @@ class Simulator:
             masked = True
         return masked
 
+    def check_ind_sample(self):
+        x1 = 2000
+        y1 = -2000
+        x2 = 1500
+        y2 = -1000
+        ind = s.get_ind_sample(x1, y1, x2, y2)
+        plt.plot(s.grf_grid[:, 1], s.grf_grid[:, 0], 'r.')
+        plt.plot([y1, y2], [x1, x2], 'b-')
+        plt.plot(s.grf_grid[ind, 1], s.grf_grid[ind, 0], 'g.')
+        plt.show()
+        pass
+
+    def get_ind_sample(self, x1, y1, x2, y2):
+        N = 20
+        x_path = np.linspace(x1, x2, N)
+        y_path = np.linspace(y1, y2, N)
+        dataset = np.vstack((x_path, y_path, np.ones_like(x_path), np.zeros_like(x_path))).T
+        ind, value = self.assimilate_data(dataset)
+        return ind
+
+    def assimilate_data(self, dataset):
+        print("dataset before filtering: ", dataset[:10, :])
+        depth_dataset = np.abs(dataset[:, 2])
+        ind_selected_depth_layer = np.where((depth_dataset >= .25) * (depth_dataset <= DEPTH_LAYER + .5))[0]
+        dataset = dataset[ind_selected_depth_layer, :]
+        print("dataset after filtering: ", dataset[:10, :])
+        t1 = time.time()
+        dx = (vectorise(dataset[:, 0]) @ np.ones([1, self.N_grf_grid]) -
+              np.ones([dataset.shape[0], 1]) @ vectorise(self.grf_grid[:, 0]).T) ** 2
+        dy = (vectorise(dataset[:, 1]) @ np.ones([1, self.N_grf_grid]) -
+              np.ones([dataset.shape[0], 1]) @ vectorise(self.grf_grid[:, 1]).T) ** 2
+        dist = dx + dy
+        ind_min_distance = np.argmin(dist, axis=1)
+        t2 = time.time()
+        ind_assimilated = np.unique(ind_min_distance)
+        salinity_assimilated = np.zeros(len(ind_assimilated))
+        for i in range(len(ind_assimilated)):
+            ind_selected = np.where(ind_min_distance == ind_assimilated[i])[0]
+            salinity_assimilated[i] = np.mean(dataset[ind_selected, 3])
+        print("Data assimilation takes: ", t2 - t1)
+        self.auv_data = []
+        print("Reset auv_data: ", self.auv_data)
+        return vectorise(ind_assimilated), vectorise(salinity_assimilated)
+
 
 if __name__ == "__main__":
     s = Simulator()
     s.run()
-
 
 
 

@@ -277,7 +277,7 @@ class RRTStarCV:
         yp = -10
         xn = 3000
         yn = 0
-        cv.budget.budget_left = 2700
+        cv.budget.budget_left = 4000
         cv.update_cost_valley(self.mu, Sigma, xn, yn, xp, yp)
         cv.get_cost_valley()
         plt.figure()

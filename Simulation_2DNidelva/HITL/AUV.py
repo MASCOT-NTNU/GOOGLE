@@ -22,7 +22,7 @@ class AUV:
         rospy.Subscriber("/IMC/Out/Salinity", Salinity, self.SalinityCB)
         rospy.Subscriber("/Vehicle/Out/EstimatedState_filtered", EstimatedState, self.EstimatedStateCB)
 
-        self.speed = 1.2  # m/s
+        self.speed = 1.5  # m/s
         self.depth = 0.0  # meters
         self.last_state = "unavailable"
         self.rate.sleep()
@@ -46,5 +46,5 @@ class AUV:
         offset_east = msg.lon.data - deg2rad(LONGITUDE_ORIGIN)
         N = offset_north * CIRCUMFERENCE / (2.0 * np.pi)
         E = offset_east * CIRCUMFERENCE * np.cos(deg2rad(LATITUDE_ORIGIN)) / (2.0 * np.pi)
-        D = msg.z.data
+        D = msg.depth.data
         self.vehicle_pos = [N, E, D]
