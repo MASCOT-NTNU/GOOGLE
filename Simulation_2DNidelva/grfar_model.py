@@ -2,7 +2,7 @@
 This script builds the kernel for simulation
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-03-16
+Date: 2022-05-06
 """
 
 import pandas as pd
@@ -18,7 +18,7 @@ from usr_func import vectorise
 # == Parameters
 SIGMA = .6
 LATERAL_RANGE = 1600
-AR1_COEF = .965
+AR1_COEF = .965 # trained based on SINMOD data on May-27-2021
 # ==
 
 
@@ -97,7 +97,7 @@ class GRFAR:
         plt.show()
 
     def check_update(self):
-        self.update_grfar_model(np.array([1]), vectorise([30]), timestep=6)
+        self.update_grfar_model(np.array([1]), vectorise([30]), timestep=0)
         plt.figure(figsize=(20, 10))
         plt.subplot(121)
         plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu_cond,
@@ -109,17 +109,17 @@ class GRFAR:
         plt.colorbar()
         plt.show()
 
-        self.update_grfar_model(np.array([100, 20, 500]), vectorise([30, 20, 33]), timestep=2)
-        plt.figure(figsize=(20, 10))
-        plt.subplot(121)
-        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu_cond,
-                    cmap=get_cmap("BrBG", 10), s=150, vmin=20, vmax=30)
-        plt.colorbar()
-        plt.subplot(122)
-        plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=np.diag(self.Sigma_cond),
-                    cmap=get_cmap("RdBu", 10), s=150)
-        plt.colorbar()
-        plt.show()
+        # self.update_grfar_model(np.array([100, 20, 500]), vectorise([30, 20, 33]), timestep=2)
+        # plt.figure(figsize=(20, 10))
+        # plt.subplot(121)
+        # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.mu_cond,
+        #             cmap=get_cmap("BrBG", 10), s=150, vmin=20, vmax=30)
+        # plt.colorbar()
+        # plt.subplot(122)
+        # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=np.diag(self.Sigma_cond),
+        #             cmap=get_cmap("RdBu", 10), s=150)
+        # plt.colorbar()
+        # plt.show()
 
 
 if __name__ == "__main__":
