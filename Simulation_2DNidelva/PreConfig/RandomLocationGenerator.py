@@ -9,8 +9,8 @@ Date: 2022-03-23
 from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH
 from usr_func import *
 
-filepath_polygon_border = FILEPATH + "/Config/Polygon_border.csv"
-filepath_polygon_obstacle = FILEPATH + "/Config/Polygon_obstacle.csv"
+filepath_polygon_border = FILEPATH + "/Config/polygon_border.csv"
+filepath_polygon_obstacle = FILEPATH + "/Config/polygon_obstacle.csv"
 
 polygon_border = pd.read_csv(filepath_polygon_border)[['x', 'y']].to_numpy()
 polygon_obstacle = pd.read_csv(filepath_polygon_obstacle)[['x', 'y']].to_numpy()
