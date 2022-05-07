@@ -200,18 +200,18 @@ class GOOGLE2Launcher:
             return False
 
     def assimilate_data(self, dataset):
-        print("dataset before filtering: ", dataset[-10:, :])
-        ind_remove_noise_layer = np.where(np.abs(dataset[:, 2]) >= MIN_DEPTH_FOR_DATA_ASSIMILATION)[0]
-        dataset = dataset[ind_remove_noise_layer, :]
-        print("dataset after filtering: ", dataset[-10:, :])
+        print("dataset before filtering: ", dataset[:10, :])
+        depth_dataset = np.abs(dataset[:, 2])
+        ind_selected_depth_layer = np.where((depth_dataset >= MIN_DEPTH_FOR_DATA_ASSIMILATION) *
+                                            (depth_dataset <= DEPTH_LAYER + DEPTH_TOLERANCE))[0]
+        dataset = dataset[ind_selected_depth_layer, :]
+        print("dataset after filtering: ", dataset[:10, :])
         t1 = time.time()
         dx = (vectorise(dataset[:, 0]) @ np.ones([1, self.N_grf_grid]) -
               np.ones([dataset.shape[0], 1]) @ vectorise(self.grf_grid[:, 0]).T) ** 2
         dy = (vectorise(dataset[:, 1]) @ np.ones([1, self.N_grf_grid]) -
               np.ones([dataset.shape[0], 1]) @ vectorise(self.grf_grid[:, 1]).T) ** 2
-        dz = ((vectorise(dataset[:, 2]) @ np.ones([1, self.N_grf_grid]) -
-              np.ones([dataset.shape[0], 1]) @ vectorise(self.grf_grid[:, 2]).T) * GRF_DISTANCE_NEIGHBOUR) ** 2
-        dist = dx + dy + dz
+        dist = dx + dy
         ind_min_distance = np.argmin(dist, axis=1)
         t2 = time.time()
         ind_assimilated = np.unique(ind_min_distance)
