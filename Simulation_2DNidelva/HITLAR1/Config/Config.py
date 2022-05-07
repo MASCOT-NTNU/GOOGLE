@@ -33,6 +33,10 @@ GRF_DISTANCE_NEIGHBOUR = 120
 DEPTH_LAYER = .5
 # ==
 
+# == AR1
+TIME_AR1 = 600 # [sec]
+# ==
+
 
 
 

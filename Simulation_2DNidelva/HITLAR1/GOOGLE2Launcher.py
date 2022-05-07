@@ -143,7 +143,7 @@ class GOOGLE2Launcher:
                         ind_assimilated, salinity_assimilated = self.assimilate_data(np.array(self.auv_data))
                         print("Sampled salinity: ", np.mean(salinity_assimilated))
                         self.t_ar1_end = time.time()
-                        timestep = int(self.t_ar1_end - self.t_ar1_start)
+                        timestep = int((self.t_ar1_end - self.t_ar1_start)/TIME_AR1)
                         print("Timestep in AR1: ", timestep)
                         self.grfar_model.update_grfar_model(ind_assimilated, salinity_assimilated, timestep=timestep)
                         self.t_ar1_start = time.time()
