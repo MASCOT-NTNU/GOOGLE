@@ -18,8 +18,8 @@ from GOOGLE.Simulation_2DNidelva.grfar_model import GRFAR
 
 # == Set up
 # 0, lade
-LAT_START = 63.456232
-LON_START = 10.435198
+# LAT_START = 63.456232
+# LON_START = 10.435198
 
 # 1, back munkhomen
 # LAT_START = 63.449664
@@ -38,8 +38,8 @@ LON_START = 10.435198
 # LON_START = 10.381842
 
 # 5, home
-# LAT_START = LATITUDE_HOME
-# LON_START = LONGITUDE_HOME
+LAT_START = LATITUDE_HOME
+LON_START = LONGITUDE_HOME
 
 X_START, Y_START = latlon2xy(LAT_START, LON_START, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
 NUM_STEPS = 120
@@ -253,9 +253,10 @@ class Simulator:
             plt.savefig(FILEPATH+"fig/rrtstar/P_{:03d}.jpg".format(j))
             plt.close("all")
 
-            if np.sqrt((X_HOME-x_current)**2 + (Y_HOME-y_current)**2)<=TARGET_RADIUS:
-                print("I am home, mission complete!")
-                break
+            if self.gohome:
+                if np.sqrt((X_HOME-x_current)**2 + (Y_HOME-y_current)**2)<=TARGET_RADIUS:
+                    print("I am home, mission complete!")
+                    break
 
             x_previous = x_current
             y_previous = y_current

@@ -117,6 +117,14 @@ class GOOGLE2Launcher:
                     if (self.auv.auv_handler.getState() == "waiting" and
                             rospy.get_time() -self.update_time > WAYPOINT_UPDATE_TIME):
                         print("Arrived the current location")
+                        if self.gohome:
+                            if np.sqrt((X_HOME - self.x_current) ** 2 + (Y_HOME - self.y_current) ** 2) <= TARGET_RADIUS:
+                                self.auv.auv_handler.PopUp(sms=True, iridium=True, popup_duration=self.auv.min_popup_time,
+                                                           phone_number=self.auv.phone_number,
+                                                           iridium_dest=self.auv.iridium_destination)  # self.ada_state = "surfacing"
+                                print("Mission complete! Congrates!")
+                                rospy.signal_shutdown("Mission completed!!!")
+                                break
                         self.x_previous = self.x_current
                         self.y_previous = self.y_current
                         self.x_current = self.x_next
@@ -129,8 +137,6 @@ class GOOGLE2Launcher:
                             self.auv.auv_handler.PopUp(sms=True, iridium=True, popup_duration=self.auv.min_popup_time,
                                                    phone_number=self.auv.phone_number,
                                                    iridium_dest=self.auv.iridium_destination)  # self.ada_state = "surfacing"
-                            self.auv.auv_handler.setWaypoint(deg2rad(lat_waypoint), deg2rad(lon_waypoint), 0,
-                                                             speed=self.auv.speed)
                             print("Mission complete! Congrates!")
                             rospy.signal_shutdown("Mission completed!!!")
                             break
@@ -182,7 +188,6 @@ class GOOGLE2Launcher:
                     if (self.auv.auv_handler.getState() == "waiting" and
                             rospy.get_time() - self.update_time > WAYPOINT_UPDATE_TIME):
                         self.popup = False
-
                 self.auv.last_state = self.auv.auv_handler.getState()
                 self.auv.auv_handler.spin()
             self.auv.rate.sleep()
