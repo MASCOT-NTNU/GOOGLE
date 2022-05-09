@@ -13,9 +13,9 @@ import numpy as np
 from usr_func import get_ibv, normalise, vectorise
 import time
 
-# == Setting
-PENALTY_AZIMUTH = 10
-# ==
+# # == Setting
+PENALTY_AZIMUTH = 0
+# # ==
 
 
 class CostValley:
@@ -45,6 +45,7 @@ class CostValley:
         self.budget.get_budget_field()
         self.get_directional_field()
         self.get_exploration_exploitation_field()
+        # self.cost_valley = self.ee_field + self.budget.budget_field
         self.cost_valley = self.azimuth_field + self.ee_field + self.budget.budget_field
         t2 = time.time()
         print("Cost valley takes: ", t2 - t1)
