@@ -29,6 +29,7 @@ if not CRASH:
     np.savetxt(FILEPATH + "Backup/current_location.txt", np.array([X_START, Y_START]), delimiter = ", ")
     print("Current location is saved successfully!")
 # ==
+print("Crash state: ", CRASH)
 
 
 class GOOGLE2Launcher:
@@ -90,12 +91,14 @@ class GOOGLE2Launcher:
     def run(self):
         # self.x_current = X_START
         # self.y_current = Y_START
+        print("Current location: ", self.x_current, self.y_current)
         self.x_previous = self.x_current
         self.y_previous = self.y_current
 
         self.counter_waypoint = 0
         self.auv_data = []
         self.set_waypoint_to_xy(self.x_current, self.y_current)
+        print("set waypoint to current location: ", self.x_current, self.y_current)
 
         mu = self.grfar_model.mu_cond.flatten()
         Sigma = self.grfar_model.Sigma_cond
