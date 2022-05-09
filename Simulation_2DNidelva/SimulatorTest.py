@@ -15,6 +15,7 @@ from GOOGLE.Simulation_2DNidelva.RRTStarCV import RRTStarCV, TARGET_RADIUS
 from GOOGLE.Simulation_2DNidelva.RRTStarHome import RRTStarHome
 from GOOGLE.Simulation_2DNidelva.StraightLinePathPlanner import StraightLinePathPlanner
 from GOOGLE.Simulation_2DNidelva.grfar_model import GRFAR
+import multiprocessing as mp
 
 # == Set up
 # 0, lade
@@ -57,6 +58,7 @@ class Simulator:
         self.load_straight_line_planner()
         self.gohome = False
         self.obstacle_in_the_way = True
+        self.pool = mp.Pool(1)
 
     # def load_grf_model(self):
     #     self.grf_model = GRF()
@@ -96,12 +98,32 @@ class Simulator:
         Sigma = self.grfar_model.Sigma_cond
         self.CV.update_cost_valley(mu=mu, Sigma=Sigma, x_current=x_current, y_current=y_current,
                                    x_previous=x_previous, y_previous=y_previous)
-        self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
-                                            polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
-                                            line_budget_ellipse=self.CV.budget.line_budget_ellipse,
-                                            x_current=x_current, y_current=y_current)
-        x_next = self.rrtstar.x_next
-        y_next = self.rrtstar.y_next
+        # self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+        #                                     polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+        #                                     line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+        #                                     x_current=x_current, y_current=y_current)
+        # x_next = self.rrtstar.x_next
+        # y_next = self.rrtstar.y_next
+        # print("x_next", x_next)
+        # print("y_next", y_next)
+        t1 = time.time()
+        res = self.pool.apply_async(self.rrtstar.search_path_from_trees, args=(self.CV.cost_valley,
+                                                                             self.CV.budget.polygon_budget_ellipse,
+                                                                             self.CV.budget.line_budget_ellipse,
+                                                                             x_current,
+                                                                             y_current))
+        t2 = time.time()
+        print("Time consuemd: ", t2 - t1)
+        # self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+        #                                     polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+        #                                     line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+        #                                     x_current=x_current, y_current=y_current)
+        # x_next = self.rrtstar.x_next
+        # y_next = self.rrtstar.y_next
+        x_next, y_next, self.path_to_target = res.get()
+        # print("x_next", x_next)
+        # print("y_next", y_next)
+
 
         for j in range(NUM_STEPS):
             print("Step: ", j)
@@ -126,19 +148,34 @@ class Simulator:
             self.gohome = self.CV.budget.gohome_alert
 
             if not self.gohome:
-                self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
-                                                    polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
-                                                    line_budget_ellipse=self.CV.budget.line_budget_ellipse,
-                                                    x_current=x_next, y_current=y_next)
-                x_pioneer = self.rrtstar.x_next
-                y_pioneer = self.rrtstar.y_next
+                t1 = time.time()
+                res = self.pool.apply_async(self.rrtstar.search_path_from_trees, args=(self.CV.cost_valley,
+                                                                                       self.CV.budget.polygon_budget_ellipse,
+                                                                                       self.CV.budget.line_budget_ellipse,
+                                                                                       x_next,
+                                                                                       y_next))
+                t2 = time.time()
+                print("Path planning takes: ", t2 - t1)
+                x_pioneer, y_pioneer, self.path_to_target = res.get()
+                # self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+                #                                     polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+                #                                     line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+                #                                     x_current=x_next, y_current=y_next)
+                # x_pioneer = self.rrtstar.x_next
+                # y_pioneer = self.rrtstar.y_next
             else:
                 self.obstacle_in_the_way = self.is_obstacle_in_the_way(x1=x_next, y1=y_next, x2=X_HOME, y2=Y_HOME)
                 if self.obstacle_in_the_way:
-                    self.rrthome.search_path_from_trees(x_current=x_next, y_current=y_next,
-                                                        x_target=X_HOME, y_target=Y_HOME)
-                    x_pioneer = self.rrthome.x_next
-                    y_pioneer = self.rrthome.y_next
+                    t1 = time.time()
+                    res = self.pool.apply_async(self.rrthome.search_path_from_trees, args=(x_next, y_next,
+                                                                                     X_HOME, Y_HOME))
+                    t2 = time.time()
+                    print("Path planning takes: ", t2 - t1)
+                    # self.rrthome.search_path_from_trees(x_current=x_next, y_current=y_next,
+                    #                                     x_target=X_HOME, y_target=Y_HOME)
+                    # x_pioneer = self.rrthome.x_next
+                    # y_pioneer = self.rrthome.y_next
+                    x_pioneer, y_pioneer, self.path_to_target = res.get()
                 else:
                     self.straight_line_planner.get_waypoint_from_straight_line(x_current=x_next, y_current=y_next,
                                                                                x_target=X_HOME, y_target=Y_HOME)
@@ -158,14 +195,16 @@ class Simulator:
                 #     if node.parent is not None:
                 #         plt.plot([node.y, node.parent.y],
                 #                  [node.x, node.parent.x], "g-")
-                ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
+                # ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
+                ax.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r')
             else:
                 if self.obstacle_in_the_way:
                     # for node in self.rrthome.tree_nodes:
                     #     if node.parent is not None:
                     #         plt.plot([node.y, node.parent.y],
                     #                  [node.x, node.parent.x], "g-")
-                    ax.plot(self.rrthome.path_to_target[:, 1], self.rrthome.path_to_target[:, 0], 'r')
+                    # ax.plot(self.rrthome.path_to_target[:, 1], self.rrthome.path_to_target[:, 0], 'r')
+                    ax.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r')
 
 
             # plt.scatter(self.grf_model.grf_grid[:, 1], self.grf_model.grf_grid[:, 0], c=mu, cmap=get_cmap('RdBu', 15),
@@ -173,21 +212,21 @@ class Simulator:
 
             xplot = self.grf_grid[:, 1]
             yplot = self.grf_grid[:, 0]
-            if not self.gohome:
-                triangulated = tri.Triangulation(xplot, yplot)
-                x_triangulated = xplot[triangulated.triangles].mean(axis=1)
-                y_triangulated = yplot[triangulated.triangles].mean(axis=1)
-
-                ind_mask = []
-                for i in range(len(x_triangulated)):
-                    ind_mask.append(self.is_masked(y_triangulated[i], x_triangulated[i]))
-                triangulated.set_mask(ind_mask)
-                refiner = tri.UniformTriRefiner(triangulated)
-                triangulated_refined, value_refined = refiner.refine_field(mu.flatten(), subdiv=3)
-                contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=get_cmap("RdBu", 15), alpha=.5)
-                im = ax.tricontour(triangulated_refined, value_refined, vmin=10, vmax=30, alpha=.5)
-            else:
-                im = ax.scatter(xplot, yplot, c=mu, s=200, cmap=get_cmap("BrBG", 15), vmin=10, vmax=30, alpha=.5)
+            # if not self.gohome:
+            #     triangulated = tri.Triangulation(xplot, yplot)
+            #     x_triangulated = xplot[triangulated.triangles].mean(axis=1)
+            #     y_triangulated = yplot[triangulated.triangles].mean(axis=1)
+            #
+            #     ind_mask = []
+            #     for i in range(len(x_triangulated)):
+            #         ind_mask.append(self.is_masked(y_triangulated[i], x_triangulated[i]))
+            #     triangulated.set_mask(ind_mask)
+            #     refiner = tri.UniformTriRefiner(triangulated)
+            #     triangulated_refined, value_refined = refiner.refine_field(mu.flatten(), subdiv=3)
+            #     contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=get_cmap("RdBu", 15), alpha=.5)
+            #     im = ax.tricontour(triangulated_refined, value_refined, vmin=10, vmax=30, alpha=.5)
+            # else:
+            im = ax.scatter(xplot, yplot, c=mu, s=200, cmap=get_cmap("BrBG", 15), vmin=10, vmax=30, alpha=.5)
             plt.colorbar(im)
 
             ellipse = Ellipse(xy=(self.CV.budget.y_middle, self.CV.budget.x_middle), width=2 * self.CV.budget.ellipse_a,
@@ -218,18 +257,20 @@ class Simulator:
                 #     if node.parent is not None:
                 #         plt.plot([node.y, node.parent.y],
                 #                  [node.x, node.parent.x], "g-")
-                ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
+                # ax.plot(self.rrtstar.path_to_target[:, 1], self.rrtstar.path_to_target[:, 0], 'r')
+                ax.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r')
             else:
                 if self.obstacle_in_the_way:
                     # for node in self.rrthome.tree_nodes:
                     #     if node.parent is not None:
                     #         plt.plot([node.y, node.parent.y],
                     #                  [node.x, node.parent.x], "g-")
-                    ax.plot(self.rrthome.path_to_target[:, 1], self.rrthome.path_to_target[:, 0], 'r')
+                    # ax.plot(self.rrthome.path_to_target[:, 1], self.rrthome.path_to_target[:, 0], 'r')
+                    ax.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r')
 
             xplot = self.grf_grid[:, 1]
             yplot = self.grf_grid[:, 0]
-            im = ax.scatter(xplot, yplot, c=self.rrtstar.cost_valley, s=200, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
+            im = ax.scatter(xplot, yplot, c=self.CV.cost_valley, s=200, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
             plt.colorbar(im)
             ellipse = Ellipse(xy=(self.CV.budget.y_middle, self.CV.budget.x_middle), width=2 * self.CV.budget.ellipse_a,
                               height=2 * self.CV.budget.ellipse_b, angle=math.degrees(self.CV.budget.angle),

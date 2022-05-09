@@ -164,6 +164,7 @@ class RRTStarHome:
         # plt.plot(self.path_to_target[:, 1], self.path_to_target[:, 0], 'r-')
         # plt.plot(y_target, x_target, 'g*')
         # plt.plot(self.y_next, self.x_next, 'y*')
+        return self.x_next, self.y_next, self.path_to_target
 
     def get_nearest_node(self, x, y):
         self.distance_from_location_to_nodes = np.zeros(len(self.tree_nodes))

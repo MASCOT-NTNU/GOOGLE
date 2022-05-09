@@ -180,6 +180,7 @@ class RRTStarCV:
         # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, s=50, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
         # plt.colorbar()
         # plt.plot(y_target, x_target, 'g*')
+        return self.x_next, self.y_next, self.path_to_target
 
     def get_nearest_node(self, x, y):
         self.distance_from_location_to_nodes = np.zeros(len(self.tree_nodes))
