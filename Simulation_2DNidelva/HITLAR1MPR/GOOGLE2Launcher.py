@@ -25,8 +25,9 @@ LON_START = 10.435198
 # LON_START = LONGITUDE_HOME
 X_START, Y_START = latlon2xy(LAT_START, LON_START, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
 NUM_STEPS = 120
-# np.savetxt(FILEPATH + "Backup/current_location.txt", np.array([X_START, Y_START]), delimiter = ", ")
-# print("Current location is saved successfully!")
+if not CRASH:
+    np.savetxt(FILEPATH + "Backup/current_location.txt", np.array([X_START, Y_START]), delimiter = ", ")
+    print("Current location is saved successfully!")
 # ==
 
 

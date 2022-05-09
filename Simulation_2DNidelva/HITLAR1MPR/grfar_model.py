@@ -11,7 +11,7 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from scipy.spatial.distance import cdist
-from Config.Config import FILEPATH, NUGGET
+from Config.Config import FILEPATH, NUGGET, CRASH
 from usr_func import vectorise
 
 
@@ -32,10 +32,11 @@ class GRFAR:
         self.get_simulated_truth()
         self.mu_cond = self.mu_prior
         self.Sigma_cond = self.Sigma_prior
-        np.save(FILEPATH + "Backup/mu.npy", self.mu_cond)
-        np.save(FILEPATH + "Backup/Sigma.npy", self.Sigma_cond)
-        print("mu, Sigma is saved successfully!")
-        print("GRF1- is set up successfully!")
+        if not CRASH:
+            np.save(FILEPATH + "Backup/mu.npy", self.mu_cond)
+            np.save(FILEPATH + "Backup/Sigma.npy", self.Sigma_cond)
+            print("mu, Sigma is saved successfully!")
+            print("GRF1- is set up successfully!")
 
     def load_grf_grid(self):
         self.grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
