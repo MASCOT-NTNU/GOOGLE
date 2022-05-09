@@ -6,8 +6,8 @@ from GOOGLE.Simulation_2DNidelva.Tree.Location import *
 from usr_func import *
 
 
-polygon_border = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/Config/Polygon_border.csv"
-polygon_obstacle = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/Config/Polygon_obstacle.csv"
+polygon_border = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/Config/polygon_border.csv"
+polygon_obstacle = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/Config/polygon_obstacle.csv"
 DISTANCE_STEPSIZE = 250
 DISTANCE_TOLERANCE = 50
 DISTANCE_NEIGHBOUR = 50
