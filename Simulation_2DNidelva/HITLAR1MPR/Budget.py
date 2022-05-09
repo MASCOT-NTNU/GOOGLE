@@ -5,7 +5,7 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-04-26
 """
 
-from Config.Config import FILEPATH, BUDGET, X_HOME, Y_HOME
+from Config.Config import FILEPATH, BUDGET, X_HOME, Y_HOME, CRASH
 import numpy as np
 import pandas as pd
 import math
@@ -31,10 +31,12 @@ def get_utility_ellipse(x, y, xm, ym, ellipse_a, ellipse_b, angle):
 class Budget:
 
     def __init__(self):
-        # self.budget_left = BUDGET
-        # self.gohome_alert = False
-        self.budget_left = np.loadtxt(FILEPATH + "Backup/budget.txt")
-        self.gohome_alert = np.loadtxt(FILEPATH + "Backup/gohome.txt")
+        if not CRASH:
+            self.budget_left = BUDGET
+            self.gohome_alert = False
+        else:
+            self.budget_left = np.loadtxt(FILEPATH + "Backup/budget.txt")
+            self.gohome_alert = np.loadtxt(FILEPATH + "Backup/gohome.txt")
         self.load_grf_grid()
 
     def load_grf_grid(self):

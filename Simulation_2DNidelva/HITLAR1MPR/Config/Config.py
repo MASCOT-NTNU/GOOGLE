@@ -37,6 +37,9 @@ DEPTH_LAYER = .5
 TIME_AR1 = 600 # [sec]
 # ==
 
+# == CRASH
+CRASH = False
+# ==
 
 
 
