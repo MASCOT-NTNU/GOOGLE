@@ -16,8 +16,8 @@ from usr_func import vectorise
 
 
 # == Parameters
-SIGMA = 2
-LATERAL_RANGE = 450
+SIGMA = 2.8
+LATERAL_RANGE = 680
 AR1_COEF = .965 # trained based on SINMOD data on May-27-2021
 # ==
 

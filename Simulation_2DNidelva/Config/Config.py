@@ -19,7 +19,7 @@ LONGITUDE_ORIGIN = 10.3969375
 
 # == GP kernel
 THRESHOLD = 27
-NUGGET = .1  # .03
+NUGGET = .7  # .03
 # ==
 
 # == Path planner
