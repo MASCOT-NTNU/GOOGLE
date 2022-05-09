@@ -180,8 +180,8 @@ class RRTStarCV:
         # plt.scatter(self.grf_grid[:, 1], self.grf_grid[:, 0], c=self.cost_valley, s=50, cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.5)
         # plt.colorbar()
         # plt.plot(y_target, x_target, 'g*')
-        waypoint = np.array([self.x_next, self.y_next])
-        np.savetxt(FILEPATH+"Waypoint/waypoint.txt", waypoint, delimiter=', ')
+        np.savetxt(FILEPATH + "Waypoint/waypoint.txt", np.array([self.x_next, self.y_next]), delimiter=', ')
+        print("waypoint is saved!")
         # return self.x_next, self.y_next
 
     def get_nearest_node(self, x, y):
