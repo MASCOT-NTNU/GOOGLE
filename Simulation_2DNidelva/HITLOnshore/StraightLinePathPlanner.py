@@ -10,6 +10,7 @@ from RRTStarCV import TARGET_RADIUS, STEPSIZE
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from Config.Config import FILEPATH
 
 
 class StraightLinePathPlanner:
@@ -31,6 +32,8 @@ class StraightLinePathPlanner:
             self.x_next = x_current + STEPSIZE * np.sin(angle)
         t2 = time.time()
         print("StraightLine planning takes: ", t2 - t1)
+        np.savetxt(FILEPATH + "Waypoint/waypoint.txt", np.array([self.x_next, self.y_next]), delimiter=', ')
+        print("waypoint is saved!")
 
     def check(self):
         xn = 20

@@ -15,6 +15,7 @@ from RRTStarCV import RRTStarCV, TARGET_RADIUS
 from RRTStarHome import RRTStarHome
 from StraightLinePathPlanner import StraightLinePathPlanner
 from grfar_model import GRFAR
+import multiprocessing as mp
 
 
 # == Set up
@@ -40,6 +41,7 @@ class GOOGLE2Launcher:
         self.gohome = False
         self.obstacle_in_the_way = True
         self.popup = False
+        self.pool = mp.Pool(1)
         print("S1-S6 complete")
 
     def load_grfar_model(self):
@@ -82,18 +84,27 @@ class GOOGLE2Launcher:
         Sigma = self.grfar_model.Sigma_cond
         self.CV.update_cost_valley(mu=mu, Sigma=Sigma, x_current=self.x_current, y_current=self.y_current,
                                    x_previous=self.x_previous, y_previous=self.y_previous)
-        self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
-                                            polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
-                                            line_budget_ellipse=self.CV.budget.line_budget_ellipse,
-                                            x_current=self.x_current, y_current=self.y_current)
-        self.x_next = self.rrtstar.x_next
-        self.y_next = self.rrtstar.y_next
+        self.pool.apply_async(self.rrtstar.search_path_from_trees, args=(self.CV.cost_valley,
+                                                                         self.CV.budget.polygon_budget_ellipse,
+                                                                         self.CV.budget.line_budget_ellipse,
+                                                                         self.x_current,
+                                                                         self.y_current))
+        # self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+        #                                     polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+        #                                     line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+        #                                     x_current=self.x_current, y_current=self.y_current)
+        # self.x_next = self.rrtstar.x_next
+        # self.y_next = self.rrtstar.y_next
+        self.x_next, self.y_next = np.loadtxt(FILEPATH + "Waypoint/waypoint.txt", delimiter=', ')
+        print("Next waypoint: ", self.x_next, self.y_next)
 
         t_start = time.time()
         self.t_ar1_start = time.time()
         while not rospy.is_shutdown():
             if self.auv.init:
                 print("Waypoint step: ", self.counter_waypoint)
+                self.x_next, self.y_next = np.loadtxt(FILEPATH + "Waypoint/waypoint.txt", delimiter=', ')
+                print("Next waypoint: ", self.x_next, self.y_next)
                 t_end = time.time()
 
                 self.auv_data.append([self.auv.vehicle_pos[0],
@@ -160,29 +171,41 @@ class GOOGLE2Launcher:
                         self.gohome = self.CV.budget.gohome_alert
 
                         if not self.gohome:
-                            self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
-                                                                polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
-                                                                line_budget_ellipse=self.CV.budget.line_budget_ellipse,
-                                                                x_current=self.x_next, y_current=self.y_next)
-                            self.x_pioneer = self.rrtstar.x_next
-                            self.y_pioneer = self.rrtstar.y_next
+                            self.pool.apply_async(self.rrtstar.search_path_from_trees, args=(self.CV.cost_valley,
+                                                                                             self.CV.budget.polygon_budget_ellipse,
+                                                                                             self.CV.budget.line_budget_ellipse,
+                                                                                             self.x_next,
+                                                                                             self.y_next))
+                            # self.rrtstar.search_path_from_trees(cost_valley=self.CV.cost_valley,
+                            #                                     polygon_budget_ellipse=self.CV.budget.polygon_budget_ellipse,
+                            #                                     line_budget_ellipse=self.CV.budget.line_budget_ellipse,
+                            #                                     x_current=self.x_next, y_current=self.y_next)
+                            # self.x_pioneer = self.rrtstar.x_next
+                            # self.y_pioneer = self.rrtstar.y_next
                         else:
                             self.obstacle_in_the_way = self.is_obstacle_in_the_way(x1=self.x_next, y1=self.y_next,
                                                                                    x2=X_HOME, y2=Y_HOME)
                             if self.obstacle_in_the_way:
-                                self.rrthome.search_path_from_trees(x_current=self.x_next, y_current=self.y_next,
-                                                                    x_target=X_HOME, y_target=Y_HOME)
-                                self.x_pioneer = self.rrthome.x_next
-                                self.y_pioneer = self.rrthome.y_next
+                                self.pool.apply_async(self.rrthome.search_path_from_trees, args=(self.x_next,
+                                                                                                 self.y_next,
+                                                                                                 X_HOME,
+                                                                                                 Y_HOME))
+                                # self.rrthome.search_path_from_trees(x_current=self.x_next, y_current=self.y_next,
+                                #                                     x_target=X_HOME, y_target=Y_HOME)
+                                # self.x_pioneer = self.rrthome.x_next
+                                # self.y_pioneer = self.rrthome.y_next
                             else:
-                                self.straight_line_planner.get_waypoint_from_straight_line(x_current=self.x_next,
-                                                                                           y_current=self.y_next,
-                                                                                           x_target=X_HOME,
-                                                                                           y_target=Y_HOME)
-                                self.x_pioneer = self.straight_line_planner.x_next
-                                self.y_pioneer = self.straight_line_planner.y_next
-                        self.x_next = self.x_pioneer
-                        self.y_next = self.y_pioneer
+                                self.pool.apply_async(self.straight_line_planner.get_waypoint_from_straight_line,
+                                                      args=(self.x_next, self.y_next,
+                                                            X_HOME, Y_HOME))
+                                # self.straight_line_planner.get_waypoint_from_straight_line(x_current=self.x_next,
+                                #                                                            y_current=self.y_next,
+                                #                                                            x_target=X_HOME,
+                                #                                                            y_target=Y_HOME)
+                                # self.x_pioneer = self.straight_line_planner.x_next
+                                # self.y_pioneer = self.straight_line_planner.y_next
+                        # self.x_next = self.x_pioneer
+                        # self.y_next = self.y_pioneer
                         self.counter_waypoint += 1
                 else:
                     if (self.auv.auv_handler.getState() == "waiting" and
