@@ -40,6 +40,7 @@ class GOOGLE2Launcher:
         self.update_time = rospy.get_time()
         self.gohome = False
         self.obstacle_in_the_way = True
+        self.straight_line = False
         self.popup = False
         self.pool = mp.Pool(1)
         print("S1-S6 complete")
@@ -103,8 +104,9 @@ class GOOGLE2Launcher:
         while not rospy.is_shutdown():
             if self.auv.init:
                 print("Waypoint step: ", self.counter_waypoint)
-                self.x_next, self.y_next = np.loadtxt(FILEPATH + "Waypoint/waypoint.txt", delimiter=', ')
-                print("Next waypoint: ", self.x_next, self.y_next)
+                if not self.straight_line:
+                    self.x_next, self.y_next = np.loadtxt(FILEPATH + "Waypoint/waypoint.txt", delimiter=', ')
+                    print("Next waypoint: ", self.x_next, self.y_next)
                 t_end = time.time()
 
                 self.auv_data.append([self.auv.vehicle_pos[0],
@@ -197,16 +199,16 @@ class GOOGLE2Launcher:
                                 # self.x_pioneer = self.rrthome.x_next
                                 # self.y_pioneer = self.rrthome.y_next
                             else:
-                                self.pool.apply_async(self.straight_line_planner.get_waypoint_from_straight_line,
-                                                                                args=(self.x_next, self.y_next,
-                                                                                      X_HOME, Y_HOME))
-                                # self.straight_line_planner.get_waypoint_from_straight_line(x_current=self.x_next,
-                                #                                                            y_current=self.y_next,
-                                #                                                            x_target=X_HOME,
-                                #                                                            y_target=Y_HOME)
-                                # self.x_pioneer = self.straight_line_planner.x_next
-                                # self.y_pioneer = self.straight_line_planner.y_next
-                        # self.x_pioneer, self.y_pioneer = self.result_pathplanner.get()
+                                # self.pool.apply_async(self.straight_line_planner.get_waypoint_from_straight_line,
+                                #                                                 args=(self.x_next, self.y_next,
+                                #                                                       X_HOME, Y_HOME))
+                                self.straight_line = True
+                                self.straight_line_planner.get_waypoint_from_straight_line(x_current=self.x_next,
+                                                                                           y_current=self.y_next,
+                                                                                           x_target=X_HOME,
+                                                                                           y_target=Y_HOME)
+                                self.x_next = self.straight_line_planner.x_next
+                                self.y_next = self.straight_line_planner.y_next
                         self.counter_waypoint += 1
                 else:
                     if (self.auv.auv_handler.getState() == "waiting" and
