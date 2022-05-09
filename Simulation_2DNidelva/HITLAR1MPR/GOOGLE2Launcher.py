@@ -39,6 +39,8 @@ class GOOGLE2Launcher:
         self.load_rrthome()
         self.load_straight_line_planner()
         self.setup_AUV()
+        self.load_current_location()
+        self.load_conditional_field()
         self.update_time = rospy.get_time()
         self.gohome = False
         self.obstacle_in_the_way = True
