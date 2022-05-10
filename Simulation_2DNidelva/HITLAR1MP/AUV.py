@@ -48,3 +48,12 @@ class AUV:
         E = offset_east * CIRCUMFERENCE * np.cos(deg2rad(LATITUDE_ORIGIN)) / (2.0 * np.pi)
         D = msg.depth.data
         self.vehicle_pos = [N, E, D]
+
+    def send_SMS_mission_complete(self):
+        print("Mission complete! will be sent via SMS")
+        SMS = Sms()
+        SMS.number.data = self.phone_number
+        SMS.timeout.data = 60
+        SMS.contents.data = "Congrats, Mission complete!"
+        self.sms_pub_.publish(SMS)
+        print("Finished SMS sending!")

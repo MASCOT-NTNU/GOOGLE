@@ -136,6 +136,7 @@ class GOOGLE2Launcher:
                                                            phone_number=self.auv.phone_number,
                                                            iridium_dest=self.auv.iridium_destination)  # self.ada_state = "surfacing"
                                 print("Mission complete! Congrates!")
+                                self.auv.send_SMS_mission_complete()
                                 rospy.signal_shutdown("Mission completed!!!")
                                 break
                         self.x_previous = self.x_current
@@ -151,6 +152,7 @@ class GOOGLE2Launcher:
                                                    phone_number=self.auv.phone_number,
                                                    iridium_dest=self.auv.iridium_destination)  # self.ada_state = "surfacing"
                             print("Mission complete! Congrates!")
+                            self.auv.send_SMS_mission_complete()
                             rospy.signal_shutdown("Mission completed!!!")
                             break
                         else:
