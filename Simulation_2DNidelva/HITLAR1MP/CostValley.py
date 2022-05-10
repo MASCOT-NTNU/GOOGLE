@@ -33,7 +33,7 @@ class CostValley:
     def load_threshold(self):
         self.threshold = 27
         print("Default threshold: ", self.threshold)
-        self.threshold = np.load(FILEPATH + "../../../MAFIA/HITL2reduced/models/threshold.npy")
+        self.threshold = np.load(FILEPATH + "../../../MAFIA/HITLMP/models/threshold.npy")
         print("Updated threshold: ", self.threshold)
         print("CV2: Threshold is loaded successfully!")
 
