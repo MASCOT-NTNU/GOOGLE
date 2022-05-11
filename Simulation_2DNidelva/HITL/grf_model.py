@@ -15,8 +15,8 @@ from Config.Config import FILEPATH, NUGGET
 
 
 # == Parameters
-SIGMA = 2.
-LATERAL_RANGE = 500
+SIGMA = 1.5
+LATERAL_RANGE = 700
 # ==
 
 

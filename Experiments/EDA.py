@@ -12,7 +12,7 @@ from DataHandler.SINMOD import SINMOD
 circumference = 40075000
 
 
-datapath = os.getcwd() + "/GOOGLE/Experiments/20220510/"
+datapath = os.getcwd() + "/GOOGLE/Experiments/20220510/csv/"
 # sal = pd.read_csv("Salinity.csv")
 # est = pd.read_csv("EstimatedState.csv")
 # depth = pd.read_csv("Depth.csv")
@@ -108,14 +108,64 @@ plt.scatter(coordinates[:, 1], coordinates[:, 0], c=sal_auv, cmap=get_cmap("BrBG
 plt.colorbar()
 plt.show()
 #%%
-
-sinmod = SINMOD()
+#
+# sinmod = SINMOD()
+# #%% data interpolation section
+# sinmod.load_sinmod_data(raw_data=True)
+# # sinmod.get_data_at_coordinates(coordinates)
+# #%%
+#
+# DATAPATH = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220510/"
+# #% Step II: extract data by section
+# p1 = coordinates[0:5000,:]
+# sinmod.get_data_at_coordinates(p1, filename=DATAPATH+'p1.csv')
+#
+# #%%
+# p2 = coordinates[5000:10000,:]
+# sinmod.get_data_at_coordinates(p2, filename=DATAPATH+'p2.csv')
+# os.system('say complete 2')
+# #%%
+# p3 = coordinates[10000:-1,:]
+# sinmod.get_data_at_coordinates(p3, filename=DATAPATH+'p3.csv')
+# os.system('say complete 3')
+#
+# #%%
+#
+# datapath = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220510/"
+# import os
+# import pandas as pd
+#
+# df = []
+# files = os.listdir(datapath)
+# for file in files:
+#     if file.endswith(".csv"):
+#         df.append(pd.read_csv(datapath+file))
+#
+# #%%
+# # for file in files:
+# file = files[0]
+# df1 = pd.read_csv(datapath+file)
+#
+# file = files[1]
+# df2 = pd.read_csv(datapath+file)
+#
+# file = files[2]
+# df3 = pd.read_csv(datapath+file)
+# #%%
+# # file = files[3]
+# # df4 = pd.read_csv(datapath+file)
+# #
+# # file = files[4]
+# # df5 = pd.read_csv(datapath+file)
+#
+# # df = np.vstack((df1, df2, df3, df4, df5))
+# df = pd.concat([d for d in df], ignore_index=True, sort=False)
+# df.to_csv(datapath + "data_sinmod.csv", index=False)
+# os.system('say complete all')
 #%%
-sinmod.load_sinmod_data(raw_data=True)
-sinmod.get_data_at_coordinates(coordinates)
-
-#%%
-data_sinmod = pd.read_csv(datapath + "data_interpolated.csv").to_numpy()
+datapath = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220510/"
+# data_sinmod = pd.read_csv(datapath + "data_interpolated.csv").to_numpy()
+data_sinmod = pd.read_csv(datapath + "data_sinmod.csv").to_numpy()
 
 lat_sinmod = data_sinmod[:, 0]
 lon_sinmod = data_sinmod[:, 1]
@@ -129,13 +179,14 @@ plt.show()
 LATITUDE_ORIGIN = 63.4269097
 LONGITUDE_ORIGIN = 10.3969375
 x, y = latlon2xy(lat_sinmod, lon_sinmod, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
-residual = sal_auv.flatten() - sal_sinmod
+residual = sal_auv[:-1].flatten() - sal_sinmod
 plt.scatter(lon_sinmod, lat_sinmod, c=residual, cmap=get_cmap("BrBG", 10))
 plt.colorbar()
 plt.show()
 #%%
+ind = np.random.randint(0, len(x), 6000)
 from skgstat import Variogram
-v = Variogram(coordinates=np.vstack((x, y)).T, values=residual,
+v = Variogram(coordinates=np.vstack((x[ind], y[ind])).T, values=residual[ind],
               use_nugget=True, n_lags=50, maxlag=2000)
 
 v.plot()
