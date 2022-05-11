@@ -19,6 +19,7 @@ LONGITUDE_ORIGIN = 10.3969375
 
 # == GP kernel
 NUGGET = .4  # .03
+# NUGGET = .4  # .03
 # ==
 
 # == Path planner
