@@ -9,7 +9,7 @@ from usr_func import latlon2xy
 
 
 # == sys
-FILEPATH = os.getcwd() + "/GOOGLE/Simulation_2DNidelva/"
+FILEPATH = os.getcwd() + "/GOOGLE/Nidelva2D/"
 # ==
 
 # == WGS
