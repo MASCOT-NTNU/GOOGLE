@@ -107,6 +107,22 @@ coordinates = np.hstack((lat_auv, lon_auv, np.zeros_like(lat_auv)))
 plt.scatter(coordinates[:, 1], coordinates[:, 0], c=sal_auv, cmap=get_cmap("BrBG", 10), vmin=5, vmax=30)
 plt.colorbar()
 plt.show()
+
+#%%
+from usr_func import *
+
+fig = go.Figure(data=go.Scatter3d(
+    x=lon_auv.flatten(),
+    y=lat_auv.flatten(),
+    z=-dauv.flatten(),
+    mode="markers",
+    marker=dict(color=sal_auv.flatten(), size=2, cmin=25, cmax=30, showscale=True),
+    # line=dict(color='black', width=1),
+))
+
+plotly.offline.plot(fig, filename="/Users/yaolin/HomeOffice/GOOGLE/Experiments/auv.html", auto_open=True)
+
+
 #%%
 #
 # sinmod = SINMOD()
