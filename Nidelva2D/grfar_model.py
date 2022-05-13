@@ -11,7 +11,7 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from scipy.spatial.distance import cdist
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, NUGGET
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, NUGGET
 from usr_func import vectorise
 
 
@@ -40,7 +40,7 @@ class GRFAR:
         print("GRF1: Grid is loaded successfully!")
 
     def load_prior_mean(self):
-        self.beta1, self.beta0 = np.load(FILEPATH + "../../MAFIA/HITL2reduced/models/Google_coef.npy") # !!! different in HITL
+        self.beta1, self.beta0 = np.load(FILEPATH + "../../MAFIA/HITLMP/models/Google_coef.npy") # !!! different in HITL
         self.mu_prior = (vectorise(pd.read_csv(FILEPATH + "Config/data_interpolated.csv")['salinity'].to_numpy()) *
                          self.beta1 + self.beta0)
         # self.mu_prior = vectorise(pd.read_csv(FILEPATH + "Config/data_interpolated.csv")['salinity'].to_numpy())
