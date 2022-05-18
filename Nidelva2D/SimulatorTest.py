@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from usr_func import *
-from GOOGLE.Simulation_2DNidelva.Config.Config import *
-from GOOGLE.Simulation_2DNidelva.grf_model import GRF
-from GOOGLE.Simulation_2DNidelva.CostValley import CostValley
-from GOOGLE.Simulation_2DNidelva.RRTStarCV import RRTStarCV, TARGET_RADIUS
-from GOOGLE.Simulation_2DNidelva.RRTStarHome import RRTStarHome
-from GOOGLE.Simulation_2DNidelva.StraightLinePathPlanner import StraightLinePathPlanner
-from GOOGLE.Simulation_2DNidelva.grfar_model import GRFAR
+from GOOGLE.Nidelva2D.Config.Config import *
+from GOOGLE.Nidelva2D.grf_model import GRF
+from GOOGLE.Nidelva2D.CostValley import CostValley
+from GOOGLE.Nidelva2D.RRTStarCV import RRTStarCV, TARGET_RADIUS
+from GOOGLE.Nidelva2D.RRTStarHome import RRTStarHome
+from GOOGLE.Nidelva2D.StraightLinePathPlanner import StraightLinePathPlanner
+from GOOGLE.Nidelva2D.grfar_model import GRFAR
 import multiprocessing as mp
 
 # == Set up
