@@ -4,9 +4,6 @@ Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
 Date: 2022-05-13
 """
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from GOOGLE.Nidelva2D.grfar_model import GRFAR
 from GOOGLE.Nidelva2D.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from usr_func import *
@@ -19,7 +16,7 @@ class EDA:
 
     def __init__(self):
         self.load_auv_data()
-        pass
+        self.load_grfar_model()
 
     def load_auv_data(self):
         self.data = pd.read_csv(DATAPATH+"data_sync.csv").to_numpy()
@@ -74,15 +71,15 @@ class EDA:
         pass
 
     def plot_2d(self):
-        plt.scatter(self.lon, self.lat, c=self.salinity, cmap=get_cmap("BrBG", 10), vmin=4, vmax=30)
+        plt.scatter(self.lon, self.lat, c=self.salinity, cmap=get_cmap("BrBG", 10), vmin=22, vmax=27)
         plt.colorbar()
         plt.show()
 
 
 if __name__ == "__main__":
     e = EDA()
-    # e.plot_2d()
-    e.plot_scatter_data()
+    e.plot_2d()
+    # e.plot_scatter_data()
 
 
 
