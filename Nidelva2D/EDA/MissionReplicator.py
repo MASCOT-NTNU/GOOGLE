@@ -7,8 +7,8 @@ Date: 2022-04-27
 
 
 from usr_func import *
-from Config.Config import *
-from Config.AUVConfig import * # !!!! ROSPY important
+from GOOGLE.Nidelva2D.Config.Config import *
+from GOOGLE.Nidelva2D.Config.AUVConfig import * # !!!! ROSPY important
 from AUV import AUV
 from CostValley import CostValley
 from RRTStarCV import RRTStarCV, TARGET_RADIUS

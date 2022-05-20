@@ -33,7 +33,7 @@ def plotf_vector(lon, lat, values, title=None, alpha=None, cmap=get_cmap("BrBG",
     else:
         levels = None
 
-    print("levels: ", levels)
+    # print("levels: ", levels)
 
     if np.any(levels):
         linewidths = np.ones_like(levels) * .3
