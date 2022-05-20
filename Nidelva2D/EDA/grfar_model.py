@@ -18,8 +18,8 @@ from usr_func import vectorise
 PATH_COEF = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/Coef/"
 
 # == Parameters
-SIGMA = 2.0 # used in the mission
-LATERAL_RANGE = 500 # used in the mission
+SIGMA = 1.5 # used in the mission
+LATERAL_RANGE = 700 # used in the mission
 # SIGMA = 2.8 # used in simulation
 # LATERAL_RANGE = 680 # used in simulation
 AR1_COEF = .965 # trained based on SINMOD data on May-27-2021

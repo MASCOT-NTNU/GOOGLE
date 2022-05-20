@@ -7,11 +7,13 @@ Date: 2022-04-25
 import matplotlib.pyplot as plt
 
 from GOOGLE.Nidelva2D.Config.Config import FILEPATH, NUGGET
-from Budget import Budget
+from GOOGLE.Nidelva2D.EDA.Budget import Budget
 import pandas as pd
 import numpy as np
 from usr_func import get_ibv, normalise, vectorise
 import time
+
+PATH_THRESHOLD = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/Coef/"
 
 # # == Setting
 PENALTY_AZIMUTH = 0
@@ -33,7 +35,7 @@ class CostValley:
     def load_threshold(self):
         self.threshold = 27
         print("Default threshold: ", self.threshold)
-        self.threshold = np.load(FILEPATH + "../../../MAFIA/HITLMP/models/threshold.npy")
+        self.threshold = np.load(PATH_THRESHOLD + "threshold.npy")
         print("Updated threshold: ", self.threshold)
         print("CV2: Threshold is loaded successfully!")
 
