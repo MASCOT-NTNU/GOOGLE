@@ -6,7 +6,7 @@ Date: 2022-04-25
 """
 import matplotlib.pyplot as plt
 
-from Config.Config import FILEPATH, NUGGET
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, NUGGET
 from Budget import Budget
 import pandas as pd
 import numpy as np

@@ -108,14 +108,14 @@ def xyz2latlondepth(x, y, z, lat_origin, lon_origin, depth_origin):
 
 def get_ind_at_location3d_wgs(coordinates, location):
     dist_x, dist_y, dist_z = latlondepth2xyz(coordinates[:, 0], coordinates[:, 1], coordinates[:, 2],
-                                             location.lat, location.lon, location.depth)
+                                             location.lat_auv, location.lon_auv, location.depth_auv)
     dist = dist_x ** 2 + dist_y ** 2 + dist_z ** 2
     ind = np.where(dist == np.amin(dist))[0]
     return ind
 
 
 def get_ind_at_location2d_wgs(coordinates, location):
-    dist_x, dist_y = latlon2xy(coordinates[:, 0], coordinates[:, 1], location.lat, location.lon)
+    dist_x, dist_y = latlon2xy(coordinates[:, 0], coordinates[:, 1], location.lat_auv, location.lon_auv)
     dist = dist_x ** 2 + dist_y ** 2
     ind = np.where(dist == np.amin(dist))[0]
     return ind
