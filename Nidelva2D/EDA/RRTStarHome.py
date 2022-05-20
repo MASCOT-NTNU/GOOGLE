@@ -6,7 +6,7 @@ Date: 2022-04-26
 """
 import matplotlib.pyplot as plt
 
-from Config.Config import FILEPATH
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH
 from usr_func import Polygon, Point, LineString
 from RRTStarCV import GOAL_SAMPLE_RATE, MAX_ITERATION, STEPSIZE, NEIGHBOUR_RADIUS, TARGET_RADIUS
 import pandas as pd

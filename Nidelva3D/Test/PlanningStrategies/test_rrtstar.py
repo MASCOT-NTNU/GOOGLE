@@ -46,10 +46,10 @@ n1 = 50
 n2 = 250
 polygon_new = rrtstar.knowledge.polygon_border_xy[n1:n2]
 plt.plot(polygon_border[n1:n2, 1], polygon_border[n1:n2, 0], 'k.-')
-plt.plot([loc1.lon, loc2.lon], [loc1.lat, loc2.lat], 'r-')
+plt.plot([loc1.lon_auv, loc2.lon_auv], [loc1.lat_auv, loc2.lat_auv], 'r-')
 plt.show()
-line = LineString([(loc1.lat, loc1.lon),
-                   (loc2.lat, loc2.lon)])
+line = LineString([(loc1.lat_auv, loc1.lon_auv),
+                   (loc2.lat_auv, loc2.lon_auv)])
 
 print(rrtstar.knowledge.polygon_border_shapely.intersects(line))
 path = Polygon(polygon_new)

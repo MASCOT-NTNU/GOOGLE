@@ -7,7 +7,7 @@ Date: 2022-05-06
 
 
 from RRTStarCV import TARGET_RADIUS, STEPSIZE
-from Config.Config import FILEPATH
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH
 import time
 import numpy as np
 import matplotlib.pyplot as plt

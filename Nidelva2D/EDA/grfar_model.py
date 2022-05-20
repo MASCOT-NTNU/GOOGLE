@@ -33,7 +33,7 @@ class GRFAR:
         self.load_prior_mean()
         self.load_ar1_coef()
         self.get_covariance_matrix()
-        self.get_simulated_truth()
+        # self.get_simulated_truth()
         self.mu_cond = self.mu_prior
         self.Sigma_cond = self.Sigma_prior
         print("GRF1- is set up successfully!")

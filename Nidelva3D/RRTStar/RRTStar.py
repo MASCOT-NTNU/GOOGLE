@@ -86,10 +86,10 @@ class RRTStar:
     def get_bigger_box(self):
         self.box_lat_min, self.box_lon_min, self.box_depth_min = map(np.amin, [self.config.polygon_border_xy[:, 0],
                                                                                self.config.polygon_border_xy[:, 1],
-                                                                               self.config.depth])
+                                                                               self.config.depth_auv])
         self.box_lat_max, self.box_lon_max, self.box_depth_max = map(np.amax, [self.config.polygon_border_xy[:, 0],
                                                                                self.config.polygon_border_xy[:, 1],
-                                                                               self.config.depth])
+                                                                               self.config.depth_auv])
 
     def get_new_location(self):
         while True:
@@ -109,20 +109,20 @@ class RRTStar:
 
     @staticmethod
     def get_distance_between_nodes(node1, node2):
-        dist_x, dist_y = latlon2xy(node1.location.lat, node1.location.lon, node2.location.lat, node2.location.lon)
-        dist_z = node1.location.depth - node2.location.depth
+        dist_x, dist_y = latlon2xy(node1.location.lat_auv, node1.location.lon_auv, node2.location.lat_auv, node2.location.lon_auv)
+        dist_z = node1.location.depth_auv - node2.location.depth_auv
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2 + dist_z ** 2)
         return dist
 
     def get_next_node(self, node, location):
-        x, y = latlon2xy(location.lat, location.lon, node.location.lat, node.location.lon)
+        x, y = latlon2xy(location.lat_auv, location.lon_auv, node.location.lat_auv, node.location.lon_auv)
         angle_lateral = np.math.atan2(x, y)
         y_new = self.config.step_lateral * np.cos(angle_lateral)
         x_new = self.config.step_lateral * np.sin(angle_lateral)
-        angle_vertical = np.math.atan2(location.depth - node.location.depth, np.sqrt(x ** 2 + y ** 2))
+        angle_vertical = np.math.atan2(location.depth_auv - node.location.depth_auv, np.sqrt(x ** 2 + y ** 2))
         z_new = self.config.step_vertical * np.sin(angle_vertical)
-        lat_new, lon_new = xy2latlon(x_new, y_new, node.location.lat, node.location.lon)
-        depth_new = node.location.depth + z_new
+        lat_new, lon_new = xy2latlon(x_new, y_new, node.location.lat_auv, node.location.lon_auv)
+        depth_new = node.location.depth_auv + z_new
         location_next = Location(lat_new, lon_new, depth_new)
         return TreeNode(location_next, node)
 
@@ -145,9 +145,9 @@ class RRTStar:
 
     def iscollided(self, node):
         #TODO: check collision detection
-        point = Point(node.location.lat, node.location.lon)
-        line = LineString([(node.parent.location.lat, node.parent.location.lon),
-                           (node.location.lat, node.location.lon)])
+        point = Point(node.location.lat_auv, node.location.lon_auv)
+        line = LineString([(node.parent.location.lat_auv, node.parent.location.lon_auv),
+                           (node.location.lat_auv, node.location.lon_auv)])
         collision = False
         if self.config.polygon_obstacles_shapely.contains(point) or self.config.polygon_obstacles_shapely.intersects(line):
             collision = True
@@ -158,17 +158,17 @@ class RRTStar:
 
     def get_shortest_path(self):
         print("here comes the path finding")
-        self.path.append([self.ending_node.location.lat, self.ending_node.location.lon])
+        self.path.append([self.ending_node.location.lat_auv, self.ending_node.location.lon_auv])
         pointer_node = self.ending_node
         counter = 0
         while pointer_node.parent is not None:
             print("counter: ", counter)
             counter += 1
             node = pointer_node.parent
-            self.path.append([node.location.lat, node.location.lon])
+            self.path.append([node.location.lat_auv, node.location.lon_auv])
             pointer_node = node
 
-        self.path.append([self.starting_node.location.lat, self.starting_node.location.lon])
+        self.path.append([self.starting_node.location.lat_auv, self.starting_node.location.lon_auv])
 
         print("Finished path reorganising")
 
@@ -192,12 +192,12 @@ class RRTStar:
 
         for node in self.nodes:
             if node.parent is not None:
-                plt.plot([node.location.lon, node.parent.location.lon],
-                         [node.location.lat, node.parent.location.lat], "-g")
+                plt.plot([node.location.lon_auv, node.parent.location.lon_auv],
+                         [node.location.lat_auv, node.parent.location.lat_auv], "-g")
         path = np.array(self.path)
         plt.plot(path[:, 1], path[:, 0], "-b")
-        plt.plot(self.config.starting_location.lon, self.config.starting_location.lat, 'k*', ms=10)
-        plt.plot(self.config.ending_location.lon, self.config.ending_location.lat, 'g*', ms=10)
+        plt.plot(self.config.starting_location.lon_auv, self.config.starting_location.lat_auv, 'k*', ms=10)
+        plt.plot(self.config.ending_location.lon_auv, self.config.ending_location.lat_auv, 'g*', ms=10)
         plt.grid()
         plt.show()
 
