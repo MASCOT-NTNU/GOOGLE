@@ -72,7 +72,7 @@ class PathPlanner:
                 self.rrtstar = RRTStar(knowledge)
                 self.rrtstar.expand_trees()
                 self.rrtstar.get_shortest_trajectory()
-                path = self.rrtstar.trajectory
+                path = self.rrtstar.trajectory_plot
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
 

@@ -129,14 +129,14 @@ class EDA:
         counter = 0
         trajectory = []
         lat_grid, lon_grid = xy2latlon(self.grf_grid[:, 0], self.grf_grid[:, 1], LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
-        lat_p, lon_p = xy2latlon(self.rrtstar.polygon_border[:, 0], self.rrtstar.polygon_border[:, 1], LATITUDE_ORIGIN,
+        lat_border, lon_border = xy2latlon(self.rrtstar.polygon_border[:, 0], self.rrtstar.polygon_border[:, 1], LATITUDE_ORIGIN,
                                  LONGITUDE_ORIGIN)
-        polygon_border = np.vstack((lat_p, lon_p)).T
+        polygon_border = np.vstack((lat_border, lon_border)).T
 
-        lat_o, lon_o = xy2latlon(self.rrtstar.polygon_obstacle[:, 0], self.rrtstar.polygon_obstacle[:, 1],
+        lat_obstacle, lon_obstacle = xy2latlon(self.rrtstar.polygon_obstacle[:, 0], self.rrtstar.polygon_obstacle[:, 1],
                                  LATITUDE_ORIGIN,
                                  LONGITUDE_ORIGIN)
-        polygon_obstacle = np.vstack((lat_o, lon_o)).T
+        polygon_obstacle = np.vstack((lat_obstacle, lon_obstacle)).T
         t_start = self.timestamp_auv[0]
         for i in range(0, len(self.lat_auv), AUV_TIMESTEP):
             counter += 1
