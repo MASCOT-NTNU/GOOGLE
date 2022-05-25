@@ -56,11 +56,11 @@ class PathPlanner:
                 self.rrtstar = RRTStar(knowledge)
                 self.rrtstar.expand_trees()
                 self.rrtstar.get_shortest_trajectory()
-                if len(self.rrtstar.trajectory) <= 2:
+                if len(self.rrtstar.trajectory_plot) <= 2:
                     self.rrtstar.maximum_iteration = MAXITER_HARD
                     self.rrtstar.expand_trees()
                     self.rrtstar.get_shortest_trajectory()
-                self.path_minimum_cost = self.rrtstar.trajectory
+                self.path_minimum_cost = self.rrtstar.trajectory_plot
                 t2 = time.time()
                 print("Path planning takes: ", t2 - t1)
                 self.plot_knowledge(i)

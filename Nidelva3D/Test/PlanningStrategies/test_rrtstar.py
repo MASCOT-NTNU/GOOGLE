@@ -33,7 +33,7 @@ knowledge = Knowledge(starting_location=starting_location, ending_location=endin
 
 rrtstar = RRTStar(knowledge)
 rrtstar.expand_trees()
-rrtstar.trajectory = []
+rrtstar.trajectory_plot = []
 rrtstar.get_shortest_trajectory()
 rrtstar.plot_tree()
 plt.show()
