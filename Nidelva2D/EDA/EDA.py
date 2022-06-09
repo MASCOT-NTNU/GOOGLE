@@ -93,6 +93,11 @@ class EDA:
         polygon = np.vstack((lat, lon)).T
         df = pd.DataFrame(polygon, columns=['lat', 'lon'])
         df.to_csv(FILEPATH + "../GIS/csv/polygon_obstacle.csv", index=False)
+
+        lat, lon = 63.44410, 10.37910 # boat location
+        self.dataset = np.array([lat, lon]).reshape(1, -1)
+        self.df = pd.DataFrame(self.dataset, columns=['lat', 'lon'])
+        self.df.to_csv(FILEPATH + "../GIS/csv/boat_location.csv", index=False)
         print("Dataset is saved successfully!")
 
     def plot_scatter_data(self):
