@@ -71,6 +71,36 @@ class EDA:
         self.CV = CostValley()
         print("S4: Cost Valley is loaded successfully!")
 
+    def save_grid_to_gis(self):
+        x = self.grf_grid[:, 0]
+        y = self.grf_grid[:, 1]
+        lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        grf_grid = np.vstack((lat, lon)).T
+        df = pd.DataFrame(grf_grid, columns=['lat', 'lon'])
+        df.to_csv(FILEPATH + "../GIS/csv/grf_grid.csv", index=False)
+
+        polygon = pd.read_csv(FILEPATH + "Config/polygon_border.csv").to_numpy()
+        x = polygon[:, 0]
+        y = polygon[:, 1]
+        lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        polygon = np.vstack((lat, lon)).T
+        df = pd.DataFrame(polygon, columns=['lat', 'lon'])
+        df.to_csv(FILEPATH + "../GIS/csv/polygon_border.csv", index=False)
+
+        polygon = pd.read_csv(FILEPATH + "Config/polygon_obstacle.csv").to_numpy()
+        x = polygon[:, 0]
+        y = polygon[:, 1]
+        lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
+        polygon = np.vstack((lat, lon)).T
+        df = pd.DataFrame(polygon, columns=['lat', 'lon'])
+        df.to_csv(FILEPATH + "../GIS/csv/polygon_obstacle.csv", index=False)
+
+        lat, lon = 63.44410, 10.37910 # boat location
+        self.dataset = np.array([lat, lon]).reshape(1, -1)
+        self.df = pd.DataFrame(self.dataset, columns=['lat', 'lon'])
+        self.df.to_csv(FILEPATH + "../GIS/csv/boat_location.csv", index=False)
+        print("Dataset is saved successfully!")
+
     def plot_scatter_data(self):
         fig = go.Figure(data=go.Scatter3d(
             x=self.lon_auv,
@@ -305,7 +335,9 @@ if __name__ == "__main__":
     # e.get_residual_with_sinmod()
     # e.plot_scatter_data()
     # e.plot_recap_mission()
-    e.plot_variogram()
+    # e.plot_variogram()
+    e.save_grid_to_gis()
+
 
  #%%
 # plt.scatter(e.grf_grid[:, 1], e.grf_grid[:, 0], c=e.grfar_model.mu_prior, cmap=get_cmap("BrBG", 10), vmin=10, vmax=27)
