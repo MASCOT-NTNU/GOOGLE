@@ -15,15 +15,16 @@ from GOOGLE.Nidelva2D.EDA.RRTStarCV import RRTStarCV
 from GOOGLE.Nidelva2D.EDA.CostValley import CostValley
 from skgstat import Variogram
 
-
 DATAPATH = "/Users/yaolin/OneDrive - NTNU/MASCOT_PhD/Data/Nidelva/20220511/GOOGLE/"
-SINMODPATH = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/"
-FIGPATH = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/fig/"
+if not os.path.exists(DATAPATH):
+    DATAPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Data/Nidelva/20220511/GOOGLE/"
+SINMODPATH = os.getcwd() + "/GOOGLE/Experiments/20220511/"
+FIGPATH = os.getcwd() + "GOOGLE/Experiments/20220511/fig/"
 AUV_TIMESTEP = 170
 # == Set up
 LAT_START = 63.456232
 LON_START = 10.435198
-
+#%%
 
 class EDA:
 
