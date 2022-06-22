@@ -136,7 +136,7 @@ class Simulator:
                                   vmax=1.2,
                                   cbar_title="Salinity", knowledge=self.knowledge, stepsize=.1,
                                   threshold=self.knowledge.threshold)
-        trajectory = np.array(self.knowledge.trajectory_plot)
+        trajectory = np.array(self.knowledge.sampling_location_plot)
         plt.plot(trajectory[:, 0], trajectory[:, 1], 'k.-')
 
         ax = fig.add_subplot(gs[1])
@@ -146,7 +146,7 @@ class Simulator:
                                   cbar_title="Salinity", knowledge=self.knowledge, stepsize=.1,
                                   threshold=self.knowledge.threshold)
         # plotf_trajectory(self.trajectory)
-        trajectory = np.array(self.knowledge.trajectory_plot)
+        trajectory = np.array(self.knowledge.sampling_location_plot)
         plt.plot(trajectory[:, 0], trajectory[:, 1], 'k.-')
 
         ax = fig.add_subplot(gs[2])
@@ -155,7 +155,7 @@ class Simulator:
                                   cbar_title="Cost",
                                   colorbar=True, vmin=-.2, vmax=1.2, knowledge=self.knowledge, stepsize=.1)
         # plotf_trajectory(self.trajectory)
-        trajectory = np.array(self.knowledge.trajectory_plot)
+        trajectory = np.array(self.knowledge.sampling_location_plot)
         plt.plot(trajectory[:, 0], trajectory[:, 1], 'k.-')
 
         ax = fig.add_subplot(gs[3])
@@ -164,7 +164,7 @@ class Simulator:
                                   cbar_title="Cost",
                                   colorbar=True, vmin=-.2, vmax=1.2, knowledge=self.knowledge, stepsize=.1)
         # plotf_trajectory(self.trajectory)
-        trajectory = np.array(self.knowledge.trajectory_plot)
+        trajectory = np.array(self.knowledge.sampling_location_plot)
         plt.plot(trajectory[:, 0], trajectory[:, 1], 'k.-')
 
         ax = fig.add_subplot(gs[4])
@@ -180,7 +180,7 @@ class Simulator:
         # plotf_vector_triangulated(self.knowledge.grid, cost_valley, "COST VALLEY", cmap=CMAP, vmin=-.2, vmax=4,
         #                           cbar_title="Cost",
         #                           colorbar=True, knowledge=self.knowledge, stepsize=.1)
-        trajectory = np.array(self.knowledge.trajectory_plot)
+        trajectory = np.array(self.knowledge.sampling_location_plot)
         plt.plot(trajectory[:, 0], trajectory[:, 1], 'k.-')
 
         # plt.colorbar()
