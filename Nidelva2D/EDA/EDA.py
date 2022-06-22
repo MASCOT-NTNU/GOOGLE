@@ -87,6 +87,7 @@ class EDA:
         df.to_csv(FILEPATH + "../GIS/csv/polygon_border.csv", index=False)
 
         polygon = pd.read_csv(FILEPATH + "Config/polygon_obstacle.csv").to_numpy()
+        polygon = np.append(polygon, polygon[0, :].reshape(1, -1), axis=0)
         x = polygon[:, 0]
         y = polygon[:, 1]
         lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
@@ -326,7 +327,7 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-    e.load_sinmod_data(data_exists=True)
+    # e.load_sinmod_data(data_exists=True)
     # e.plot_prior()
     # e.plot_sinmod_on_grf_grid()
     # e.plot_sinmod_on_grf_grid()
@@ -335,7 +336,7 @@ if __name__ == "__main__":
     # e.plot_scatter_data()
     # e.plot_recap_mission()
     # e.plot_variogram()
-    e.save_grid_to_gis()
+    # e.save_grid_to_gis()
 
 
  #%%
@@ -343,9 +344,10 @@ if __name__ == "__main__":
 # plt.colorbar()
 # plt.plot(LON_START, LAT_START, 'rs')
 # plt.show()
-
-
-
+df = pd.read_csv(FILEPATH + "../GIS/csv/polygon_obstacle.csv").to_numpy()
+# e.save_grid_to_gis()
+plt.plot(df[:, 1], df[:, 0], 'k.-')
+plt.show()
 
 
 #%%

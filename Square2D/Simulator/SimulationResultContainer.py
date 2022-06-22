@@ -13,10 +13,10 @@ class SimulationResultContainer:
     def append(self, knowledge):
         print(knowledge.integrated_bernoulli_variance)
         print(knowledge.distance_travelled)
-        print(knowledge.root_mean_squared_error)
+        print(knowledge.rmse)
         self.expected_integrated_bernoulli_variance.append(knowledge.integrated_bernoulli_variance)
-        self.root_mean_squared_error.append(knowledge.root_mean_squared_error)
-        self.expected_variance.append(knowledge.expected_variance)
+        self.root_mean_squared_error.append(knowledge.rmse)
+        self.expected_variance.append(knowledge.uncertainty)
         self.distance_travelled.append(knowledge.distance_travelled)
-        self.continuous_ranked_probability_score.append(knowledge.continuous_ranked_probability_score)
+        self.continuous_ranked_probability_score.append(knowledge.crps)
 

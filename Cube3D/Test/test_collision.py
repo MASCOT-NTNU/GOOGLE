@@ -102,5 +102,5 @@ class World(DirectObject):
 base = ShowBase()
 # Run the world. Move around with the mouse to create collisions.
 w = World()
-base.run()
+base.run_twin_agents()
 
