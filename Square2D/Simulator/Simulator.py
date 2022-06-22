@@ -6,15 +6,15 @@ Date: 2022-03-24
 """
 import matplotlib.pyplot as plt
 
-from GOOGLE.Simulation_2DSquare.PlanningStrategies.Myopic2D import MyopicPlanning2D
-from GOOGLE.Simulation_2DSquare.PlanningStrategies.Lawnmower import LawnMowerPlanning
-from GOOGLE.Simulation_2DSquare.PlanningStrategies.RRTStar import RRTStar
-from GOOGLE.Simulation_2DSquare.Simulator.Sampler import Sampler
-from GOOGLE.Simulation_2DSquare.Plotting.plotting_func import *
-from GOOGLE.Simulation_2DSquare.GPKernel.GPKernel import *
-from GOOGLE.Simulation_2DSquare.Tree.Location import *
-from GOOGLE.Simulation_2DSquare.Config.Config import *
-from GOOGLE.Simulation_2DSquare.Tree.Knowledge import Knowledge
+from GOOGLE.Square2D.PlanningStrategies.Myopic2D import MyopicPlanning2D
+from GOOGLE.Square2D.PlanningStrategies.Lawnmower import LawnMowerPlanning
+from GOOGLE.Square2D.PlanningStrategies.RRTStar import RRTStar
+from GOOGLE.Square2D.Simulator.Sampler import Sampler
+from GOOGLE.Square2D.Plotting.plotting_func import *
+from GOOGLE.Square2D.GPKernel.GPKernel import *
+from GOOGLE.Square2D.Tree.Location import *
+from GOOGLE.Square2D.Config.Config import *
+from GOOGLE.Square2D.Tree.Knowledge import Knowledge
 
 
 class Simulator:

@@ -24,9 +24,9 @@ class Sampler:
                            F, self.knowledge.R)
         dist = self.getDistanceTravelled()
         y_sampled = self.ground_truth[self.ind_sample]
-        self.knowledge.continuous_ranked_probability_score.append(np.sum(get_crps_1d(y_sampled,
-                                                                                     self.knowledge.mu_cond,
-                                                                                     self.knowledge.Sigma_cond)))
+        self.knowledge.crps.append(np.sum(get_crps_1d(y_sampled,
+                                                      self.knowledge.mu_cond,
+                                                      self.knowledge.Sigma_cond)))
 
         self.knowledge.mu_cond, self.knowledge.Sigma_cond = \
             update_GP_field(mu_cond=self.knowledge.mu_cond, Sigma_cond=self.knowledge.Sigma_cond, F=F,
@@ -40,10 +40,10 @@ class Sampler:
         self.knowledge.ind_prev = self.knowledge.ind_now
         self.knowledge.ind_now = self.ind_sample
 
-        self.knowledge.root_mean_squared_error.append(mean_squared_error(self.ground_truth, 
-                                                                         self.knowledge.mu_cond,
-                                                                         squared=False))
-        self.knowledge.expected_variance.append(np.sum(np.diag(self.knowledge.Sigma_cond)))
+        self.knowledge.rmse.append(mean_squared_error(self.ground_truth,
+                                                      self.knowledge.mu_cond,
+                                                      squared=False))
+        self.knowledge.uncertainty.append(np.sum(np.diag(self.knowledge.Sigma_cond)))
         self.knowledge.integrated_bernoulli_variance.append(eibv)
         self.knowledge.distance_travelled.append(dist + self.knowledge.distance_travelled[-1])
 

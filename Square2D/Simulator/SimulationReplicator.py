@@ -51,20 +51,20 @@ class SimulationReplicator:
             print('Each replicate takes: ', t2 - t1)
 
     def plot_simulation_result(self):
-        ibv_2d = np.array(self.result_simulation_2d.expected_integrated_bernoulli_variance)
-        rmse_2d = np.array(self.result_simulation_2d.root_mean_squared_error)
-        ev_2d = np.array(self.result_simulation_2d.expected_variance)
-        crps_2d = np.array(self.result_simulation_2d.continuous_ranked_probability_score)
+        ibv_2d = np.array(self.result_simulation_2d.ibv)
+        rmse_2d = np.array(self.result_simulation_2d.rmse)
+        ev_2d = np.array(self.result_simulation_2d.uncertainty)
+        crps_2d = np.array(self.result_simulation_2d.crps)
 
-        ibv_rrtstar = np.array(self.result_simulation_rrtstar.expected_integrated_bernoulli_variance)
-        rmse_rrtstar = np.array(self.result_simulation_rrtstar.root_mean_squared_error)
-        ev_rrtstar = np.array(self.result_simulation_rrtstar.expected_variance)
-        crps_rrtstar = np.array(self.result_simulation_rrtstar.continuous_ranked_probability_score)
+        ibv_rrtstar = np.array(self.result_simulation_rrtstar.ibv)
+        rmse_rrtstar = np.array(self.result_simulation_rrtstar.rmse)
+        ev_rrtstar = np.array(self.result_simulation_rrtstar.uncertainty)
+        crps_rrtstar = np.array(self.result_simulation_rrtstar.crps)
 
-        ibv_lawnmower = np.array(self.result_simulation_lawnmower.expected_integrated_bernoulli_variance)
-        rmse_lawnmower = np.array(self.result_simulation_lawnmower.root_mean_squared_error)
-        ev_lawnmower = np.array(self.result_simulation_lawnmower.expected_variance)
-        crps_lawnmower = np.array(self.result_simulation_lawnmower.continuous_ranked_probability_score)
+        ibv_lawnmower = np.array(self.result_simulation_lawnmower.ibv)
+        rmse_lawnmower = np.array(self.result_simulation_lawnmower.rmse)
+        ev_lawnmower = np.array(self.result_simulation_lawnmower.uncertainty)
+        crps_lawnmower = np.array(self.result_simulation_lawnmower.crps)
 
         fig = plt.figure(figsize=(20, 20))
         gs = GridSpec(nrows=2, ncols=2)
@@ -139,20 +139,20 @@ class SimulationReplicator:
         pass
 
     def save_simulation_result(self):
-        ibv_2d = np.array(self.result_simulation_2d.expected_integrated_bernoulli_variance)
-        rmse_2d = np.array(self.result_simulation_2d.root_mean_squared_error)
-        ev_2d = np.array(self.result_simulation_2d.expected_variance)
-        crps_2d = np.array(self.result_simulation_2d.continuous_ranked_probability_score)
+        ibv_2d = np.array(self.result_simulation_2d.ibv)
+        rmse_2d = np.array(self.result_simulation_2d.rmse)
+        ev_2d = np.array(self.result_simulation_2d.uncertainty)
+        crps_2d = np.array(self.result_simulation_2d.crps)
 
-        ibv_rrtstar = np.array(self.result_simulation_rrtstar.expected_integrated_bernoulli_variance)
-        rmse_rrtstar = np.array(self.result_simulation_rrtstar.root_mean_squared_error)
-        ev_rrtstar = np.array(self.result_simulation_rrtstar.expected_variance)
-        crps_rrtstar = np.array(self.result_simulation_rrtstar.continuous_ranked_probability_score)
+        ibv_rrtstar = np.array(self.result_simulation_rrtstar.ibv)
+        rmse_rrtstar = np.array(self.result_simulation_rrtstar.rmse)
+        ev_rrtstar = np.array(self.result_simulation_rrtstar.uncertainty)
+        crps_rrtstar = np.array(self.result_simulation_rrtstar.crps)
 
-        ibv_lawnmower = np.array(self.result_simulation_lawnmower.expected_integrated_bernoulli_variance)
-        rmse_lawnmower = np.array(self.result_simulation_lawnmower.root_mean_squared_error)
-        ev_lawnmower = np.array(self.result_simulation_lawnmower.expected_variance)
-        crps_lawnmower = np.array(self.result_simulation_lawnmower.continuous_ranked_probability_score)
+        ibv_lawnmower = np.array(self.result_simulation_lawnmower.ibv)
+        rmse_lawnmower = np.array(self.result_simulation_lawnmower.rmse)
+        ev_lawnmower = np.array(self.result_simulation_lawnmower.uncertainty)
+        crps_lawnmower = np.array(self.result_simulation_lawnmower.crps)
 
         print(ibv_2d.shape)
         print(rmse_2d.shape)
