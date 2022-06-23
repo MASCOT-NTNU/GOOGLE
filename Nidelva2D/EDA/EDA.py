@@ -327,7 +327,7 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-    # e.load_sinmod_data(data_exists=True)
+    e.load_sinmod_data(data_exists=True)
     # e.plot_prior()
     # e.plot_sinmod_on_grf_grid()
     # e.plot_sinmod_on_grf_grid()
