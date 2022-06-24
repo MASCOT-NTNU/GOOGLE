@@ -13,7 +13,7 @@ import numpy as np
 from usr_func import get_ibv, normalise, vectorise
 import time
 
-PATH_THRESHOLD = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/Coef/"
+# PATH_THRESHOLD = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/Coef/"
 
 # # == Setting
 PENALTY_AZIMUTH = 0
@@ -35,7 +35,7 @@ class CostValley:
     def load_threshold(self):
         self.threshold = 27
         print("Default threshold: ", self.threshold)
-        self.threshold = np.load(PATH_THRESHOLD + "threshold.npy")
+        self.threshold = np.load(FILEPATH + "../Experiments/20220511/Coef/threshold.npy")
         print("Updated threshold: ", self.threshold)
         print("CV2: Threshold is loaded successfully!")
 

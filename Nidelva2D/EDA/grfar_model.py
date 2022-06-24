@@ -15,7 +15,7 @@ from GOOGLE.Nidelva2D.Config.Config import FILEPATH, NUGGET
 from usr_func import vectorise
 
 
-PATH_COEF = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/Coef/"
+# PATH_COEF = "/Users/yaolin/HomeOffice/GOOGLE/Experiments/20220511/Coef/"
 
 # == Parameters
 SIGMA = 1.5 # used in the mission
@@ -44,8 +44,8 @@ class GRFAR:
         print("GRF1: Grid is loaded successfully!")
 
     def load_prior_mean(self):
-        self.beta1, self.beta0 = np.load(PATH_COEF + "Google_coef.npy") # !!! different in HITL
-        self.mu_sinmod = vectorise(pd.read_csv(PATH_COEF + "data_interpolated.csv")['salinity'].to_numpy())
+        self.beta1, self.beta0 = np.load(FILEPATH + "../Experiments/20220511/Coef/Google_coef.npy") # !!! different in HITL
+        self.mu_sinmod = vectorise(pd.read_csv(FILEPATH + "../Experiments/20220511/Coef/data_interpolated.csv")['salinity'].to_numpy())
         self.mu_prior = self.mu_sinmod * self.beta1 + self.beta0
         print("GRF2: Prior mean is loaded successfully!")
 
