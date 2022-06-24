@@ -6,7 +6,7 @@ Date: 2022-02-25
 """
 
 from usr_func import *
-from GOOGLE.Simulation_2DNidelva.Config.Config import LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from GOOGLE.Nidelva2D.Config.Config import LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 
 
 class HexgonalGrid2DGenerator:

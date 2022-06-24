@@ -6,7 +6,7 @@ Date: 2022-05-06
 """
 
 
-from GOOGLE.Simulation_2DNidelva.RRTStarCV import TARGET_RADIUS, STEPSIZE
+from GOOGLE.Nidelva2D.RRTStarCV import TARGET_RADIUS, STEPSIZE
 import time
 import numpy as np
 import matplotlib.pyplot as plt

@@ -223,7 +223,7 @@ class RRTStarHome:
         from matplotlib.patches import Ellipse
         import math
         from matplotlib.cm import get_cmap
-        from GOOGLE.Simulation_2DNidelva.CostValley import CostValley
+        from GOOGLE.Nidelva2D.CostValley import CostValley
 
         self.mu = pd.read_csv(FILEPATH + "Config/data_interpolated.csv")['salinity'].to_numpy()
         DM = cdist(self.grf_grid, self.grf_grid)

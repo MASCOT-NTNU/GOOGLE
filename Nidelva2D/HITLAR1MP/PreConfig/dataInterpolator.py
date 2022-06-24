@@ -7,7 +7,7 @@ Date: 2022-03-16
 import numpy as np
 import pandas as pd
 from DataHandler.SINMOD import SINMOD
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from usr_func import xy2latlon
 
 grf_grid = pd.read_csv(FILEPATH+"Config/GRFGrid.csv").to_numpy()
