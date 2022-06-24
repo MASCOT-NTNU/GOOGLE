@@ -5,6 +5,7 @@ Contact: yaolin.ge@ntnu.no
 Date: 2022-05-13
 """
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from GOOGLE.Nidelva2D.EDA.grfar_model import GRFAR
 from GOOGLE.Nidelva2D.Config.Config import *
@@ -15,16 +16,16 @@ from GOOGLE.Nidelva2D.EDA.RRTStarCV import RRTStarCV
 from GOOGLE.Nidelva2D.EDA.CostValley import CostValley
 from skgstat import Variogram
 
-DATAPATH = "/Users/yaolin/OneDrive - NTNU/MASCOT_PhD/Data/Nidelva/20220511/GOOGLE/"
+DATAPATH = "/Users/yaolin/OneDrive - NTNU/MASCOT_PhD/Data/Nidelva/20220511/"
 if not os.path.exists(DATAPATH):
-    DATAPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Data/Nidelva/20220511/GOOGLE/"
+    DATAPATH = "/Users/yaoling/OneDrive - NTNU/MASCOT_PhD/Data/Nidelva/20220511/"
 SINMODPATH = os.getcwd() + "/GOOGLE/Experiments/20220511/"
-FIGPATH = os.getcwd() + "GOOGLE/Experiments/20220511/fig/"
+FIGPATH = os.getcwd() + "/GOOGLE/Nidelva2D/fig/EDA/20220511/"
 AUV_TIMESTEP = 170
 # == Set up
 LAT_START = 63.456232
 LON_START = 10.435198
-#%%
+
 
 class EDA:
 
@@ -35,7 +36,9 @@ class EDA:
         self.load_cost_valley()
 
     def load_auv_data(self):
-        self.data_auv = pd.read_csv(DATAPATH + "data_sync.csv").to_numpy()
+        self.data_auv = pd.read_csv(DATAPATH + "GOOGLE/data_sync.csv").to_numpy()
+        # self.data_auv = pd.read_csv(DATAPATH + "data_sync.csv").to_numpy()
+        # self.data_auv = pd.read_csv(DATAPATH + "d.csv").to_numpy()
         self.timestamp_auv = self.data_auv[:, 0]
         self.lat_auv = self.data_auv[:, 1]
         self.lon_auv = self.data_auv[:, 2]
@@ -52,6 +55,7 @@ class EDA:
             self.sinmod.get_data_at_coordinates(coordinates_auv)
         else:
             self.data_sinmod = pd.read_csv(SINMODPATH+"data_sinmod.csv")
+            # self.data_sinmod = pd.read_csv(SINMODPATH+"data_sinmod_google.csv")
             print("SINMOD data is loaded successfully!")
             print(self.data_sinmod.head())
             self.data_sinmod = self.data_sinmod.to_numpy()
@@ -88,7 +92,7 @@ class EDA:
         df.to_csv(FILEPATH + "../GIS/csv/polygon_border.csv", index=False)
 
         polygon = pd.read_csv(FILEPATH + "Config/polygon_obstacle.csv").to_numpy()
-        polygon = np.append(polygon, polygon[0, :].reshape(1, -1), axis=0)
+        polygon = np.append(polygon, polygon[0, :].reshape(1, -1), axis=0)  # to make polygon complete
         x = polygon[:, 0]
         y = polygon[:, 1]
         lat, lon = xy2latlon(x, y, LATITUDE_ORIGIN, LONGITUDE_ORIGIN)
@@ -149,11 +153,11 @@ class EDA:
 
         plt.figure(figsize=(12, 10))
         plotf_vector(lon=lon_grid, lat=lat_grid, values=self.grfar_model.mu_prior,
-                     title="Prior on grid on 20220511",
+                     title="Prior on grid on 20220510",
                      cmap=get_cmap("BrBG", 10), cbar_title="Salinity", vmin=2, vmax=32, stepsize=1, threshold=self.CV.threshold,
                      polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
                      ylabel="Lat [deg]")
-        # plt.savefig(figpath + "prior.jpg")
+        plt.savefig(FIGPATH + "prior.jpg")
         # plt.plot(self.lon_auv[:3000], self.lat_auv[:3000], 'r-.')
         plt.show()
 
@@ -198,56 +202,59 @@ class EDA:
                 self.grfar_model.update_grfar_model(ind_measured, measurements, timestep=0)
                 enablePrint()
 
-            # ### MEAN
-            # plt.figure(figsize=(12, 10))
-            # plotf_vector(lon=lon_grid, lat=lat_grid, values=self.grfar_model.mu_cond,
-            #              title="Condional field over {:03d} iterations".format(counter),
-            #              cmap=get_cmap("BrBG", 10), cbar_title="Salinity", vmin=2, vmax=32, stepsize=1, threshold=self.CV.threshold,
-            #              polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
-            #              ylabel="Lat [deg]")
-            # plt.plot(self.lon_auv[:ind_end], self.lat_auv[:ind_end], 'y-.')
-            # plt.plot(LON_START, LAT_START, 'rs', ms=10)
-            # plt.plot(LONGITUDE_HOME, LATITUDE_HOME, 'y.', ms=150, alpha=.5)
-            # trj = np.array(trajectory)
-            # plt.plot(trj[:, 1], trj[:, 0], 'k.')
-            # plt.plot(lon_grid[ind_measured], lat_grid[ind_measured], 'b^')
-            # plt.savefig(FIGPATH + "mu_cond/P_{:03d}.jpg".format(counter))
-            # plt.close("all")
-            #
-            # ### STD
-            # plt.figure(figsize=(12, 10))
-            # plotf_vector(lon=lon_grid, lat=lat_grid, values=np.sqrt(np.diag(self.grfar_model.Sigma_cond)),
-            #              title="Uncertainty field over {:03d} iterations".format(counter),
-            #              cmap=get_cmap("RdBu", 10), cbar_title="Std", vmin=0, vmax=2.4, stepsize=.1,
-            #              polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
-            #              ylabel="Lat [deg]")
-            # plt.plot(self.lon_auv[:ind_end], self.lat_auv[:ind_end], 'y-.')
-            # plt.plot(LON_START, LAT_START, 'rs', ms=10)
-            # plt.plot(LONGITUDE_HOME, LATITUDE_HOME, 'y.', ms=150, alpha=.5)
-            # trj = np.array(trajectory)
-            # plt.plot(trj[:, 1], trj[:, 0], 'k.')
-            # plt.plot(lon_grid[ind_measured], lat_grid[ind_measured], 'b^')
-            # plt.savefig(FIGPATH + "Sigma_cond/P_{:03d}.jpg".format(counter))
-            # plt.close("all")
-            #
-            # ### EP
-            # self.ep = get_excursion_prob(self.grfar_model.mu_cond.flatten().astype(np.float32),
-            #                    np.diag(self.grfar_model.Sigma_cond).astype(np.float32),
-            #                    self.CV.threshold.astype(np.float32))
-            # plt.figure(figsize=(12, 10))
-            # plotf_vector(lon=lon_grid, lat=lat_grid, values=self.ep,
-            #              title="Excursion probability field over {:03d} iterations".format(counter),
-            #              cmap=get_cmap("GnBu", 10), cbar_title="EP", vmin=0, vmax=1.11, stepsize=.1, threshold=.5,
-            #              polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
-            #              ylabel="Lat [deg]")
-            # plt.plot(self.lon_auv[:ind_end], self.lat_auv[:ind_end], 'y-.')
-            # plt.plot(LON_START, LAT_START, 'rs', ms=10)
-            # plt.plot(LONGITUDE_HOME, LATITUDE_HOME, 'y.', ms=150, alpha=.5)
-            # trj = np.array(trajectory)
-            # plt.plot(trj[:, 1], trj[:, 0], 'k.')
-            # plt.plot(lon_grid[ind_measured], lat_grid[ind_measured], 'b^')
-            # plt.savefig(FIGPATH + "ep_cond/P_{:03d}.jpg".format(counter))
-            # plt.close("all")
+            ### MEAN
+            plt.figure(figsize=(12, 10))
+            plotf_vector(lon=lon_grid, lat=lat_grid, values=self.grfar_model.mu_cond,
+                         title="Condional field over {:03d} iterations".format(counter),
+                         cmap=get_cmap("BrBG", 10), cbar_title="Salinity", vmin=2, vmax=32, stepsize=1, threshold=self.CV.threshold,
+                         polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
+                         ylabel="Lat [deg]")
+            plt.plot(self.lon_auv[:ind_end], self.lat_auv[:ind_end], 'y-.')
+            plt.plot(LON_START, LAT_START, 'rs', ms=10)
+            plt.plot(LONGITUDE_HOME, LATITUDE_HOME, 'y.', ms=150, alpha=.5)
+            trj = np.array(trajectory)
+            plt.plot(trj[:, 1], trj[:, 0], 'k.')
+            plt.plot(lon_grid[ind_measured], lat_grid[ind_measured], 'b^')
+            plt.savefig(FIGPATH + "mu_cond/P_{:03d}.jpg".format(counter))
+            # plt.savefig(FIGPATH + "mu_cond.jpg")
+            plt.close("all")
+
+            ### STD
+            plt.figure(figsize=(12, 10))
+            plotf_vector(lon=lon_grid, lat=lat_grid, values=np.sqrt(np.diag(self.grfar_model.Sigma_cond)),
+                         title="Uncertainty field over {:03d} iterations".format(counter),
+                         cmap=get_cmap("RdBu", 10), cbar_title="Std", vmin=0, vmax=2.4, stepsize=.1,
+                         polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
+                         ylabel="Lat [deg]")
+            plt.plot(self.lon_auv[:ind_end], self.lat_auv[:ind_end], 'y-.')
+            plt.plot(LON_START, LAT_START, 'rs', ms=10)
+            plt.plot(LONGITUDE_HOME, LATITUDE_HOME, 'y.', ms=150, alpha=.5)
+            trj = np.array(trajectory)
+            plt.plot(trj[:, 1], trj[:, 0], 'k.')
+            plt.plot(lon_grid[ind_measured], lat_grid[ind_measured], 'b^')
+            plt.savefig(FIGPATH + "Sigma_cond/P_{:03d}.jpg".format(counter))
+            # plt.savefig(FIGPATH + "Sigma_cond.jpg")
+            plt.close("all")
+
+            ### EP
+            self.ep = get_excursion_prob(self.grfar_model.mu_cond.flatten().astype(np.float32),
+                               np.diag(self.grfar_model.Sigma_cond).astype(np.float32),
+                               self.CV.threshold.astype(np.float32))
+            plt.figure(figsize=(12, 10))
+            plotf_vector(lon=lon_grid, lat=lat_grid, values=self.ep,
+                         title="Excursion probability field over {:03d} iterations".format(counter),
+                         cmap=get_cmap("GnBu", 10), cbar_title="EP", vmin=0, vmax=1.11, stepsize=.1, threshold=.5,
+                         polygon_border=polygon_border, polygon_obstacle=polygon_obstacle, xlabel="Lon [deg]",
+                         ylabel="Lat [deg]")
+            plt.plot(self.lon_auv[:ind_end], self.lat_auv[:ind_end], 'y-.')
+            plt.plot(LON_START, LAT_START, 'rs', ms=10)
+            plt.plot(LONGITUDE_HOME, LATITUDE_HOME, 'y.', ms=150, alpha=.5)
+            trj = np.array(trajectory)
+            plt.plot(trj[:, 1], trj[:, 0], 'k.')
+            plt.plot(lon_grid[ind_measured], lat_grid[ind_measured], 'b^')
+            plt.savefig(FIGPATH + "ep_cond/P_{:03d}.jpg".format(counter))
+            # plt.savefig(FIGPATH + "ep_cond.jpg")
+            plt.close("all")
         pass
 
     def assimilate_data(self, dataset):
@@ -328,7 +335,7 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-    # e.load_sinmod_data(data_exists=True)
+    e.load_sinmod_data(data_exists=True)
     # e.plot_prior()
     # e.plot_sinmod_on_grf_grid()
     # e.plot_sinmod_on_grf_grid()
@@ -340,15 +347,62 @@ if __name__ == "__main__":
     # e.save_grid_to_gis()
 
 
- #%%
+#%%
+plt.scatter(e.lon_auv[:], e.lat_auv[:], c=e.salinity_auv[:], cmap=get_cmap("BrBG", 10), vmin=20, vmax=30)
+plt.colorbar()
+plt.show()
+#%%
+plt.scatter(e.data_sinmod[:, 1], e.data_sinmod[:, 0], c=e.data_sinmod[:, -1], cmap=get_cmap("BrBG", 10), vmin=20, vmax=30)
+plt.colorbar()
+plt.show()
+
+#%%
+r = e.salinity_auv - e.data_sinmod[:, -1].flatten()
+
+# lon = e.grf_grid[:, 1]
+# lat = e.grf_grid[:, 0]
+polygon_border = pd.read_csv(FILEPATH + "Test/polygon_border.csv").to_numpy()
+polygon_obstacle = pd.read_csv(FILEPATH + "Test/polygon_obstacle.csv").to_numpy()
+
+
+plt.figure(figsize=(12, 10))
+plt.scatter(e.data_sinmod[:, 1], e.data_sinmod[:, 0], c=r, cmap=get_cmap("BrBG", 10), vmin=-5, vmax=5)
+# plt.colorbar()
+# plt.xlim([np.amin(lon), np.amax(lon)])
+# plt.ylim([np.amin(lat), np.amax(lat)])
+plt.title("Salinity discrepancy betwen AUV and SINMOD")
+plt.xlabel("Lon [deg]")
+plt.ylabel("Lat [deg]")
+plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-.', lw=2)
+plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-.', lw=2)
+cbar = plt.colorbar(ax=plt.gca())
+cbar.ax.set_title("Residual")
+plt.savefig(FIGPATH + "residual.pdf")
+plt.show()
+# df = pd.DataFrame(e.data_sinmod[7000:], columns=['lat', 'lon', 'depth', 'salinity'])
+# df.to_csv(DATAPATH + "data_sinmod_google.csv", index=False)
+
+
+# d1 = pd.read_csv(DATAPATH + "d1.csv").to_numpy()
+# d2 = pd.read_csv(DATAPATH + "d2.csv").to_numpy()
+#
+# d3 = np.vstack((d1[7000:], d2))
+#%%
+plt.scatter(d3[:, 2], d3[:, 1], c=d3[:, -2], cmap=get_cmap("RdBu", 10), vmin=20, vmax=30)
+plt.colorbar()
+plt.show()
+df = pd.DataFrame(d3, columns=['timestamp', 'lat', 'lon', 'depth', 'salinity', 'temperature'])
+df.to_csv(DATAPATH + "d.csv", index=False)
+
+#%%
 # plt.scatter(e.grf_grid[:, 1], e.grf_grid[:, 0], c=e.grfar_model.mu_prior, cmap=get_cmap("BrBG", 10), vmin=10, vmax=27)
 # plt.colorbar()
 # plt.plot(LON_START, LAT_START, 'rs')
 # plt.show()
-df = pd.read_csv(FILEPATH + "../GIS/csv/polygon_obstacle.csv").to_numpy()
+# df = pd.read_csv(FILEPATH + "../GIS/csv/polygon_obstacle.csv").to_numpy()
 # e.save_grid_to_gis()
-plt.plot(df[:, 1], df[:, 0], 'k.-')
-plt.show()
+# plt.plot(df[:, 1], df[:, 0], 'k.-')
+# plt.show()
 
 
 #%%

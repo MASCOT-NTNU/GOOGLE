@@ -2,85 +2,139 @@
 This script generates the next waypoint based on the current knowledge and previous path
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-03-18
+Date: 2022-06-22
 """
 
 """
 Usage:
-lat_next, lon_next = MyopicPlanning_2D(Knowledge, Experience).next_waypoint
+loc_next = MyopicPlanning2D(Knowledge).next_waypoint
 """
 
-from usr_func import *
-from GOOGLE.Simulation_2DNidelva.Tree.Location import LocationWGS
-import time
+
+from usr_func import get_ibv, vectorise, time, np, pd, plt
+import pickle
+from GOOGLE.Nidelva2D.Config.Config import THRESHOLD, FILEPATH
+from GOOGLE.Nidelva2D.GRF import GRF
 
 
-class MyopicPlanning_2D:
+class MyopicPlanning2D:
 
-    def __init__(self, knowledge):
-        self.knowledge = knowledge
-        self.find_next_waypoint()
+    def __init__(self, grf_model=None, waypoint_graph=None, hash_neighbours=None, hash_waypoint2grf=None, echo=False):
+        self.grf_model = grf_model
+        self.waypoint_graph = waypoint_graph
+        self.hash_neighbours = hash_neighbours
+        self.hash_waypoint2grf = hash_waypoint2grf
+        self.echo = echo
+        print("Myopic2D path planner is ready!")
 
-    def find_next_waypoint(self):
-        self.find_candidates_loc()
-        self.filter_candidates_loc()
+    def update_legal_indices(self, ind_legal=None):
+        if ind_legal is None:
+            ind_legal = []
+        self.ind_legal = ind_legal
+
+    def find_next_waypoint_using_min_eibv(self, ind_current=None, ind_previous=None, ind_visited=None):
+        self.ind_current = ind_current
+        self.ind_previous = ind_previous
+        self.ind_visited = ind_visited
+
         t1 = time.time()
-        id = self.knowledge.ind_cand_filtered
-        eibv = []
-        for k in range(len(id)):
-            F = getFVector(id[k], self.knowledge.coordinates_wgs.shape[0])
-            eibv.append(get_eibv_1d(self.knowledge.gp_kernel.threshold, self.knowledge.gp_kernel.mu_cond,
-                                    self.knowledge.gp_kernel.Sigma_cond, F, self.knowledge.gp_kernel.R))
+        self.find_all_neighbours()
         t2 = time.time()
-        if len(eibv) == 0:  # in case it is in the corner and not found any valid candidate locations
-            while True:
-                ind_next = self.search_for_new_location()
-                if not ind_next in self.knowledge.ind_visited:
-                    # print("Found new: ", ind_next)
-                    self.knowledge.ind_sample_waypoint = ind_next
-                    break
+        if self.echo:
+            print("Time consumed for neighbour: ", t2 - t1)
+        t1 = time.time()
+        self.smooth_filter_neighbours()
+        t2 = time.time()
+        if self.echo:
+            print("Time consumed for smoothing: ", t2 - t1)
+
+        self.EIBV = []
+        t1 = time.time()
+        for ind_candidate in self.ind_candidates:  # don't need parallel, since candidate number is small, too slow to run mp
+            self.EIBV.append(self.get_eibv_from_grf_model(self.hash_waypoint2grf[ind_candidate]))
+        if self.EIBV:
+            self.ind_next = self.ind_candidates[np.argmin(self.EIBV)]
         else:
-            self.knowledge.ind_sample_waypoint = self.knowledge.ind_cand_filtered[np.argmin(np.array(eibv))]
+            if len(self.ind_neighbours) > 1:
+                self.ind_next = self.ind_neighbours[np.random.randint(len(self.ind_neighbours))]
+            else:
+                print("WARN")
 
-    def find_candidates_loc(self):
-        delta_x, delta_y = latlon2xy(self.knowledge.coordinates_wgs[:, 0], self.knowledge.coordinates_wgs[:, 1],
-                                     self.knowledge.coordinates_wgs[self.knowledge.ind_now, 0],
-                                     self.knowledge.coordinates_wgs[self.knowledge.ind_now, 1])  # using the distance
-        distance_vector = np.sqrt(delta_x ** 2 + delta_y ** 2)
-        self.knowledge.ind_cand = np.where((distance_vector <= self.knowledge.distance_neighbour_radar))[0]
-
-    def filter_candidates_loc(self):
-        id = []  # ind vector for containing the filtered desired candidate location
-        t1 = time.time()
-        dx1, dy1 = latlon2xy(self.knowledge.coordinates_wgs[self.knowledge.ind_now, 0],
-                             self.knowledge.coordinates_wgs[self.knowledge.ind_now, 1],
-                             self.knowledge.coordinates_wgs[self.knowledge.ind_prev, 0],
-                             self.knowledge.coordinates_wgs[self.knowledge.ind_prev, 1])
-        vec1 = vectorise([dx1, dy1])
-        for i in range(len(self.knowledge.ind_cand)):
-            if self.knowledge.ind_cand[i] != self.knowledge.ind_now:
-                if not self.knowledge.ind_cand[i] in self.knowledge.ind_visited:
-                    dx2, dy2 = latlon2xy(self.knowledge.coordinates_wgs[self.knowledge.ind_cand[i], 0],
-                                         self.knowledge.coordinates_wgs[self.knowledge.ind_cand[i], 1],
-                                         self.knowledge.coordinates_wgs[self.knowledge.ind_now, 0],
-                                         self.knowledge.coordinates_wgs[self.knowledge.ind_now, 1])
-                    vec2 = vectorise([dx2, dy2])
-                    if np.dot(vec1.T, vec2) >= 0:
-                        id.append(self.knowledge.ind_cand[i])
-        # print(id)
-        id = np.unique(np.array(id))  # filter out repetitive candidate locations
-        self.knowledge.ind_cand_filtered = id  # refresh old candidate location
         t2 = time.time()
+        print("Path planning takes: ", t2 - t1)
+        return self.ind_next
 
-    def search_for_new_location(self):
-        ind_next = np.random.randint(len(self.knowledge.coordinates_wgs))
-        return ind_next
+    def find_all_neighbours(self):
+        self.ind_neighbours = self.hash_neighbours[self.ind_current]
+        self.ind_neighbours = list(set(self.ind_neighbours).intersection(self.ind_legal))
+        print("legal neighbours: ", self.ind_neighbours)
 
-    @property
-    def next_waypoint(self):
-        return LocationWGS(self.knowledge.coordinates_wgs[self.knowledge.ind_sample_waypoint, 0],
-                           self.knowledge.coordinates_wgs[self.knowledge.ind_sample_waypoint, 1])
+    def smooth_filter_neighbours(self):
+        vec1 = self.get_vec_from_indices(self.ind_previous, self.ind_current)
+        self.ind_candidates = []
+        for i in range(len(self.ind_neighbours)):
+            ind_candidate = self.ind_neighbours[i]
+            if not ind_candidate in self.ind_visited:
+                vec2 = self.get_vec_from_indices(self.ind_current, ind_candidate)
+                if np.dot(vec1.T, vec2) >= 0:
+                    self.ind_candidates.append(ind_candidate)
+
+    def get_vec_from_indices(self, ind_start, ind_end):
+        x_start = self.waypoint_graph[ind_start, 0]
+        y_start = self.waypoint_graph[ind_start, 1]
+        x_end = self.waypoint_graph[ind_end, 0]
+        y_end = self.waypoint_graph[ind_end, 1]
+
+        dx = x_end - x_start
+        dy = y_end - y_start
+        return vectorise([dx, dy])
+
+    def get_eibv_from_grf_model(self, ind_candidate):
+        t1 = time.time()
+        sigma_diag = self.grf_model.get_posterior_variance_at_ind(ind_candidate)
+        t2 = time.time()
+        if self.echo:
+            print("get post variance take: ", t2-t1)
+        t1 = time.time()
+        eibv = get_ibv(self.grf_model.mu_cond, sigma_diag, THRESHOLD)
+        t2 = time.time()
+        if self.echo:
+            print("eibv takes; ", t2 - t1)
+        return eibv
+
+    def check_mp(self):
+        self.grf_model = GRF()
+        self.waypoint_graph = pd.read_csv(FILEPATH + "Config/WaypointGraph.csv").to_numpy()
+        f_neighbour = open(FILEPATH + "Config/HashNeighbours.p", 'rb')
+        self.hash_neighbours = pickle.load(f_neighbour)
+        f_neighbour.close()
+
+        f2 = open(FILEPATH + "Config/HashWaypoint2GRF.p", 'rb')
+        f2.close()
+        self.hash_waypoint2grf = pickle.load(f2)
+
+        i_now = int(self.waypoint_graph.shape[0]/2) - 190
+        i_prev = i_now - 1
+        ind_legal = np.arange(i_now)
+        self.update_legal_indices(ind_legal=ind_legal)
+
+        ind = self.find_next_waypoint_using_min_eibv(i_now, i_prev, [])
+        print("ind_neighbour: ", self.ind_neighbours)
+
+        x = self.waypoint_graph[:, 0]
+        y = self.waypoint_graph[:, 1]
+        plt.plot(x, y, 'k.', alpha=.3)
+        plt.plot(x[i_now], y[i_now], 'b.', markersize=20)
+        plt.plot(x[i_prev], y[i_prev], 'y.', markersize=20)
+        plt.plot(x[self.ind_candidates], y[self.ind_candidates], 'g.', markersize=20)
+        plt.plot(x[ind], y[ind], 'r.', markersize=20)
+        plt.plot(x[ind_legal], y[ind_legal], 'c*', alpha=.2)
+        plt.plot(x[self.ind_neighbours], y[self.ind_neighbours], 'c^', alpha=.1, markersize=30)
+        plt.show()
 
 
+if __name__ == "__main__":
+    mp = MyopicPlanning2D()
+    mp.check_mp()
 
 
