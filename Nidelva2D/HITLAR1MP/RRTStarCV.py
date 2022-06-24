@@ -267,7 +267,7 @@ class RRTStarCV:
         from matplotlib.patches import Ellipse
         import math
         from matplotlib.cm import get_cmap
-        from GOOGLE.Simulation_2DNidelva.CostValley import CostValley
+        from GOOGLE.Nidelva2D.CostValley import CostValley
 
         self.mu = pd.read_csv(FILEPATH + "Config/data_interpolated.csv")['salinity'].to_numpy()
         DM = cdist(self.grf_grid, self.grf_grid)
@@ -308,6 +308,7 @@ class RRTStarCV:
         # plt.plot(self.random_locations[:, 1], self.random_locations[:, 0], 'r.', alpha=.05)
         # plt.plot(self.grf_grid[:, 1], self.grf_grid[:, 0], 'g.')
         # plt.show()
+
 
 if __name__ == "__main__":
     r = RRTStarCV()

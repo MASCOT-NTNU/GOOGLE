@@ -8,7 +8,7 @@ Date: 2022-04-25
 import numpy as np
 import pandas as pd
 from usr_func import latlon2xy
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 
 box = np.array([[63.4441527, 10.3296626],
                 [63.4761121, 10.3948786],

@@ -6,7 +6,7 @@ Date: 2022-03-23
 """
 
 
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH
 import numpy as np
 N = int(1e6)
 ind = np.random.rand(N)

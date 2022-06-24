@@ -59,7 +59,6 @@ class EDA:
             print("SINMOD data is loaded successfully!")
             print(self.data_sinmod.head())
             self.data_sinmod = self.data_sinmod.to_numpy()
-        pass
 
     def load_grfar_model(self):
         self.grfar_model = GRFAR()
@@ -335,7 +334,7 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-    e.load_sinmod_data(data_exists=True)
+    e.load_sinmod_data(data_exists=False)
     # e.plot_prior()
     # e.plot_sinmod_on_grf_grid()
     # e.plot_sinmod_on_grf_grid()
