@@ -6,7 +6,7 @@ Date: 2022-04-26
 """
 import matplotlib.pyplot as plt
 
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, X_HOME, Y_HOME
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, X_HOME, Y_HOME
 from usr_func import Polygon, Point, LineString
 import pandas as pd
 import numpy as np
