@@ -6,8 +6,8 @@ Date: 2022-04-25
 """
 import matplotlib.pyplot as plt
 
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, THRESHOLD, NUGGET
-from GOOGLE.Simulation_2DNidelva.Budget import Budget
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, THRESHOLD, NUGGET
+from GOOGLE.Nidelva2D.Budget import Budget
 import pandas as pd
 import numpy as np
 from usr_func import get_ibv, normalise, vectorise

@@ -2,11 +2,11 @@
 This script generates regular hexgonal grid points within certain boundary
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-02-25
+Date: 2022-07-11
 """
 
 from usr_func import *
-from GOOGLE.Simulation_2DNidelva.Config.Config import LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from GOOGLE.Nidelva2D.Config.Config import LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 
 
 class HexgonalGrid2DGenerator:

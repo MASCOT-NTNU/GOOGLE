@@ -2,12 +2,12 @@
 This script generates grid and save them
 Author: Yaolin Ge
 Contact: yaolin.ge@ntnu.no
-Date: 2022-03-16
+Date: 2022-07-11
 """
 import pandas as pd
 
-from GOOGLE.Simulation_2DNidelva.PreConfig.HexagonalGrid2D import HexgonalGrid2DGenerator
-from GOOGLE.Simulation_2DNidelva.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+from GOOGLE.Nidelva2D.PreConfig.HexagonalGrid2D import HexgonalGrid2DGenerator
+from GOOGLE.Nidelva2D.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from usr_func import *
 
 # == Setup
