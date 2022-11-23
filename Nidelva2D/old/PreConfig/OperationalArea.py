@@ -7,9 +7,8 @@ Date: 2022-02-23
 
 import geopandas
 import pandas as pd
-
-from usr_func import *
-from GOOGLE.Nidelva2D.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
+# from usr_func import *
+from Nidelva2D.old.Config.Config import FILEPATH, LATITUDE_ORIGIN, LONGITUDE_ORIGIN
 from rdp import rdp  # used to smooth path
 BUFFER_SIZE_BORDER = -200  # [m]
 BUFFER_SIZE_MUNKHOLMEN = 150  # [m]
