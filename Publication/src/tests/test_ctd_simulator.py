@@ -34,7 +34,7 @@ class TestCTDSimulator(TestCase):
         truth = self.ctd.get_ground_truth()
         # value = normalize(truth, 16, 32)
         value = truth
-        plg = self.f.get_polygon_border()
+        plg = self.f.get_wgs_polygon_border()
         plt.figure(figsize=(15, 12))
         # plt.scatter(grid[:, 1], grid[:, 0], c=truth, cmap=get_cmap("BrBG", 10), vmin=10, vmax=35)
         # plt.colorbar()

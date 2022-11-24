@@ -29,7 +29,7 @@ class Budget:
     __MARGIN = 100  # when ellipse b is smaller than this, should go home.
     __grid = None
     __budget = 100000  # metres for the operation in the sea.
-    __goal = __config.get_loc_home()
+    __goal = __config.get_loc_end()
     __x_now, __y_now = __config.get_loc_start()
     __x_prev, __y_prev = __config.get_loc_start()
     __budget_field = None

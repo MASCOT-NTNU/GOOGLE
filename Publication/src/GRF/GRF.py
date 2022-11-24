@@ -3,9 +3,10 @@ GRF handles the following functions
 - udpate the field.
 - assimilate data.
 - get eibv for a specific location.
+
+It does not employ the temporal effect for now.
 """
 from Field import Field
-from Delft3D import Delft3D
 from usr_func.vectorize import vectorize
 from usr_func.checkfolder import checkfolder
 from scipy.spatial.distance import cdist
@@ -20,35 +21,35 @@ import pandas as pd
 
 
 class GRF:
-    # parameters
-    __distance_matrix = None
-    __sigma = 1.
-    __lateral_range = 3000
-    __nugget = .04
-    __threshold = 30
-
-    # computed
-    __eta = 4.5 / __lateral_range  # decay factor
-    __tau = np.sqrt(__nugget)  # measurement noise
-
-    # properties
-    __mu = None
-    __Sigma = None
-    __eibv_field = None
-    __ivr_field = None
-
-    # data sources
-    __delft3d = Delft3D()
-
-    # field and grid
-    field = Field()
-    grid = field.get_grid()
-    Ngrid = len(grid)
-    __Fgrf = np.ones([1, Ngrid])
-    __xg = vectorize(grid[:, 0])
-    __yg = vectorize(grid[:, 1])
-
+    """
+    GRF
+    """
     def __init__(self) -> None:
+        # parameters
+        self.__distance_matrix = None
+        self.__sigma = 2.8
+        self.__lateral_range = 1200  # 680 in the experiment
+        self.__nugget = .7
+        self.__threshold = 27
+
+        # computed
+        self.__eta = 4.5 / self.__lateral_range  # decay factor
+        self.__tau = np.sqrt(self.__nugget)  # measurement noise
+
+        # properties
+        self.__mu = None
+        self.__Sigma = None
+        self.__eibv_field = None
+        self.__ivr_field = None
+
+        # field and grid
+        self.field = Field()
+        self.grid = self.field.get_grid()
+        self.Ngrid = len(self.grid)
+        self.__Fgrf = np.ones([1, self.Ngrid])
+        self.__xg = vectorize(self.grid[:, 0])
+        self.__yg = vectorize(self.grid[:, 1])
+
         # s0: check datafolders
         t = int(time.time())
         f = os.getcwd() + "/GRF/data/"
@@ -61,20 +62,14 @@ class GRF:
         checkfolder(self.foldername_mu)
         checkfolder(self.foldername_Sigma)
 
-        resume = get_resume_state()
-        # s1: setup
-        if not resume:
-            # s0: compute matern kernel
-            self.__construct_grf_field()
+        # s0: compute matern kernel
+        self.__construct_grf_field()
 
-            # s1: update prior mean
-            self.__construct_prior_mean()
+        # s1: update prior mean
+        self.__construct_prior_mean()
 
-            # s2: set initial data saving index
-            self.__cnt_data_saving = 0
-        else:
-            # s0: in case it is aborted
-            self.__load_conditional_field()
+        # s2: set initial data saving index
+        self.__cnt_data_saving = 0
 
     def __construct_grf_field(self) -> None:
         """ Construct distance matrix and thus Covariance matrix for the kernel. """
@@ -84,27 +79,11 @@ class GRF:
 
     def __construct_prior_mean(self) -> None:
         # s0: get delft3d dataset
-        dataset_delft3d = self.__delft3d.get_dataset()
+        dataset_sinmod = pd.read_csv("./../prior/sinmod.csv").to_numpy()
         # s1: interpolate onto grid.
-        dm_grid_delft3d = cdist(self.grid, dataset_delft3d[:, :2])
+        dm_grid_delft3d = cdist(self.grid, dataset_sinmod[:, :2])
         ind_close = np.argmin(dm_grid_delft3d, axis=1)
-        self.__mu = dataset_delft3d[ind_close, 2].reshape(-1, 1)
-
-    def __load_conditional_field(self) -> None:
-        """
-        Load data from suspended conditional salinity field and covariance structure.
-        """
-        files_mu = os.listdir(self.foldername_mu)
-        files_Sigma = os.listdir(self.foldername_Sigma)
-        if len(files_mu) > 0 and len(files_Sigma) > 0:
-            last_file = sorted(files_mu)[-1]
-            self.__mu = np.load(self.foldername_mu + last_file)
-            self.__Sigma = np.load(self.foldername_Sigma + last_file)
-            self.__cnt_data_saving = int(last_file[2:-4]) + 1
-        else:
-            self.__construct_grf_field()
-            self.__construct_prior_mean()
-            self.__cnt_data_saving = 0
+        self.__mu = dataset_sinmod[ind_close, 2].reshape(-1, 1)
 
     def assimilate_data(self, dataset: np.ndarray) -> None:
         """
@@ -181,28 +160,6 @@ class GRF:
         print("Total EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
 
-    def get_ei_field_para(self) -> tuple:
-        t1 = time.time()
-
-        def get_eibv_ivr(i):
-            SF = self.__Sigma[:, i].reshape(-1, 1)
-            MD = 1 / (self.__Sigma[i, i] + self.__nugget)
-            VR = SF @ SF.T * MD
-            SP = self.__Sigma - VR
-            sigma_diag = np.diag(SP).reshape(-1, 1)
-            eibv = self.__get_ibv(self.__mu, sigma_diag)
-            ivr = np.sum(np.diag(VR))
-            return eibv, ivr
-
-        res = Parallel(n_jobs=10)(delayed(get_eibv_ivr)(i) for i in range(self.Ngrid))
-        eibv_field = np.array([item[0] for item in res])
-        ivr_field = np.array([item[1] for item in res])
-        self.__eibv_field = normalize(eibv_field)
-        self.__ivr_field = 1 - normalize(ivr_field)
-        t2 = time.time()
-        print("Para EI field takes: ", t2 - t1, " seconds.")
-        return self.__eibv_field, self.__ivr_field
-
     def get_ei_field_partial(self, indices: np.ndarray) -> tuple:
         """ Get EI field only for selected indices.
         Only compute EI field for the designated indices. Then the rest EI field is large numbers.
@@ -238,36 +195,47 @@ class GRF:
         return ibv
 
     def set_sigma(self, value: float) -> None:
+        """ Set space variability. """
         self.__sigma = value
 
     def set_lateral_range(self, value: float) -> None:
+        """ Set lateral range. """
         self.__lateral_range = value
 
     def set_nugget(self, value: float) -> None:
+        """ Set nugget. """
         self.__nugget = value
 
     def set_threshold(self, value: float) -> None:
+        """ Set threshold. """
         self.__threshold = value
 
     def set_mu(self, value: np.ndarray) -> None:
+        """ Set mean of the field. """
         self.__mu = value
 
     def get_sigma(self) -> float:
+        """ Return variability of the field. """
         return self.__sigma
 
     def get_lateral_range(self) -> float:
+        """ Return lateral range. """
         return self.__lateral_range
 
     def get_nugget(self) -> float:
+        """ Return nugget of the field. """
         return self.__nugget
 
     def get_threshold(self) -> float:
+        """ Return threshold. """
         return self.__threshold
 
     def get_mu(self) -> np.ndarray:
+        """ Return mean vector. """
         return self.__mu
 
     def get_Sigma(self) -> np.ndarray:
+        """ Return Covariance. """
         return self.__Sigma
 
     def get_eibv_field(self) -> np.ndarray:

@@ -41,7 +41,7 @@ class TestCostValley(TestCase):
         self.cv = CostValley()
         self.grf = self.cv.get_grf_model()
         self.field = self.grf.field
-        self.polygon_border = self.field.get_polygon_border()
+        self.polygon_border = self.field.get_wgs_polygon_border()
         self.polygon_border = np.append(self.polygon_border, self.polygon_border[0, :].reshape(1, -1), axis=0)
         # self.polygon_obstacle = self.field.get_polygon_obstacles()[0]
         # self.polygon_obstacle = np.append(self.polygon_obstacle, self.polygon_obstacle[0, :].reshape(1, -1), axis=0)

@@ -35,11 +35,11 @@ class AgentPlot:
         self.grid = self.field.get_grid()
         self.xgrid = self.grid[:, 0]
         self.ygrid = self.grid[:, 1]
-        self.plg = self.field.get_polygon_border()
+        self.plg = self.field.get_wgs_polygon_border()
         self.ylim, self.xlim = self.field.get_border_limits()
 
         self.c = Config()
-        self.loc_home = self.c.get_loc_home()
+        self.loc_home = self.c.get_loc_end()
         self.loc_start = self.c.get_loc_start()
 
     def plot_agent(self):

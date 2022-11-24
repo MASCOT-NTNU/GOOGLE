@@ -1,38 +1,42 @@
 """
-Field object defines the desired field of operation. It has a border polygon determines the boundary region, and it uses
-list of obstacles to determine the area where operation needs to be avoided.
+Field handles
+- check legal conditions of given locations.
+- generate grid discretization.
+- check collision with obstacles.
 """
 from Config import Config
-from WGS import WGS
-from usr_func.is_list_empty import is_list_empty
 import numpy as np
-from shapely.geometry import Polygon, Point, LineString
+from shapely.geometry import Point, LineString
 from scipy.spatial.distance import cdist
 from math import cos, sin, radians
 from typing import Union
 
 
 class Field:
-    __config = Config()
-    __grid = np.empty([0, 2])
-    __neighbour_hash_table = dict()
-    __neighbour_distance = 240  # metres between neighbouring locations.
-    __plg = __config.get_polygon_operational_area()
-    x, y = WGS.latlon2xy(__plg[:, 0], __plg[:, 1])
-    __polygon_border = np.stack((x, y), axis=1)
-    __polygon_border_shapely = Polygon(__polygon_border)
-
-    """ Get the xy limits and gaps for the bigger box """
-    xb = __polygon_border[:, 0]
-    yb = __polygon_border[:, 1]
-    __xmin, __ymin = map(np.amin, [xb, yb])
-    __xmax, __ymax = map(np.amax, [xb, yb])
-    __xlim = np.array([__xmin, __xmax])
-    __ylim = np.array([__ymin, __ymax])
-    __ygap = __neighbour_distance * cos(radians(60)) * 2
-    __xgap = __neighbour_distance * sin(radians(60))
-
+    """
+    Field handles everything with regarding to the field element.
+    """
     def __init__(self):
+        self.__config = Config()
+        self.__grid = np.empty([0, 2])
+        self.__neighbour_hash_table = dict()
+        self.__neighbour_distance = 120  # metres between neighbouring locations.
+        self.__polygon_border = self.__config.get_polygon_border()
+        self.__polygon_border_shapely = self.__config.get_polygon_border_shapely()
+        self.__polygon_obstacle = self.__config.get_polygon_obstacle()
+        self.__polygon_obstacle_shapely = self.__config.get_polygon_obstacle_shapely()
+        self.__line_border_shapely = LineString(self.__polygon_border)
+        self.__line_obstacle_shapely = LineString(self.__polygon_obstacle)
+        
+        """ Get the xy limits and gaps for the bigger box """
+        xb = self.__polygon_border[:, 0]
+        yb = self.__polygon_border[:, 1]
+        self.__xmin, self.__ymin = map(np.amin, [xb, yb])
+        self.__xmax, self.__ymax = map(np.amax, [xb, yb])
+        self.__xlim = np.array([self.__xmin, self.__xmax])
+        self.__ylim = np.array([self.__ymin, self.__ymax])
+        self.__ygap = self.__neighbour_distance * cos(radians(60)) * 2
+        self.__xgap = self.__neighbour_distance * sin(radians(60))
         self.__construct_grid()
         self.__construct_hash_neighbours()
 
@@ -40,24 +44,31 @@ class Field:
         """ Set the neighbour distance """
         self.__neighbour_distance = value
 
-    def set_polygon_border(self, value: np.ndarray) -> None:
-        """ Set the polygon border, only one Nx2 dimension allowed """
-        self.__polygon_border = value
-
-    @staticmethod
-    def border_contains(loc: np.ndarray) -> bool:
+    def border_contains(self, loc: np.ndarray) -> bool:
         """ Test if point is within the border polygon """
         x, y = loc
         point = Point(x, y)
-        return Field.__polygon_border_shapely.contains(point)
+        return self.__polygon_border_shapely.contains(point)
 
-    @staticmethod
-    def is_border_in_the_way(loc_start: np.ndarray, loc_end: np.ndarray) -> bool:
+    def obstacle_contains(self, loc: np.ndarray) -> bool:
+        """ Test if obstacle contains the point. """
+        x, y = loc
+        point = Point(x, y)
+        return self.__polygon_obstacle_shapely.contains(point)
+
+    def is_border_in_the_way(self, loc_start: np.ndarray, loc_end: np.ndarray) -> bool:
         """ Check if border is in the way between loc_start and loc_end. """
         xs, ys = loc_start
         xe, ye = loc_end
         line = LineString([(xs, ys), (xe, ye)])
-        return Field.__polygon_border_shapely.intersects(line)
+        return self.__line_border_shapely.intersects(line)
+
+    def is_obstacle_in_the_way(self, loc_start: np.ndarray, loc_end: np.ndarray) -> bool:
+        """ Check if border is in the way between loc_start and loc_end. """
+        xs, ys = loc_start
+        xe, ye = loc_end
+        line = LineString([(xs, ys), (xe, ye)])
+        return self.__line_obstacle_shapely.intersects(line)
 
     def __construct_grid(self) -> None:
         """ Construct the field grid based on the instruction given above.
@@ -72,20 +83,20 @@ class Field:
         - Then remove illegal locations.
         - Then add the depth layers.
         """
-        gx = np.arange(Field.__xmin, Field.__xmax, Field.__xgap)  # get [0, x_gap, 2*x_gap, ..., (n-1)*x_gap]
-        gy = np.arange(Field.__ymin, Field.__ymax, Field.__ygap)
+        gx = np.arange(self.__xmin, self.__xmax, self.__xgap)  # get [0, x_gap, 2*x_gap, ..., (n-1)*x_gap]
+        gy = np.arange(self.__ymin, self.__ymax, self.__ygap)
         grid2d = []
         counter_grid2d = 0
         for i in range(len(gx)):
             for j in range(len(gy)):
                 if i % 2 == 0:
-                    y = gy[j] + Field.__ygap / 2
+                    y = gy[j] + self.__ygap / 2
                     x = gx[i]
                 else:
                     y = gy[j]
                     x = gx[i]
                 loc = np.array([x, y])
-                if self.border_contains(loc):
+                if self.border_contains(loc) and not self.obstacle_contains(loc):
                     grid2d.append([x, y])
                     counter_grid2d += 1
         self.__grid = np.array(grid2d)
@@ -104,7 +115,7 @@ class Field:
             self.__neighbour_hash_table[i] = ind_n
 
     def get_neighbour_indices(self, ind_now: Union[int, np.ndarray]) -> np.ndarray:
-        """ Return neighbouring indices according to index current. """
+        """ Return neighbouring indices according to given current index. """
         if type(ind_now) == np.int64:
             return self.__neighbour_hash_table[ind_now]
         else:
@@ -116,21 +127,13 @@ class Field:
 
     def get_grid(self) -> np.ndarray:
         """
-        Returns: waypoints
+        Returns: grf grid.
         """
         return self.__grid
 
-    @staticmethod
-    def get_neighbour_distance() -> float:
+    def get_neighbour_distance(self) -> float:
         """ Return neighbour distance. """
-        return Field.__neighbour_distance
-
-    @staticmethod
-    def get_polygon_border() -> np.ndarray:
-        """
-        Returns: border polygon
-        """
-        return Field.__polygon_border
+        return self.__neighbour_distance
 
     def get_location_from_ind(self, ind: Union[int, list, np.ndarray]) -> np.ndarray:
         """
@@ -158,9 +161,8 @@ class Field:
         else:
             return None
 
-    @staticmethod
-    def get_border_limits():
-        return Field.__xlim, Field.__ylim
+    def get_border_limits(self):
+        return self.__xlim, self.__ylim
 
 
 if __name__ == "__main__":

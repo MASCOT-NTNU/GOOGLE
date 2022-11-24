@@ -26,7 +26,7 @@ class Planner:
         # s0: load configuration
         self.__config = Config()
         self.__wp_start = self.__config.get_loc_start()
-        self.__wp_end = self.__config.get_loc_home()
+        self.__wp_end = self.__config.get_loc_end()
 
         # s1: set up path planning strategies
         self.__rrtstarcv = RRTStarCV()

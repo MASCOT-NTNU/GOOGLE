@@ -30,7 +30,7 @@ class TestPlanner(TestCase):
         self.cv = CostValley()
         self.field = Field()
         self.grid = self.cv.get_grid()
-        self.plg = self.field.get_polygon_border()
+        self.plg = self.field.get_wgs_polygon_border()
 
     # def test_initial_waypoints(self):
     #     """ Test initial indices to be 0. """
