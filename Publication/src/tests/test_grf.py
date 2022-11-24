@@ -7,14 +7,23 @@ from unittest import TestCase
 from GRF.GRF import GRF
 import matplotlib.pyplot as plt
 import numpy as np
-from usr_func.set_resume_state import set_resume_state
 from matplotlib.gridspec import GridSpec
-# from Visualiser.Visualiser import plotf_vector
+from Visualiser.Visualiser import plotf_vector
 from matplotlib.cm import get_cmap
 from numpy import testing
+from matplotlib import tri
 
 
-def plotf_vector(x, y, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
+# def is_masked(x, y) -> bool:
+#     point = Point(x, y)
+#     # loc = np.array([x, y])
+#     masked = False
+#     if not plg_wgs_sh.contains(point):
+#     # if not field.border_contains(loc):
+#         masked = True
+#     return masked
+
+def plotf_vector2(x, y, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
                  cbar_title='test', colorbar=True, vmin=None, vmax=None, ticks=None,
                  stepsize=None, threshold=None, polygon_border=None,
                  polygon_obstacle=None, xlabel=None, ylabel=None):
@@ -40,13 +49,19 @@ def plotf(self, v1, v2, title1="mean", title2="cov", vmin1=None, vmax1=None, vmi
     fig = plt.figure(figsize=(15, 5))
     gs = GridSpec(nrows=1, ncols=2)
     ax = fig.add_subplot(gs[0])
-    plotf_vector(self.grid[:, 1], self.grid[:, 0], v1,
-                 polygon_border=self.g.field.get_polygon_border(), vmin=vmin1, vmax=vmax1)
-    plt.title(title1)
+    # plotf_vector(self.grid[:, 1], self.grid[:, 0], v1,
+    #              polygon_border=self.c.get_polygon_border(), vmin=vmin1, vmax=vmax1)
+    plotf_vector(self.grid[:, 1], self.grid[:, 0], v1, title=title1, cmap=get_cmap("BrBG", 10),
+                 vmin=10, vmax=33, cbar_title="Salinity", stepsize=1.5, threshold=27,
+                 polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
+    # plt.title(title1)
 
     ax = fig.add_subplot(gs[1])
-    plotf_vector(self.grid[:, 1], self.grid[:, 0], v2,
-                 polygon_border=self.g.field.get_polygon_border(), vmin=vmin2, vmax=vmax2)
+    # plotf_vector2(self.grid[:, 1], self.grid[:, 0], v2, cmap="RdBu",
+    #              polygon_border=self.c.get_polygon_border(), vmin=vmin2, vmax=vmax2)
+    plotf_vector(self.grid[:, 1], self.grid[:, 0], v2, title=title1, cmap=get_cmap("RdBu", 10),
+                 vmin=vmin2, vmax=vmax2, cbar_title="std",
+                 polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
     plt.title(title2)
     plt.show()
 
@@ -54,7 +69,7 @@ def plotf(self, v1, v2, title1="mean", title2="cov", vmin1=None, vmax1=None, vmi
 class TestGRF(TestCase):
 
     def setUp(self) -> None:
-        set_resume_state(False)
+        self.c = Config()
         self.g = GRF()
         self.grid = self.g.field.get_grid()
         x = self.grid[:, 0]
@@ -62,26 +77,32 @@ class TestGRF(TestCase):
         self.f = self.g.field
         self.cov = self.g.get_Sigma()
         self.mu = self.g.get_mu()
+        self.sigma = self.g.get_sigma()
+
+        # plt.imshow(self.cov)
+        # plt.colorbar()
+        # plt.show()
+        # plt.show()
 
     def test_prior_matern_covariance(self):
         print("S1")
-        plotf(self, v1=self.g.get_mu(), v2 = np.diag(self.g.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
+        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())), vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma)
         print("END S1")
 
     def test_assimilate(self):
         # c2: one
         print("S2")
-        dataset = np.array([[6000, 8000, 0, 30]])
+        dataset = np.array([[3000, 1000, 0, 10]])
         self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
+        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())), vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma)
 
         # c3: multiple
-        dataset = np.array([[6500, 7000,  0, 35],
-                            [7000, 8000, 0, 20],
-                            [7200, 8500, 0, 15],
-                            [7600, 8800, 0, 20]])
+        dataset = np.array([[2000, -1000,  0, 15],
+                            [1500, -1500, 0, 10],
+                            [1400, -1800, 0, 25],
+                            [2500, -1400, 0, 20]])
         self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
+        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())), vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma)
         print("End S2")
 
     def test_get_ei_field_total(self):
@@ -107,83 +128,5 @@ class TestGRF(TestCase):
         plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
         print("End S3")
 
-    def test_resuming_features(self):
-        # s1: start assimilating multiple steps before resuming.
-        print("Start S4")
-        set_resume_state(False)
-        g1 = GRF()
-        dataset = np.array([[6500, 7000,  0, 35],
-                            [7000, 8000, 0, 20],
-                            [7200, 8500, 0, 15],
-                            [7600, 8800, 0, 20]])
-        g1.assimilate_data(dataset)
-        plotf(self, v1=g1.get_mu(), v2=np.diag(g1.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
 
-        dataset = np.array([[7500, 7000,  0, 35],
-                            [8000, 8000, 0, 20],
-                            [8200, 8500, 0, 15],
-                            [8600, 8800, 0, 20]])
-        g1.assimilate_data(dataset)
-        plotf(self, v1=g1.get_mu(), v2=np.diag(g1.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-
-        dataset = np.array([[8500, 7000,  0, 35],
-                            [9000, 8000, 0, 20],
-                            [9200, 8500, 0, 15],
-                            [9600, 8800, 0, 20]])
-        g1.assimilate_data(dataset)
-        plotf(self, v1=g1.get_mu(), v2=np.diag(g1.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-
-        set_resume_state(False)
-        g2 = GRF()
-        plotf(self, v1=g2.get_mu(), v2=np.diag(g2.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-
-        set_resume_state(True)
-        g3 = GRF()
-        plotf(self, v1=g3.get_mu(), v2=np.diag(g3.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-
-        set_resume_state(False)
-        g4 = GRF()
-        plotf(self, v1=g4.get_mu(), v2=np.diag(g4.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-        print("End S4")
-
-    # def test_get_ei_field_partial(self):
-    #     print("S4")
-    #     loc = np.array([6000, 8000])
-    #     ind_now = self.f.get_ind_from_location(loc)
-    #     loc_now = self.f.get_location_from_ind(ind_now)
-    #     ind_neighbours_layer1 = self.f.get_neighbour_indices(ind_now)
-    #     ind_neighbours_layer2 = self.f.get_neighbour_indices(ind_neighbours_layer1)
-    #     ind_neighbours_layer3 = self.f.get_neighbour_indices(ind_neighbours_layer2)
-    #     ind_neighbours_layer4 = self.f.get_neighbour_indices(ind_neighbours_layer3)
-    #     ind_neighbours_layer5 = self.f.get_neighbour_indices(ind_neighbours_layer4)
-    #
-    #     eibv, ivr = self.g.get_ei_field_partial(ind_neighbours_layer5)
-    #     plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1)
-    #
-    #     eibv, ivr = self.g.get_ei_field_total()
-    #     plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1)
-    #
-    #     # c2: with data assimilation
-    #     dataset = np.array([[10000, 9000, 0, 10],
-    #                         [12000, 8000, 0, 15],
-    #                         [8000, 10000, 0, 13],
-    #                         [2000, 2000, 0, 33],
-    #                         [8000, 8000, 0, 26],
-    #                         [4000, 8000, 0, 24]])
-    #     self.g.assimilate_data(dataset)
-    #     eibv, ivr = self.g.get_ei_field_partial(ind_neighbours_layer5)
-    #     plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1)
-    #     plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-    #
-    #     eibv, ivr = self.g.get_ei_field_total()
-    #     plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1)
-    #     plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()), vmin1=10, vmax1=36, vmin2=0, vmax2=1)
-    #     print("End S4")
-
-    # def test_para_ei_field(self) -> None:
-    #     eibv, ivr = self.g.get_ei_field_total()
-    #     eibvp, ivrp = self.g.get_ei_field_para()
-    #     testing.assert_array_equal(eibv, eibvp)
-    #     testing.assert_array_equal(ivr, ivrp)
-    #     pass
 

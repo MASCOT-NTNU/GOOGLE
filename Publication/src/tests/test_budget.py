@@ -21,7 +21,7 @@ class TestBudget(TestCase):
     def test_locations(self):
         # c1: test goal location
         l = self.b.get_goal()
-        lc = self.c.get_loc_home()
+        lc = self.c.get_loc_end()
         self.assertEqual(lc[0], l[0])
         self.assertEqual(lc[1], l[1])
 

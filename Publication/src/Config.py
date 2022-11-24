@@ -16,25 +16,32 @@ from shapely.geometry import Polygon
 
 class Config:
     """ Config contains essential setup for the simulation or experiment study. """
+    def __init__(self) -> None:
+        """ Initializes the crucial parameters used later in the simulation/experiment. """
 
-    """ Operational Area. """
-    __polygon_operational_area = pd.read_csv("csv/polygon_border.csv").to_numpy()
-    __polygon_operational_area_shapely = Polygon(__polygon_operational_area)
+        """ Set up WGS polygons and starting and end locations. """
+        self.__wgs_polygon_border = pd.read_csv("csv/polygon_border.csv").to_numpy()
+        self.__wgs_polygon_obstacle = pd.read_csv("csv/polygon_obstacle.csv").to_numpy()
+        self.__wgs_loc_start = np.array([63.45582, 10.43287])
+        self.__wgs_loc_end = np.array([63.440323, 10.355410])
 
-    """ Obstacles"""
-    __polygon_obstacle = pd.read_csv("csv/polygon_obstacle.csv").to_numpy()
-    __polygon_obstacle_shapely = Polygon(__polygon_obstacle)
-
-    """ Starting and end locations. """
-    # c4: start at home
-    __lat_start = 63.45582
-    __lon_start = 10.43287
-
-    __lat_home = 63.440323
-    __lon_home = 10.355410
+        """ Convert them to cartesian polygons and starting and end locations. """
+        self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)
+        self.__polygon_border_shapely = Polygon(self.__polygon_border)
+        self.__polygon_obstacle = self.wgs2xy(self.__wgs_polygon_obstacle)
+        self.__polygon_obstacle_shapely = Polygon(self.__polygon_obstacle)
+        x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
+        self.__loc_start = np.array([x, y])
+        x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
+        self.__loc_end = np.array([x, y])
 
     @staticmethod
-    def set_polygon_operational_area(value: np.ndarray) -> None:
+    def wgs2xy(value: np.ndarray) -> np.ndarray:
+        """ Convert polygon containing wgs coordinates to polygon containing xy coordinates. """
+        x, y = WGS.latlon2xy(value[:, 0], value[:, 1])
+        return np.stack((x, y), axis=1)
+
+    def set_polygon_border(self, value: np.ndarray) -> None:
         """ Set operational area using polygon defined by lat lon coordinates.
         Example:
              value: np.ndarray([[lat1, lon1],
@@ -42,40 +49,73 @@ class Config:
                                 ...
                                 [latn, lonn]])
         """
-        Config.__polygon_operational_area = value
-        Config.__polygon_operational_area_shapely = Polygon(Config.__polygon_operational_area)
+        self.__wgs_polygon_border = value
+        self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)
+        self.__polygon_border_shapely = Polygon(self.__polygon_border)
 
-    @staticmethod
-    def set_loc_start(loc: np.ndarray) -> None:
+    def set_polygon_obstacle(self, value: np.ndarray) -> None:
+        """ Set polygon obstacle using polygon defined by lat lon coordinates.
+        Example:
+             value: np.ndarray([[lat1, lon1],
+                                [lat2, lon2],
+                                ...
+                                [latn, lonn]])
+        """
+        self.__wgs_polygon_obstacle = value
+        self.__polygon_obstacle = self.wgs2xy(self.__wgs_polygon_obstacle)
+        self.__polygon_obstacle_shapely = Polygon(self.__polygon_obstacle)
+
+    def set_loc_start(self, loc: np.ndarray) -> None:
         """ Set the starting location with (lat,lon). """
-        Config.__lat_start, Config.__lon_start = loc
+        self.__wgs_loc_start = loc
+        x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
+        self.__loc_start = np.array([x, y])
 
-    @staticmethod
-    def set_loc_home(loc: np.ndarray) -> None:
+    def set_loc_end(self, loc: np.ndarray) -> None:
         """ Set the home location with (lat, lon). """
-        Config.__lat_home, Config.__lon_home = loc
+        self.__wgs_loc_end = loc
+        x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
+        self.__loc_end = np.array([x, y])
 
-    @staticmethod
-    def get_polygon_operational_area() -> np.ndarray:
-        """ Return polygon for the oprational area. """
-        return Config.__polygon_operational_area
+    def get_polygon_border(self) -> np.ndarray:
+        """ Return polygon for opa in x y coordinates. """
+        return self.__polygon_border
 
-    @staticmethod
-    def get_polygon_operational_area_shapely() -> 'Polygon':
-        """ Return shapelized polygon for the operational area. """
-        return Config.__polygon_operational_area_shapely
+    def get_polygon_border_shapely(self) -> 'Polygon':
+        """ Return shapelized polygon for opa in xy coordinates. """
+        return self.__polygon_border_shapely
 
-    @staticmethod
-    def get_loc_start() -> np.ndarray:
+    def get_polygon_obstacle(self) -> np.ndarray:
+        """ Return polygon for the obstacle. """
+        return self.__polygon_obstacle
+
+    def get_polygon_obstacle_shapely(self) -> 'Polygon':
+        """ Return shapelized polygon for the obstacle. """
+        return self.__polygon_obstacle_shapely
+
+    def get_loc_start(self) -> np.ndarray:
         """ Return starting location in (x, y). """
-        x, y = WGS.latlon2xy(Config.__lat_start, Config.__lon_start)
-        return np.array([x, y])
+        return self.__loc_start
 
-    @staticmethod
-    def get_loc_home() -> np.ndarray:
+    def get_loc_end(self) -> np.ndarray:
         """ Return home location in (x, y). """
-        x, y = WGS.latlon2xy(Config.__lat_home, Config.__lon_home)
-        return np.array([x, y])
+        return self.__loc_end
+
+    def get_wgs_polygon_border(self) -> np.ndarray:
+        """ Return polygon for the oprational area in wgs coordinates. """
+        return self.__wgs_polygon_border
+
+    def get_wgs_polygon_obstacle(self) -> np.ndarray:
+        """ Return polygon for the oprational area in wgs coordinates. """
+        return self.__wgs_polygon_obstacle
+
+    def get_wgs_loc_start(self) -> np.ndarray:
+        """ Return starting location in (lat, lon). """
+        return self.__wgs_loc_start
+
+    def get_wgs_loc_end(self) -> np.ndarray:
+        """ Return end location in (lat, lon). """
+        return self.__wgs_loc_end
 
 
 if __name__ == "__main__":

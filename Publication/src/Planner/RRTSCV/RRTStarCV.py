@@ -38,7 +38,7 @@ class RRTStarCV:
         self.__rrtstar_neighbour_radius = self.__stepsize * 1.12
 
         # polygons and lines
-        self.__polygon_border = Field.get_polygon_border()
+        self.__polygon_border = Field.get_wgs_polygon_border()
         self.__polygon_border_shapely = Polygon(self.__polygon_border)
         self.__line_border_shapely = LineString(self.__polygon_border)
 

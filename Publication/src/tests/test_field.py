@@ -1,11 +1,9 @@
 """ Unit test for Field
 This module tests the field object.
 """
-import os
 from unittest import TestCase
-import pandas as pd
 from Field import Field
-from usr_func.is_list_empty import is_list_empty
+from Config import Config
 from numpy import testing
 from shapely.geometry import Polygon, Point, LineString
 from scipy.spatial.distance import cdist
@@ -21,8 +19,10 @@ class TestField(TestCase):
     def setUp(self) -> None:
         """ setup parameters """
         self.f = Field()
+        self.c = Config()
         self.grid = self.f.get_grid()
-        self.polygon_border = self.f.get_polygon_border()
+        self.polygon_border = self.c.get_polygon_border()
+        self.polygon_obstacle = self.c.get_polygon_obstacle()
 
     def test_empty_grids(self):
         """ Test if it generates empty waypoint. """
@@ -33,12 +33,13 @@ class TestField(TestCase):
     def test_illegal_grids(self):
         """ Test if any waypoints are not within the border polygon or colliding with obstacles. """
         pb = Polygon(self.polygon_border)
+        po = Polygon(self.polygon_obstacle)
         s = True
 
         for i in range(len(self.grid)):
             p = Point(self.grid[i, :2])
             in_border = pb.contains(p)
-            in_obs = False
+            in_obs = po.contains(p)
             if in_obs or not in_border:
                 s = False
                 break
@@ -101,6 +102,8 @@ class TestField(TestCase):
         self.assertTrue(np.all(d == np.amin(da, axis=0)))
 
         plt.plot(self.grid[:, 1], self.grid[:, 0], 'k.', alpha=.1)
+        plt.plot(self.polygon_obstacle[:, 1], self.polygon_obstacle[:, 0], 'k-.')
+        plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
         for i in range(len(wp)):
             plt.plot([wp[i, 1], wr[i, 1]], [wp[i, 0], wr[i, 0]], 'r.-')
             # plt.plot(wr[i, 0], wr[i, 1], '.', alpha=.3)
@@ -116,12 +119,22 @@ class TestField(TestCase):
         self.assertTrue(b)
 
     def test_border_in_the_way(self):
+        """ Test if border is colliding with path. """
+        # c1: far away
         x1, y1 = 0, 0
-        x2, y2 = 8000, 8000
+        x2, y2 = 5000, 0
         c = self.f.is_border_in_the_way(np.array([x1, y1]), np.array([x2, y2]))
         self.assertTrue(c)
+
+        # c2: close
         x1, y1 = -20, -20
         x2, y2 = -100, -100
+        c = self.f.is_border_in_the_way(np.array([x1, y1]), np.array([x2, y2]))
+        self.assertTrue(c)
+
+        # c3: not colliding
+        x1, y1 = 0, 0
+        x2, y2 = 1000, 1000
         c = self.f.is_border_in_the_way(np.array([x1, y1]), np.array([x2, y2]))
         self.assertFalse(c)
 
@@ -163,24 +176,5 @@ class TestField(TestCase):
         # plt.plot(self.grid[ind, 1], self.grid[ind, 0], 'b.')
         # plt.show()
 
-    def test_get_grid_for_eda(self):
-        grid = self.grid
-        df = pd.DataFrame(grid, columns=['x', 'y'])
-        df.to_csv(os.getcwd() + "/../../EDA/OP2_LongHorizon/grid_xy.csv", index=False)
-
-        plg = self.polygon_border
-        df = pd.DataFrame(plg, columns=['x', 'y'])
-        df.to_csv(os.getcwd() + "/../../EDA/OP2_LongHorizon/plg_xy.csv", index=False)
-
-        lat, lon = WGS.xy2latlon(grid[:, 0], grid[:, 1])
-        gd = np.stack((lat, lon), axis=1)
-        df = pd.DataFrame(gd, columns=['lat', 'lon'])
-        df.to_csv(os.getcwd() + "/../../EDA/OP2_LongHorizon/grid.csv", index=False)
-
-        lat, lon = WGS.xy2latlon(plg[:, 0], plg[:, 1])
-        plb = np.stack((lat, lon), axis=1)
-        df = pd.DataFrame(plb, columns=['lat', 'lon'])
-        df.to_csv(os.getcwd() + "/../../EDA/OP2_LongHorizon/polygon.csv", index=False)
-        df
 
 

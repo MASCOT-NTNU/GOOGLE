@@ -15,7 +15,7 @@ class TestDirection(TestCase):
         f = Field()
         self.grid = f.get_grid()
         self.d = Direction(self.grid)
-        self.polygon_border = f.get_polygon_border()
+        self.polygon_border = f.get_wgs_polygon_border()
         self.polygon_border = np.append(self.polygon_border, self.polygon_border[0, :].reshape(1, -1), axis=0)
         # self.polygon_obstacle = f.get_polygon_obstacles()[0]
         # self.polygon_obstacle = np.append(self.polygon_obstacle, self.polygon_obstacle[0, :].reshape(1, -1), axis=0)

@@ -1,5 +1,6 @@
 """
 It generates the operational area using GIS shape file.
+# TODO: I need to double check the tutorials to make sure I fully understand the process of using QGIS.
 """
 
 import geopandas
