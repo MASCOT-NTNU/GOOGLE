@@ -15,7 +15,7 @@ class TestAgentPlot(TestCase):
         # s3: setup Visualiser.
         self.agent = Agent()
 
-        self.ap = AgentPlot(agent=self.agent, figpath=os.getcwd() + "/../../fig/OP2_LongHorizon/")
+        self.ap = AgentPlot(agent=self.agent, figpath=os.getcwd() + "/../../fig/Nidelva2D_LongHorizon/")
         # self.visualiser = Visualiser(self, figpath=os.getcwd() + "/../fig/Myopic3D/")
 
     def test_plot(self):

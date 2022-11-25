@@ -9,7 +9,7 @@ import numpy as np
 class StraightLinePathPlanner:
 
     __home_radius = 150  # metres.
-    __step_size = 360  # metres.
+    __step_size = 120  # metres.
     __loc_next = np.empty([0, 2])
 
     def get_waypoint_from_straight_line(self, loc_now: np.ndarray, loc_target: np.ndarray):

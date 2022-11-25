@@ -42,12 +42,14 @@ class TestRRTStar(TestCase):
         self.cv = self.rrtstar.get_CostValley()
         self.field = self.cv.get_field()
         self.grid = self.cv.get_grid()
-        self.polygon_border = self.field.get_wgs_polygon_border()
+        self.polygon_border = self.config.get_polygon_border()
+        self.polygon_obstacle = self.config.get_polygon_obstacle()
 
     def test_get_new_location(self):
-        loc_now = np.array([6000, 8000])
+        loc_now = np.array([1000, -1000])
         # loc_now = self.config.get_loc_start()
-        loc_end = self.config.get_loc_end()
+        # loc_end = self.config.get_loc_end()
+        loc_end = np.array([4000, 200])
         wp = self.rrtstar.get_next_waypoint(loc_now, loc_end)
         print(wp)
         nodes = self.rrtstar.get_tree_nodes()
@@ -62,11 +64,12 @@ class TestRRTStar(TestCase):
         # plt.plot(wp[0], wp[1], 'b*', markersize=20)
         # plt.plot(loc_now[0], loc_now[1], 'c.', markersize=10)
         plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'r-.')
+        plt.plot(self.polygon_obstacle[:, 1], self.polygon_obstacle[:, 0], 'r-.')
 
         plt.plot(loc_now[1], loc_now[0], 'r.', markersize=20)
         plt.plot(loc_end[1], loc_end[0], 'k*', markersize=20)
         plt.xlabel("x")
         plt.ylabel("y")
-        plt.savefig(os.getcwd() + "/../../fig/trees/rrtcv.png")
+        # plt.savefig(os.getcwd() + "/../../fig/trees/rrtcv.png")
         plt.show()
 

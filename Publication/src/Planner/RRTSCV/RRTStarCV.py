@@ -5,6 +5,7 @@ determine the final tree discretization.
 """
 from Planner.RRTSCV.TreeNode import TreeNode
 from Field import Field
+from Config import Config
 from CostValley.CostValley import CostValley
 import numpy as np
 import os
@@ -14,6 +15,12 @@ from shapely.geometry import Polygon, Point, LineString
 class RRTStarCV:
 
     def __init__(self) -> None:
+        """
+
+        """
+        self.__config = Config()
+        self.__field = Field()
+
         # load pre_generated locations
         self.__filepath = os.getcwd() + "/Planner/RRTSCV/"
         self.__random_locations = np.load(self.__filepath + "RRT_Random_Locations.npy")
@@ -33,14 +40,15 @@ class RRTStarCV:
         self.__trajectory = np.empty([0, 2])  # to save trajectory.
         self.__goal_sampling_rate = .01
         self.__max_expansion_iteration = 1000  # TODO: to run simulation and see if it is able to converage
-        self.__stepsize = Field.get_neighbour_distance()
+        self.__stepsize = self.__field.get_neighbour_distance()
         self.__home_radius = self.__stepsize * .8
         self.__rrtstar_neighbour_radius = self.__stepsize * 1.12
 
         # polygons and lines
-        self.__polygon_border = Field.get_wgs_polygon_border()
-        self.__polygon_border_shapely = Polygon(self.__polygon_border)
-        self.__line_border_shapely = LineString(self.__polygon_border)
+        self.__polygon_border_shapely = self.__config.get_polygon_border_shapely()
+        self.__line_border_shapely = self.__config.get_line_border_shapely()
+        self.__polygon_obstacle_shapely = self.__config.get_polygon_obstacle_shapely()
+        self.__line_obstacle_shapely = self.__config.get_line_obstacle_shapely()
 
         self.__polygon_ellipse_shapely = None  # budget
         self.__line_ellipse_shapely = None
@@ -53,7 +61,7 @@ class RRTStarCV:
         self.__neighbour_nodes = []
 
         # field
-        self.__xlim, self.__ylim = Field.get_border_limits()
+        self.__xlim, self.__ylim = self.__field.get_border_limits()
 
         # budget
         self.__Budget = False
@@ -99,16 +107,16 @@ class RRTStarCV:
         x = loc_start[0] + self.__stepsize * np.sin(angle)
         wp_next = np.array([x, y])
 
-        # # s5: final check legal condition, if not produce a random next location.
-        # if not self.is_location_legal(wp_next) or not self.is_path_legal(loc_start, wp_next):
-        #     angles = np.linspace(0, 2 * np.pi, 60)
-        #     for angle in angles:
-        #         x_next = loc_start[0] + self.__step_size * np.cos(angle)
-        #         y_next = loc_start[1] + self.__step_size * np.sin(angle)
-        #         ln = np.array([x_next, y_next])
-        #         if self.is_location_legal(ln) and self.is_path_legal(loc_start, ln):
-        #             wp_next = ln
-        #             break
+        # s5: final check legal condition, if not produce a random next location.
+        if not self.is_location_legal(wp_next) or not self.is_path_legal(loc_start, wp_next):
+            angles = np.linspace(0, 2 * np.pi, 60)
+            for angle in angles:
+                x_next = loc_start[0] + self.__stepsize * np.cos(angle)
+                y_next = loc_start[1] + self.__stepsize * np.sin(angle)
+                ln = np.array([x_next, y_next])
+                if self.is_location_legal(ln) and self.is_path_legal(loc_start, ln):
+                    wp_next = ln
+                    break
         return wp_next
 
     def __expand_trees(self):
@@ -242,7 +250,7 @@ class RRTStarCV:
         x, y = loc
         point = Point(x, y)
         islegal = True
-        if not self.__polygon_ellipse_shapely.contains(point):
+        if self.__polygon_obstacle_shapely.contains(point) or not self.__polygon_ellipse_shapely.contains(point):  # TODO: add polygon_obstacle
             islegal = False
         return islegal
 
@@ -253,7 +261,8 @@ class RRTStarCV:
         islegal = True
         c1 = self.__line_border_shapely.intersects(line)  # TODO: tricky to detect, since cannot have points on border.
         c2 = self.__line_ellipse_shapely.intersects(line)
-        if c1 or c2:
+        c3 = self.__line_obstacle_shapely.intersects(line)
+        if c1 or c2 or c3:
             islegal = False
         return islegal
 

@@ -45,23 +45,27 @@ def plotf_vector2(x, y, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10
     return plt.gca()
 
 
-def plotf(self, v1, v2, title1="mean", title2="cov", vmin1=None, vmax1=None, vmin2=None, vmax2=None):
+def plotf(self, v1, v2, title1="mean", title2="cov", cbar1="salinity", cbar2="std", stepsize1=None, threshold1=None,
+          stepsize2=None, threshold2=None, vmin1=None, vmax1=None, vmin2=None, vmax2=None):
     fig = plt.figure(figsize=(15, 5))
     gs = GridSpec(nrows=1, ncols=2)
     ax = fig.add_subplot(gs[0])
-    # plotf_vector(self.grid[:, 1], self.grid[:, 0], v1,
-    #              polygon_border=self.c.get_polygon_border(), vmin=vmin1, vmax=vmax1)
-    plotf_vector(self.grid[:, 1], self.grid[:, 0], v1, title=title1, cmap=get_cmap("BrBG", 10),
-                 vmin=10, vmax=33, cbar_title="Salinity", stepsize=1.5, threshold=27,
-                 polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
+    plotf_vector2(self.grid[:, 1], self.grid[:, 0], v1,
+                 polygon_border=self.c.get_polygon_border(), vmin=vmin1, vmax=vmax1)
+    if threshold1:
+        ind = np.where((v1 < threshold1 + .25) * (v1 > threshold1 - .25))[0]
+        plt.plot(self.grid[ind, 1], self.grid[ind, 0], 'r.')
+    # plotf_vector(self.grid[:, 1], self.grid[:, 0], v1, title=title1, cmap=get_cmap("BrBG", 10),
+    #              vmin=vmin1, vmax=vmax1, cbar_title=cbar1, stepsize=stepsize1, threshold=threshold1,
+    #              polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
     # plt.title(title1)
 
     ax = fig.add_subplot(gs[1])
-    # plotf_vector2(self.grid[:, 1], self.grid[:, 0], v2, cmap="RdBu",
-    #              polygon_border=self.c.get_polygon_border(), vmin=vmin2, vmax=vmax2)
-    plotf_vector(self.grid[:, 1], self.grid[:, 0], v2, title=title1, cmap=get_cmap("RdBu", 10),
-                 vmin=vmin2, vmax=vmax2, cbar_title="std",
-                 polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
+    plotf_vector2(self.grid[:, 1], self.grid[:, 0], v2, cmap="RdBu",
+                 polygon_border=self.c.get_polygon_border(), vmin=vmin2, vmax=vmax2)
+    # plotf_vector(self.grid[:, 1], self.grid[:, 0], v2, title=title1, cmap=get_cmap("RdBu", 10),
+    #              vmin=vmin2, vmax=vmax2, cbar_title=cbar2, stepsize=stepsize2, threshold=threshold2,
+    #              polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
     plt.title(title2)
     plt.show()
 
@@ -86,46 +90,48 @@ class TestGRF(TestCase):
 
     def test_prior_matern_covariance(self):
         print("S1")
-        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())), vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma)
+        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())),
+              vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
         print("END S1")
 
-    def test_assimilate(self):
-        # c2: one
-        print("S2")
-        dataset = np.array([[3000, 1000, 0, 10]])
-        self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())), vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma)
-
-        # c3: multiple
-        dataset = np.array([[2000, -1000,  0, 15],
-                            [1500, -1500, 0, 10],
-                            [1400, -1800, 0, 25],
-                            [2500, -1400, 0, 20]])
-        self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())), vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma)
-        print("End S2")
+    # def test_assimilate(self):
+    #     # c2: one
+    #     print("S2")
+    #     dataset = np.array([[3000, 1000, 0, 10]])
+    #     self.g.assimilate_data(dataset)
+    #     plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())),
+    #           vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
+    #
+    #     # c3: multiple
+    #     dataset = np.array([[2000, -1000,  0, 15],
+    #                         [1500, -1500, 0, 10],
+    #                         [1400, -1800, 0, 25],
+    #                         [2500, -1400, 0, 20]])
+    #     self.g.assimilate_data(dataset)
+    #     plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_Sigma())),
+    #           vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
+    #     print("End S2")
 
     def test_get_ei_field_total(self):
         # c1: no data assimilation
         print("S3")
         """ For now, it takes too much time to compute the entire EI field. """
         eibv, ivr = self.g.get_ei_field_total()
-        plotf(self, v1=eibv, v2=ivr)
+        plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1, cbar1="cost", cbar2="cost")
 
-        # eibv, ivr = self.g.get_ei_field_para()
-        # plotf(self, v1=eibv, v2=ivr)
+        # # c2: with data assimilation
+        # dataset = np.array([[2000, -1000,  0, 15],
+        #                     [1500, -1500, 0, 10],
+        #                     [1400, -1800, 0, 25],
+        #                     [2500, -1400, 0, 20]])
+        # self.g.assimilate_data(dataset)
+        # eibv, ivr = self.g.get_ei_field_total()
+        #
+        # plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1, cbar1="cost", cbar2="cost")
+        # plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()),
+        #       vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma,
+        #       cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
 
-        # c2: with data assimilation
-        dataset = np.array([[8000, 8000, 0, 10],
-                            [9200, 9000, 0, 15],
-                            [7000, 8000, 0, 13],
-                            [8000, 7000, 0, 33],
-                            [6000, 8000, 0, 26],
-                            [5000, 9000, 0, 24]])
-        self.g.assimilate_data(dataset)
-        eibv, ivr = self.g.get_ei_field_total()
-        plotf(self, v1=eibv, v2=ivr)
-        plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
         print("End S3")
 
 

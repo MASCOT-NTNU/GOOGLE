@@ -23,12 +23,12 @@ import math
 
 
 class Budget:
-    __config = Config
+    __config = Config()
 
     # initial values
-    __MARGIN = 100  # when ellipse b is smaller than this, should go home.
+    __MARGIN = 300  # when ellipse b is smaller than this, should go home.
     __grid = None
-    __budget = 100000  # metres for the operation in the sea.
+    __budget = 10000  # metres for the operation in the sea.
     __goal = __config.get_loc_end()
     __x_now, __y_now = __config.get_loc_start()
     __x_prev, __y_prev = __config.get_loc_start()
@@ -116,6 +116,7 @@ class Budget:
         self.__budget = value
 
     def set_goal(self, loc: np.ndarray) -> None:
+        """ Set the goal location. """
         self.__goal = loc
 
     def set_loc_prev(self, loc: np.ndarray) -> None:

@@ -10,20 +10,25 @@ import numpy as np
 
 
 class Direction:
+    """
+    Direction filter gives high penalty to locations which are not desirable.
+    """
     __PENALTY_AZIMUTH = 10
-    __x_prev = .0
-    __y_prev = .0
-    __x_now = .0
-    __y_now = .0
-    __vector_azimuth = vectorize(np.array([__x_now - __x_prev,
-                                           __y_now - __y_prev]))
-    __grid = None
-    __azimuth_field = None
 
     def __init__(self, grid):
+        self.__x_now = .0
+        self.__y_now = .0
+        self.__x_prev = .0
+        self.__y_prev = .0
+        self.__vector_azimuth = vectorize(np.array([self.__x_now - self.__x_prev,
+                                                    self.__y_now - self.__y_prev]))
         self.__grid = grid
+        self.__azimuth_field = None
 
     def get_direction_field(self, x_now, y_now) -> np.ndarray:
+        """
+        It updates the current location to the given location and then computes the directional penalty.
+        """
         self.__x_now = x_now
         self.__y_now = y_now
         self.__update_vector_azimuth()

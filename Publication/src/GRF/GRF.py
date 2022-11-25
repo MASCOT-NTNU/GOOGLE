@@ -13,7 +13,6 @@ from scipy.spatial.distance import cdist
 import numpy as np
 from scipy.stats import norm
 from usr_func.normalize import normalize
-from usr_func.get_resume_state import get_resume_state
 from sys import maxsize
 import time
 import os
@@ -28,8 +27,8 @@ class GRF:
         # parameters
         self.__distance_matrix = None
         self.__sigma = 2.8
-        self.__lateral_range = 1200  # 680 in the experiment
-        self.__nugget = .7
+        self.__lateral_range = 2800  # 680 in the experiment
+        self.__nugget = .01
         self.__threshold = 27
 
         # computed
@@ -49,18 +48,6 @@ class GRF:
         self.__Fgrf = np.ones([1, self.Ngrid])
         self.__xg = vectorize(self.grid[:, 0])
         self.__yg = vectorize(self.grid[:, 1])
-
-        # s0: check datafolders
-        t = int(time.time())
-        f = os.getcwd() + "/GRF/data/"
-        self.foldername_data = f + "assimilated/{:d}/".format(t)
-        self.foldername_ctd = f + "raw_ctd/{:d}/".format(t)
-        self.foldername_mu = f + "mu/"
-        self.foldername_Sigma = f + "Sigma/"
-        checkfolder(self.foldername_data)
-        checkfolder(self.foldername_ctd)
-        checkfolder(self.foldername_mu)
-        checkfolder(self.foldername_Sigma)
 
         # s0: compute matern kernel
         self.__construct_grf_field()
@@ -93,10 +80,6 @@ class GRF:
             dataset: np.array([x, y, sal])
             cnt_waypoint: int
         """
-        # ss1: save raw ctd
-        df = pd.DataFrame(dataset, columns=['x', 'y', 'z', 'salinity'])
-        df.to_csv(self.foldername_ctd + "D_{:03d}.csv".format(self.__cnt_data_saving), index=False)
-
         # t1 = time.time()
         xd = dataset[:, 0].reshape(-1, 1)
         yd = dataset[:, 1].reshape(-1, 1)
@@ -114,15 +97,6 @@ class GRF:
         self.__update(ind_measured=ind_assimilated, salinity_measured=salinity_assimilated)
         # t2 = time.time()
         # print("Data assimilation takes: ", t2 - t1, " seconds")
-
-        # ss2: save assimilated data
-        data = np.hstack((ind_assimilated.reshape(-1, 1), salinity_assimilated))
-        df = pd.DataFrame(data, columns=['ind', 'salinity'])
-        df.to_csv(self.foldername_data + "D_{:03d}.csv".format(self.__cnt_data_saving), index=False)
-
-        # ss3: save conditional mu and Sigma
-        np.save(self.foldername_mu + "D_{:03d}.npy".format(self.__cnt_data_saving), self.__mu)
-        np.save(self.foldername_Sigma + "D_{:03d}.npy".format(self.__cnt_data_saving), self.__Sigma)
 
         ## update counter
         self.__cnt_data_saving += 1

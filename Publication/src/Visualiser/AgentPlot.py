@@ -35,7 +35,9 @@ class AgentPlot:
         self.grid = self.field.get_grid()
         self.xgrid = self.grid[:, 0]
         self.ygrid = self.grid[:, 1]
-        self.plg = self.field.get_wgs_polygon_border()
+        self.config = Config()
+        self.plg_border = self.config.get_polygon_border()
+        self.plg_obs = self.config.get_polygon_obstacle()
         self.ylim, self.xlim = self.field.get_border_limits()
 
         self.c = Config()
@@ -77,7 +79,8 @@ class AgentPlot:
 
         def plot_waypoints():
             ax = plt.gca()
-            ax.plot(self.plg[:, 1], self.plg[:, 0], 'r-.')
+            ax.plot(self.plg_border[:, 1], self.plg_border[:, 0], 'k-.')
+            ax.plot(self.plg_obs[:, 1], self.plg_obs[:, 0], 'k-.')
             ax.plot(wp_now[1], wp_now[0], 'r.', markersize=20, label="Current waypoint")
             ax.plot(wp_next[1], wp_next[0], 'b.', markersize=20, label="Next waypoint")
             ax.plot(wp_pion[1], wp_pion[0], 'g.', markersize=20, label="Pioneer waypoint")
@@ -181,23 +184,24 @@ class AgentPlot:
         """ Note for triangulation:
         - Maybe sometimes it cannot triangulate based on one axis, but changing to another axis might work.
         - So then the final output needs to be carefully treated so that it has the correct visualisation.
+        - Also note, the floating point number can cause issues as well.
         """
         """ To show threshold as a red line, then vmin, vmax, stepsize, threshold needs to have values. """
-        triangulated = tri.Triangulation(yplot, xplot)
+        triangulated = tri.Triangulation(xplot, yplot)
         x_triangulated = xplot[triangulated.triangles].mean(axis=1)
         y_triangulated = yplot[triangulated.triangles].mean(axis=1)
 
         ind_mask = []
         for i in range(len(x_triangulated)):
             ind_mask.append(self.is_masked(y_triangulated[i], x_triangulated[i]))
+
         triangulated.set_mask(ind_mask)
         refiner = tri.UniformTriRefiner(triangulated)
         triangulated_refined, value_refined = refiner.refine_field(values.flatten(), subdiv=3)
 
         """ extract new x and y, refined ones. """
-        xre_plot = triangulated_refined.x
-        yre_plot = triangulated_refined.y
-
+        # xre_plot = triangulated_refined.x
+        # yre_plot = triangulated_refined.y
         ax = plt.gca()
         # ax.triplot(triangulated, lw=0.5, color='white')
         if np.any([vmin, vmax]):
@@ -210,31 +214,109 @@ class AgentPlot:
             if threshold:
                 dist = np.abs(threshold - levels)
                 ind = np.where(dist == np.amin(dist))[0]
-                linewidths[ind] = 3
+                linewidths[ind] = 10
                 colors[ind[0]] = 'red'
-            contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, levels=levels, cmap=cmap, alpha=alpha)
-            ax.tricontour(yre_plot, xre_plot, value_refined, levels=levels, linewidths=linewidths, colors=colors,
+            contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap, alpha=alpha)
+            ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths, colors=colors,
                           alpha=alpha)
+            # contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, levels=levels, cmap=cmap, alpha=alpha)
+            # ax.tricontour(yre_plot, xre_plot, value_refined, levels=levels, linewidths=linewidths, colors=colors,
+            #               alpha=alpha)
         else:
-            contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, cmap=cmap, alpha=alpha)
-            ax.tricontour(yre_plot, xre_plot, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
+            contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap, alpha=alpha)
+            ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
+            # contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, cmap=cmap, alpha=alpha)
+            # ax.tricontour(yre_plot, xre_plot, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
 
         if colorbar:
             cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
             cbar.ax.set_title(cbar_title)
-        return ax
+
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if np.any(polygon_border):
+            plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-.', lw=2)
+
+        if np.any(polygon_obstacle):
+            plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-.', lw=2)
+
+        return ax, value_refined
+
+    # def plotf_vector(self, xplot, yplot, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
+    #                  cbar_title='test', colorbar=True, vmin=None, vmax=None, ticks=None,
+    #                  stepsize=None, threshold=None, polygon_border=None,
+    #                  polygon_obstacle=None, xlabel=None, ylabel=None):
+    #     """ Note for triangulation:
+    #     - Maybe sometimes it cannot triangulate based on one axis, but changing to another axis might work.
+    #     - So then the final output needs to be carefully treated so that it has the correct visualisation.
+    #     """
+    #     """ To show threshold as a red line, then vmin, vmax, stepsize, threshold needs to have values. """
+    #     triangulated = tri.Triangulation(yplot, xplot)
+    #     x_triangulated = xplot[triangulated.triangles].mean(axis=1)
+    #     y_triangulated = yplot[triangulated.triangles].mean(axis=1)
+    #
+    #     ind_mask = []
+    #     for i in range(len(x_triangulated)):
+    #         ind_mask.append(self.is_masked(y_triangulated[i], x_triangulated[i]))
+    #     triangulated.set_mask(ind_mask)
+    #     refiner = tri.UniformTriRefiner(triangulated)
+    #     triangulated_refined, value_refined = refiner.refine_field(values.flatten(), subdiv=3)
+    #
+    #     """ extract new x and y, refined ones. """
+    #     xre_plot = triangulated_refined.x
+    #     yre_plot = triangulated_refined.y
+    #
+    #     ax = plt.gca()
+    #     # ax.triplot(triangulated, lw=0.5, color='white')
+    #     if np.any([vmin, vmax]):
+    #         levels = np.arange(vmin, vmax, stepsize)
+    #     else:
+    #         levels = None
+    #     if np.any(levels):
+    #         linewidths = np.ones_like(levels) * .3
+    #         colors = len(levels) * ['black']
+    #         if threshold:
+    #             dist = np.abs(threshold - levels)
+    #             ind = np.where(dist == np.amin(dist))[0]
+    #             linewidths[ind] = 3
+    #             colors[ind[0]] = 'red'
+    #         contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, levels=levels, cmap=cmap, alpha=alpha)
+    #         ax.tricontour(yre_plot, xre_plot, value_refined, levels=levels, linewidths=linewidths, colors=colors,
+    #                       alpha=alpha)
+    #     else:
+    #         contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, cmap=cmap, alpha=alpha)
+    #         ax.tricontour(yre_plot, xre_plot, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
+    #
+    #     if colorbar:
+    #         cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
+    #         cbar.ax.set_title(cbar_title)
+    #     return ax
 
     @staticmethod
-    def is_masked(x, y) -> bool:
+    def is_masked(xgrid, ygrid) -> bool:
         """
-        :param x:
-        :param y:
+        :param xgrid:
+        :param ygrid:
         :return:
         """
-        loc = np.array([x, y])
+        loc = np.array([xgrid, ygrid])
         masked = False
-        if not field.border_contains(loc):
+        if field.obstacle_contains(loc) or not field.border_contains(loc):
             masked = True
         return masked
+
+    # @staticmethod
+    # def is_masked(x, y) -> bool:
+    #     """
+    #     :param x:
+    #     :param y:
+    #     :return:
+    #     """
+    #     loc = np.array([x, y])
+    #     masked = False
+    #     if not field.border_contains(loc):
+    #         masked = True
+    #     return masked
 
 
