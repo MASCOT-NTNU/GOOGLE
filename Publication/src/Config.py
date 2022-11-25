@@ -11,7 +11,7 @@ Config has the most important parameter setting in the long horizon operation in
 from WGS import WGS
 import numpy as np
 import pandas as pd
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, LineString
 
 
 class Config:
@@ -28,8 +28,10 @@ class Config:
         """ Convert them to cartesian polygons and starting and end locations. """
         self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)
         self.__polygon_border_shapely = Polygon(self.__polygon_border)
+        self.__line_border_shapely = LineString(self.__polygon_border)
         self.__polygon_obstacle = self.wgs2xy(self.__wgs_polygon_obstacle)
         self.__polygon_obstacle_shapely = Polygon(self.__polygon_obstacle)
+        self.__line_obstacle_shapely = LineString(self.__polygon_obstacle)
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
         x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
@@ -52,6 +54,7 @@ class Config:
         self.__wgs_polygon_border = value
         self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)
         self.__polygon_border_shapely = Polygon(self.__polygon_border)
+        self.__line_border_shapely = LineString(self.__polygon_border)
 
     def set_polygon_obstacle(self, value: np.ndarray) -> None:
         """ Set polygon obstacle using polygon defined by lat lon coordinates.
@@ -64,6 +67,7 @@ class Config:
         self.__wgs_polygon_obstacle = value
         self.__polygon_obstacle = self.wgs2xy(self.__wgs_polygon_obstacle)
         self.__polygon_obstacle_shapely = Polygon(self.__polygon_obstacle)
+        self.__line_obstacle_shapely = LineString(self.__polygon_obstacle)
 
     def set_loc_start(self, loc: np.ndarray) -> None:
         """ Set the starting location with (lat,lon). """
@@ -85,6 +89,10 @@ class Config:
         """ Return shapelized polygon for opa in xy coordinates. """
         return self.__polygon_border_shapely
 
+    def get_line_border_shapely(self) -> 'LineString':
+        """ Return linestring of polygon border. """
+        return self.__line_border_shapely
+
     def get_polygon_obstacle(self) -> np.ndarray:
         """ Return polygon for the obstacle. """
         return self.__polygon_obstacle
@@ -92,6 +100,10 @@ class Config:
     def get_polygon_obstacle_shapely(self) -> 'Polygon':
         """ Return shapelized polygon for the obstacle. """
         return self.__polygon_obstacle_shapely
+
+    def get_line_obstacle_shapely(self) -> 'LineString':
+        """ Return linestring of polygon obstacle. """
+        return self.__line_obstacle_shapely
 
     def get_loc_start(self) -> np.ndarray:
         """ Return starting location in (x, y). """

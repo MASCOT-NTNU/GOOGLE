@@ -27,7 +27,6 @@ class CTDSimulator:
         Sigma_prior = self.__grf.get_Sigma()
         self.__truth = mu_prior + np.linalg.cholesky(Sigma_prior) @ np.random.randn(len(mu_prior)).reshape(-1, 1)
 
-
     def get_salinity_at_loc(self, loc: np.ndarray) -> Union[np.ndarray, None]:
         """
         Get CTD measurement at a specific location.

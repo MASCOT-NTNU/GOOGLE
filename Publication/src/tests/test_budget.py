@@ -1,3 +1,6 @@
+"""
+Unittest for budget calculation.
+"""
 from unittest import TestCase
 from Config import Config
 from CostValley.Budget import Budget
@@ -87,37 +90,37 @@ class TestBudget(TestCase):
         BU = self.b.get_budget()
         self.b.set_loc_prev(self.c.get_loc_start())
         ls = self.b.get_loc_prev()
-        loc = np.array([7000, 8000])
+        loc = np.array([1000, -1000])
         bf = self.b.get_budget_field(loc[0], loc[1])
         self.run_update_budget(loc, ls, BU, bf)
 
         # c1: move to first location,
         BU = self.b.get_budget()
         ls = self.b.get_loc_prev()
-        loc = np.array([8000, 8500])
+        loc = np.array([2000, -1000])
         bf = self.b.get_budget_field(loc[0], loc[1])
         self.run_update_budget(loc, ls, BU, bf)
 
         # c2: consume a little budget
-        loc = np.array([9500., 9000.])
+        loc = np.array([3000., -1000.])
         BU = self.b.get_budget()
         ls = self.b.get_loc_prev()
         bf = self.b.get_budget_field(loc[0], loc[1])
         self.run_update_budget(loc, ls, BU, bf)
 
         # c3: consume more budget
-        loc = np.array([10000., 9500.])
+        loc = np.array([2500., -1500.])
         BU = self.b.get_budget()
         ls = self.b.get_loc_prev()
         bf = self.b.get_budget_field(loc[0], loc[1])
         self.run_update_budget(loc, ls, BU, bf)
 
-        # # c4: consume more budget
-        # loc = np.array([4500, 4500])
-        # BU = self.b.get_budget()
-        # ls = self.b.get_loc_prev()
-        # bf = self.b.get_budget_field(loc[0], loc[1])
-        # self.run_update_budget(loc, ls, BU, bf)
+        # c4: consume more budget
+        loc = np.array([2000, -2000])
+        BU = self.b.get_budget()
+        ls = self.b.get_loc_prev()
+        bf = self.b.get_budget_field(loc[0], loc[1])
+        self.run_update_budget(loc, ls, BU, bf)
 
         # # c5: consume last budget
         # loc = np.array([5500, 4700])

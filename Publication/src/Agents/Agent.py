@@ -12,7 +12,6 @@ on the updated knowledge for the field. Therefore, it can act according to the p
 """
 from Planner.Planner import Planner
 from AUVSimulator.AUVSimulator import AUVSimulator
-from usr_func.get_resume_state import get_resume_state
 import numpy as np
 import os
 import time
@@ -35,22 +34,18 @@ class Agent:
         Set up the planning strategies and the AUV simulator for the operation.
         """
         # s1: set up planner.
-        loc_start = np.array([10000, 8200])
+        loc_start = np.array([3000, 1000])
         self.planner = Planner(loc_start)
 
         # s2: setup AUV simulator.
         self.auv = AUVSimulator()
 
         # s3: set up the counter
-        resume = get_resume_state()
-        if not resume:
-            self.__counter = 0
-        else:
-            self.__counter = int(np.loadtxt("counter.txt")) + 1
+        self.__counter = 0
 
         # s4: setup Visualiser.
         # self.tp = TreePlotter()
-        self.ap = AgentPlot(self, figpath=os.getcwd() + "/../../fig/OP2_LongHorizon/")
+        self.ap = AgentPlot(self, figpath=os.getcwd() + "/../../fig/Nidelva2D_LongHorizon/")
         # self.visualiser = Visualiser(self, figpath=os.getcwd() + "/../fig/Myopic3D/")
 
     def run(self):
@@ -119,7 +114,7 @@ class Agent:
                     break
                 print("counter: ", self.__counter)
                 self.__counter += 1
-                np.savetxt("counter.txt", np.array([self.__counter]))
+                # np.savetxt("counter.txt", np.array([self.__counter]))
 
     def get_counter(self):
         return self.__counter
