@@ -44,6 +44,7 @@ class GRF:
         # self.__mu = (.7 * (1 - np.exp(- ((x - 1.) ** 2 + (y - .5) ** 2) / .07)) +
         #              .3 * (1 - np.exp(- ((x - .5) ** 2 + (y - 1.) ** 2) / .07))).reshape(-1, 1)
         self.__mu = (1. - np.exp(- ((x - 1.) ** 2 + (y - .5) ** 2) / .07)).reshape(-1, 1)
+        # self.__mu = (1. - np.exp(- ((x - .0) ** 2 + (y - .5) ** 2) / .07)).reshape(-1, 1)
 
     def __construct_grf_field(self):
         self.__distance_matrix = cdist(self.grid, self.grid)
@@ -117,7 +118,7 @@ class GRF:
         :param sigma_diag: n x 1 dimension
         :return:
         """
-        p = norm.cdf(self.__threshold, mu, sigma_diag)
+        p = norm.cdf(self.__threshold, mu, np.sqrt(sigma_diag))
         bv = p * (1 - p)
         ibv = np.sum(bv)
         return ibv

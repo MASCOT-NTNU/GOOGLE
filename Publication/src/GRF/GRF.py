@@ -13,9 +13,7 @@ from scipy.spatial.distance import cdist
 import numpy as np
 from scipy.stats import norm
 from usr_func.normalize import normalize
-from sys import maxsize
 import time
-import os
 import pandas as pd
 
 
@@ -28,7 +26,7 @@ class GRF:
         self.__distance_matrix = None
         self.__sigma = 2.8
         self.__lateral_range = 2800  # 680 in the experiment
-        self.__nugget = .01
+        self.__nugget = .7
         self.__threshold = 27
 
         # computed
@@ -55,9 +53,6 @@ class GRF:
         # s1: update prior mean
         self.__construct_prior_mean()
 
-        # s2: set initial data saving index
-        self.__cnt_data_saving = 0
-
     def __construct_grf_field(self) -> None:
         """ Construct distance matrix and thus Covariance matrix for the kernel. """
         self.__distance_matrix = cdist(self.grid, self.grid)
@@ -67,10 +62,13 @@ class GRF:
     def __construct_prior_mean(self) -> None:
         # s0: get delft3d dataset
         dataset_sinmod = pd.read_csv("./../prior/sinmod.csv").to_numpy()
+        grid_sinmod = dataset_sinmod[:, :2]
+        sal_sinmod = dataset_sinmod[:, -1]
+
         # s1: interpolate onto grid.
-        dm_grid_delft3d = cdist(self.grid, dataset_sinmod[:, :2])
+        dm_grid_delft3d = cdist(self.grid, grid_sinmod)
         ind_close = np.argmin(dm_grid_delft3d, axis=1)
-        self.__mu = dataset_sinmod[ind_close, 2].reshape(-1, 1)
+        self.__mu = vectorize(sal_sinmod[ind_close])
 
     def assimilate_data(self, dataset: np.ndarray) -> None:
         """
@@ -97,9 +95,6 @@ class GRF:
         self.__update(ind_measured=ind_assimilated, salinity_measured=salinity_assimilated)
         # t2 = time.time()
         # print("Data assimilation takes: ", t2 - t1, " seconds")
-
-        ## update counter
-        self.__cnt_data_saving += 1
 
     def __update(self, ind_measured: np.ndarray, salinity_measured: np.ndarray):
         """
@@ -134,36 +129,37 @@ class GRF:
         print("Total EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
 
-    def get_ei_field_partial(self, indices: np.ndarray) -> tuple:
-        """ Get EI field only for selected indices.
-        Only compute EI field for the designated indices. Then the rest EI field is large numbers.
-        """
-        t1 = time.time()
-        eibv_field = np.ones([self.Ngrid]) * maxsize
-        ivr_field = np.ones([self.Ngrid]) * maxsize
-        for idx in indices:
-            SF = self.__Sigma[:, idx].reshape(-1, 1)
-            MD = 1 / (self.__Sigma[idx, idx] + self.__nugget)
-            VR = SF @ SF.T * MD
-            SP = self.__Sigma - VR
-            sigma_diag = np.diag(SP).reshape(-1, 1)
-            eibv_field[idx] = self.__get_ibv(self.__mu, sigma_diag)
-            ivr_field[idx] = np.sum(np.diag(VR))
-        eibv_field[indices] = normalize(eibv_field[indices])
-        ivr_field[indices] = 1 - normalize(ivr_field[indices])
-        self.__eibv_field = eibv_field
-        self.__ivr_field = ivr_field
-        t2 = time.time()
-        print("Partial EI field takes: ", t2 - t1, " seconds.")
-        return self.__eibv_field, self.__ivr_field
+    # def get_ei_field_partial(self, indices: np.ndarray) -> tuple:
+    #     """ Get EI field only for selected indices.
+    #     Only compute EI field for the designated indices. Then the rest EI field is large numbers.
+    #     """
+    #     t1 = time.time()
+    #     eibv_field = np.ones([self.Ngrid]) * maxsize
+    #     ivr_field = np.ones([self.Ngrid]) * maxsize
+    #     for idx in indices:
+    #         SF = self.__Sigma[:, idx].reshape(-1, 1)
+    #         MD = 1 / (self.__Sigma[idx, idx] + self.__nugget)
+    #         VR = SF @ SF.T * MD
+    #         SP = self.__Sigma - VR
+    #         sigma_diag = np.diag(SP).reshape(-1, 1)
+    #         eibv_field[idx] = self.__get_ibv(self.__mu, sigma_diag)
+    #         ivr_field[idx] = np.sum(np.diag(VR))
+    #     eibv_field[indices] = normalize(eibv_field[indices])
+    #     ivr_field[indices] = 1 - normalize(ivr_field[indices])
+    #     self.__eibv_field = eibv_field
+    #     self.__ivr_field = ivr_field
+    #     t2 = time.time()
+    #     print("Partial EI field takes: ", t2 - t1, " seconds.")
+    #     return self.__eibv_field, self.__ivr_field
 
-    def __get_ibv(self, mu: np.ndarray, sigma_diag: np.ndarray):
+    def __get_ibv(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.
+        !!! Be careful with standard deviation is not variance, so it does not cause significant issues tho.
         :param mu: n x 1 dimension
         :param sigma_diag: n x 1 dimension
         :return:
         """
-        p = norm.cdf(self.__threshold, mu, sigma_diag)
+        p = norm.cdf(self.__threshold, mu, np.sqrt(sigma_diag))
         bv = p * (1 - p)
         ibv = np.sum(bv)
         return ibv

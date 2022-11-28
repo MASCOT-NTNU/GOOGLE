@@ -47,36 +47,36 @@ class TestGRF(TestCase):
     def test_prior_matern_covariance(self):
         plotf(self, v1=self.g.get_mu(), v2 = np.diag(self.g.get_Sigma()))
 
-    def test_assimilate(self):
-        # c2: one
-        dataset = np.array([[.2, .2, 10]])
-        self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
-
-        # c3: multiple
-        dataset = np.array([[.6, .4,  1],
-                            [.2, .8, .5],
-                            [.8, .2, .1],
-                            [.9, .9, .7]])
-        self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
+    # def test_assimilate(self):
+    #     # c2: one
+    #     dataset = np.array([[.2, .2, 10]])
+    #     self.g.assimilate_data(dataset)
+    #     plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
+    #
+    #     # c3: multiple
+    #     dataset = np.array([[.6, .4,  1],
+    #                         [.2, .8, .5],
+    #                         [.8, .2, .1],
+    #                         [.9, .9, .7]])
+    #     self.g.assimilate_data(dataset)
+    #     plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
 
     def test_get_ei_field(self):
         # c1: no data assimilation
         eibv, ivr = self.g.get_ei_field()
         plotf(self, v1=eibv, v2=ivr)
 
-        # c2: with data assimilation
-        dataset = np.array([[.1, .8, .1],
-                            [.2, .8, .1],
-                            [.3, .8, .0],
-                            [.1, .7, .6],
-                            [.2, .9, .7],
-                            [.05, .9, .7]])
-        self.g.assimilate_data(dataset)
-        eibv, ivr = self.g.get_ei_field()
-        plotf(self, v1=eibv, v2=ivr)
-        plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
+        # # c2: with data assimilation
+        # dataset = np.array([[.1, .8, .1],
+        #                     [.2, .8, .1],
+        #                     [.3, .8, .0],
+        #                     [.1, .7, .6],
+        #                     [.2, .9, .7],
+        #                     [.05, .9, .7]])
+        # self.g.assimilate_data(dataset)
+        # eibv, ivr = self.g.get_ei_field()
+        # plotf(self, v1=eibv, v2=ivr)
+        # plotf(self, v1=self.g.get_mu(), v2=np.diag(self.g.get_Sigma()))
 
 
 
