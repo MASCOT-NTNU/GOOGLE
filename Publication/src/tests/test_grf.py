@@ -50,22 +50,22 @@ def plotf(self, v1, v2, title1="mean", title2="cov", cbar1="salinity", cbar2="st
     fig = plt.figure(figsize=(15, 5))
     gs = GridSpec(nrows=1, ncols=2)
     ax = fig.add_subplot(gs[0])
-    plotf_vector2(self.grid[:, 1], self.grid[:, 0], v1,
-                 polygon_border=self.c.get_polygon_border(), vmin=vmin1, vmax=vmax1)
-    if threshold1:
-        ind = np.where((v1 < threshold1 + .25) * (v1 > threshold1 - .25))[0]
-        plt.plot(self.grid[ind, 1], self.grid[ind, 0], 'r.')
-    # plotf_vector(self.grid[:, 1], self.grid[:, 0], v1, title=title1, cmap=get_cmap("BrBG", 10),
-    #              vmin=vmin1, vmax=vmax1, cbar_title=cbar1, stepsize=stepsize1, threshold=threshold1,
-    #              polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
-    # plt.title(title1)
+    # plotf_vector2(self.grid[:, 1], self.grid[:, 0], v1,
+    #              polygon_border=self.c.get_polygon_border(), vmin=vmin1, vmax=vmax1)
+    # if threshold1:
+    #     ind = np.where((v1 < threshold1 + .25) * (v1 > threshold1 - .25))[0]
+    #     plt.plot(self.grid[ind, 1], self.grid[ind, 0], 'r.')
+    plotf_vector(self.grid[:, 1], self.grid[:, 0], v1, title=title1, cmap=get_cmap("BrBG", 10),
+                 vmin=vmin1, vmax=vmax1, cbar_title=cbar1, stepsize=stepsize1, threshold=threshold1,
+                 polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
+    plt.title(title1)
 
     ax = fig.add_subplot(gs[1])
-    plotf_vector2(self.grid[:, 1], self.grid[:, 0], v2, cmap="RdBu",
-                 polygon_border=self.c.get_polygon_border(), vmin=vmin2, vmax=vmax2)
-    # plotf_vector(self.grid[:, 1], self.grid[:, 0], v2, title=title1, cmap=get_cmap("RdBu", 10),
-    #              vmin=vmin2, vmax=vmax2, cbar_title=cbar2, stepsize=stepsize2, threshold=threshold2,
-    #              polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
+    # plotf_vector2(self.grid[:, 1], self.grid[:, 0], v2, cmap="RdBu",
+    #              polygon_border=self.c.get_polygon_border(), vmin=vmin2, vmax=vmax2)
+    plotf_vector(self.grid[:, 1], self.grid[:, 0], v2, title=title1, cmap=get_cmap("RdBu", 10),
+                 vmin=vmin2, vmax=vmax2, cbar_title=cbar2, stepsize=stepsize2, threshold=threshold2,
+                 polygon_border=self.c.get_polygon_border(), polygon_obstacle=self.c.get_polygon_obstacle())
     plt.title(title2)
     plt.show()
 
@@ -82,11 +82,6 @@ class TestGRF(TestCase):
         self.cov = self.g.get_Sigma()
         self.mu = self.g.get_mu()
         self.sigma = self.g.get_sigma()
-
-        # plt.imshow(self.cov)
-        # plt.colorbar()
-        # plt.show()
-        # plt.show()
 
     def test_prior_matern_covariance(self):
         print("S1")
@@ -117,7 +112,8 @@ class TestGRF(TestCase):
         print("S3")
         """ For now, it takes too much time to compute the entire EI field. """
         eibv, ivr = self.g.get_ei_field_total()
-        plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2=0, vmax2=1, cbar1="cost", cbar2="cost")
+        plotf(self, v1=eibv, v2=ivr, vmin1=0, vmax1=1, vmin2 =0, vmax2=1, cbar1="cost", cbar2="cost",
+              title1="EIBV", title2="IVR")
 
         # # c2: with data assimilation
         # dataset = np.array([[2000, -1000,  0, 15],
