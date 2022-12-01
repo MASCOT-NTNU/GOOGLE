@@ -34,15 +34,21 @@ class CostValley:
         self.__Budget = Budget(self.__grid)
         self.__Direction = Direction(self.__grid)
 
+        # weights for simulation study
+        self.__weight_eibv = 1.
+        self.__weight_ivr = 1.
+
         # get current location.
         self.__x_now, self.__y_now = self.__Budget.get_loc_now()
 
         # fundamental layers
-        self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field_total()
+        self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field_total()  # TODO: change back
         # __azimuth_field = __Direction.get_direction_field(__x_now, __y_now)
         self.__budget_field = self.__Budget.get_budget_field(self.__x_now, self.__y_now)
-        self.__cost_field = (self.__eibv_field +
-                             self.__ivr_field +
+        # self.__eibv_field = np.zeros_like(self.__budget_field)
+        # self.__ivr_field = np.zeros_like(self.__budget_field)
+        self.__cost_field = (self.__eibv_field * self.__weight_eibv +
+                             self.__ivr_field * self.__weight_ivr +
                              # __azimuth_field +
                              self.__budget_field)
 
@@ -52,8 +58,8 @@ class CostValley:
         self.__budget_field = self.__Budget.get_budget_field(x_now, y_now)
         # self.__azimuth_field = self.__Direction.get_direction_field(x_now, y_now)
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field_total()
-        self.__cost_field = (self.__eibv_field +
-                             self.__ivr_field +
+        self.__cost_field = (self.__eibv_field * self.__weight_eibv +
+                             self.__ivr_field * self.__weight_ivr +
                              # self.__azimuth_field +
                              self.__budget_field)
         # t2 = time.time()
@@ -106,6 +112,22 @@ class CostValley:
         ind = np.argmin(self.__cost_field)
         return self.__grid[ind]
 
+    def set_weight_eibv(self, value: float) -> None:
+        """ Set weight for EIBV field. """
+        self.__weight_eibv = value
+
+    def set_weight_ivr(self, value: float) -> None:
+        """ Set weight for IVR field. """
+        self.__weight_ivr = value
+
+    def get_eibv_weight(self) -> float:
+        """ Return weight for EIBV field. """
+        return self.__weight_eibv
+
+    def get_ivr_weight(self) -> float:
+        """ Return weight for IVR field. """
+        return self.__weight_ivr
+    
 
 if __name__ == "__main__":
     cv = CostValley()

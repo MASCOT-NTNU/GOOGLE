@@ -48,27 +48,48 @@ class TestCostValley(TestCase):
         self.polygon_obstacle = self.c.get_polygon_obstacle()
         self.xlim, self.ylim = self.field.get_border_limits()
 
-    def test_minimum_cost_location(self):
-        print("S1")
-        loc_m = self.cv.get_minimum_cost_location()
-        cv = self.cv.get_cost_field()
-        id = np.argmin(cv)
-        loc = self.grf.grid[id]
-        self.assertIsNone(testing.assert_array_equal(loc, loc_m))
-        print("End S1")
+    def test_weights(self):
+        loc_now = np.array([1000, -1000])
+        # c1: equal weights
+        print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
+        self.cv.update_cost_valley(loc_now)
+        self.plot_cost_valley()
 
-    def test_get_cost_at_location(self):
-        print("S2")
-        loc = np.array([2000, -2000])
-        cost = self.cv.get_cost_at_location(loc)
-        print("End S2")
+        # c2: more EIBV
+        self.cv.set_weight_eibv(1.9)
+        self.cv.set_weight_ivr(.1)
+        print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
+        self.cv.update_cost_valley(loc_now)
+        self.plot_cost_valley()
 
-    def test_get_cost_along_path(self):
-        print("S3")
-        l1 = np.array([1000, -1000])
-        l2 = np.array([2000, -200])
-        c = self.cv.get_cost_along_path(l1, l2)
-        print("End S3")
+        # c3: more IVR
+        self.cv.set_weight_eibv(.1)
+        self.cv.set_weight_ivr(1.9)
+        print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
+        self.cv.update_cost_valley(loc_now)
+        self.plot_cost_valley()
+
+    # def test_minimum_cost_location(self):
+    #     print("S1")
+    #     loc_m = self.cv.get_minimum_cost_location()
+    #     cv = self.cv.get_cost_field()
+    #     id = np.argmin(cv)
+    #     loc = self.grf.grid[id]
+    #     self.assertIsNone(testing.assert_array_equal(loc, loc_m))
+    #     print("End S1")
+
+    # def test_get_cost_at_location(self):
+    #     print("S2")
+    #     loc = np.array([2000, -2000])
+    #     cost = self.cv.get_cost_at_location(loc)
+    #     print("End S2")
+
+    # def test_get_cost_along_path(self):
+    #     print("S3")
+    #     l1 = np.array([1000, -1000])
+    #     l2 = np.array([2000, -200])
+    #     c = self.cv.get_cost_along_path(l1, l2)
+    #     print("End S3")
 
     def plot_cost_valley(self):
         grid = self.cv.get_grid()
@@ -115,58 +136,58 @@ class TestCostValley(TestCase):
         plt.title("mean")
         plt.show()
 
-    def test_update_cost_valley(self):
-        print("S4")
-        self.plot_cost_valley()
-
-        # s1: move and sample
-        dataset = np.array([[1000, -1000, 0, 20]])
-        self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
-        self.plot_cost_valley()
-
-        # s2: move more and sample
-        dataset = np.array([[1500, -1500, 0, 15]])
-        self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
-        self.plot_cost_valley()
-
-        # s3: move more and sample
-        dataset = np.array([[2000, -2000, 0, 20]])
-        self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
-        self.plot_cost_valley()
-
-        # s4: move more and sample
-        dataset = np.array([[2500, -1500, 0, 22]])
-        self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
-        self.plot_cost_valley()
-
-        # # s5: move more and sample
-        # dataset = np.array([[8600, 9000, 0, 25]])
-        # self.grf.assimilate_data(dataset)
-        # self.cv.update_cost_valley(dataset[0, :2])
-        # self.plot_cost_valley()
-        #
-        # # s6: move final steps and sample
-        # dataset = np.array([[9000, 9200, 0, 25]])
-        # self.grf.assimilate_data(dataset)
-        # self.cv.update_cost_valley(dataset[0, :2])
-        # self.plot_cost_valley()
-        #
-        # # s6: move final steps and sample
-        # dataset = np.array([[9200, 9500, 0, 25]])
-        # self.grf.assimilate_data(dataset)
-        # self.cv.update_cost_valley(dataset[0, :2])
-        # self.plot_cost_valley()
-        #
-        # # s6: move final steps and sample
-        # dataset = np.array([[9500, 9800, 0, 10]])
-        # self.grf.assimilate_data(dataset)
-        # self.cv.update_cost_valley(dataset[0, :2])
-        # self.plot_cost_valley()
-        print("End S4")
+    # def test_update_cost_valley(self):
+    #     print("S4")
+    #     self.plot_cost_valley()
+    #
+    #     # s1: move and sample
+    #     dataset = np.array([[1000, -1000, 0, 20]])
+    #     self.grf.assimilate_data(dataset)
+    #     self.cv.update_cost_valley(dataset[0, :2])
+    #     self.plot_cost_valley()
+    #
+    #     # s2: move more and sample
+    #     dataset = np.array([[1500, -1500, 0, 15]])
+    #     self.grf.assimilate_data(dataset)
+    #     self.cv.update_cost_valley(dataset[0, :2])
+    #     self.plot_cost_valley()
+    #
+    #     # s3: move more and sample
+    #     dataset = np.array([[2000, -2000, 0, 20]])
+    #     self.grf.assimilate_data(dataset)
+    #     self.cv.update_cost_valley(dataset[0, :2])
+    #     self.plot_cost_valley()
+    #
+    #     # s4: move more and sample
+    #     dataset = np.array([[2500, -1500, 0, 22]])
+    #     self.grf.assimilate_data(dataset)
+    #     self.cv.update_cost_valley(dataset[0, :2])
+    #     self.plot_cost_valley()
+    #
+    #     # # s5: move more and sample
+    #     # dataset = np.array([[8600, 9000, 0, 25]])
+    #     # self.grf.assimilate_data(dataset)
+    #     # self.cv.update_cost_valley(dataset[0, :2])
+    #     # self.plot_cost_valley()
+    #     #
+    #     # # s6: move final steps and sample
+    #     # dataset = np.array([[9000, 9200, 0, 25]])
+    #     # self.grf.assimilate_data(dataset)
+    #     # self.cv.update_cost_valley(dataset[0, :2])
+    #     # self.plot_cost_valley()
+    #     #
+    #     # # s6: move final steps and sample
+    #     # dataset = np.array([[9200, 9500, 0, 25]])
+    #     # self.grf.assimilate_data(dataset)
+    #     # self.cv.update_cost_valley(dataset[0, :2])
+    #     # self.plot_cost_valley()
+    #     #
+    #     # # s6: move final steps and sample
+    #     # dataset = np.array([[9500, 9800, 0, 10]])
+    #     # self.grf.assimilate_data(dataset)
+    #     # self.cv.update_cost_valley(dataset[0, :2])
+    #     # self.plot_cost_valley()
+    #     print("End S4")
 
 
 

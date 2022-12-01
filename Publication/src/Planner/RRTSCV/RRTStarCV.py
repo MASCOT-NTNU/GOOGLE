@@ -90,9 +90,9 @@ class RRTStarCV:
         self.__line_ellipse_shapely = self.__Budget.get_line_ellipse()
 
         # s2: expand the trees.
-        self.__expand_trees()
+        self.__search_shortest_trajectory_within_trees()
 
-        # s3: get possible trajectory
+        # s3: get shortest trajectory.
         self.__get_shortest_trajectory()
 
         # s4: get the next possible waypoint out of trajectory.
@@ -119,7 +119,7 @@ class RRTStarCV:
                     break
         return wp_next
 
-    def __expand_trees(self):
+    def __search_shortest_trajectory_within_trees(self):
         # t1 = time.time()
         # start by appending the starting node to the nodes list.
         self.__nodes.append(self.__starting_node)
@@ -212,8 +212,8 @@ class RRTStarCV:
         # if self.is_path_legal(n1.get_location(), n2.get_location()):
         cost_distance = TreeNode.get_distance_between_nodes(n1, n2)
         cost_costvalley = self.__cost_valley.get_cost_along_path(n1.get_location(), n2.get_location())
-        cost = n1.get_cost() + cost_distance + cost_costvalley
-        # cost = n1.get_cost() + cost_distance
+        # cost = n1.get_cost() + cost_distance + cost_costvalley
+        cost = n1.get_cost() + cost_distance
         # cost = .0
         # else:
         #     cost = np.inf
@@ -266,14 +266,48 @@ class RRTStarCV:
             islegal = False
         return islegal
 
-    def set_stepsize(self, value: float) -> None:
-        self.__stepsize = value
-
-    def get_stepsize(self) -> float:
-        return self.__stepsize
-
     def get_CostValley(self) -> 'CostValley':
         return self.__cost_valley
+
+    def set_goal_sampling_rate(self, value: float) -> None:
+        """ Set the goal sampling rate. """
+        self.__goal_sampling_rate = value
+
+    def set_stepsize(self, value: float) -> None:
+        """ Set the step size of the trees. """
+        self.__stepsize = value
+
+    def set_max_expansion_iteraions(self, value: int) -> None:
+        """ Set the maximum expansion itersions. """
+        self.__max_expansion_iteration = value
+
+    def set_rrtstar_neighbour_radius(self, value: float) -> None:
+        """ Set the neighbour radius for tree searching. """
+        self.__rrtstar_neighbour_radius = value
+
+    def set_home_radius(self, value: float) -> None:
+        """ Set the home radius for path convergence. """
+        self.__home_radius = value
+
+    def get_goal_sampling_rate(self) -> float:
+        """ Set the goal sampling rate. """
+        return self.__goal_sampling_rate
+
+    def get_stepsize(self) -> float:
+        """ Set the step size of the trees. """
+        return self.__stepsize
+
+    def get_max_expansion_iteraions(self) -> int:
+        """ Set the maximum expansion itersions. """
+        return self.__max_expansion_iteration
+
+    def get_rrtstar_neighbour_radius(self) -> float:
+        """ Set the neighbour radius for tree searching. """
+        return self.__rrtstar_neighbour_radius
+
+    def get_home_radius(self) -> float:
+        """ Set the home radius for path convergence. """
+        return self.__home_radius
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ class GRF:
     def __init__(self) -> None:
         # parameters
         self.__distance_matrix = None
-        self.__sigma = 1.
+        self.__sigma = .1
         self.__lateral_range = 2800  # 680 in the experiment
         self.__nugget = .01
         self.__threshold = 27
