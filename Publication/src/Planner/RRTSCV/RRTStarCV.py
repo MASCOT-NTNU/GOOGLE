@@ -90,7 +90,7 @@ class RRTStarCV:
         self.__line_ellipse_shapely = self.__Budget.get_line_ellipse()
 
         # s2: expand the trees.
-        self.__search_shortest_trajectory_within_trees()
+        self.__expand_trees()
 
         # s3: get shortest trajectory.
         self.__get_shortest_trajectory()
@@ -119,7 +119,7 @@ class RRTStarCV:
                     break
         return wp_next
 
-    def __search_shortest_trajectory_within_trees(self):
+    def __expand_trees(self):
         # t1 = time.time()
         # start by appending the starting node to the nodes list.
         self.__nodes.append(self.__starting_node)

@@ -123,4 +123,4 @@ class TestCostEffect:
 
 if __name__ == "__main__":
     t = TestCostEffect()
-    t.run()
+    t.test_agent_run()
