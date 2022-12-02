@@ -11,6 +11,7 @@ Config has the most important parameter setting in the long horizon operation in
 from WGS import WGS
 import numpy as np
 import pandas as pd
+import os
 from shapely.geometry import Polygon, LineString
 
 
@@ -20,8 +21,8 @@ class Config:
         """ Initializes the crucial parameters used later in the simulation/experiment. """
 
         """ Set up WGS polygons and starting and end locations. """
-        self.__wgs_polygon_border = pd.read_csv("csv/polygon_border.csv").to_numpy()
-        self.__wgs_polygon_obstacle = pd.read_csv("csv/polygon_obstacle.csv").to_numpy()
+        self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
+        self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
         self.__wgs_loc_start = np.array([63.45582, 10.43287])
         self.__wgs_loc_end = np.array([63.440323, 10.355410])
 
