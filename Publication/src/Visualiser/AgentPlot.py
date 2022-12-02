@@ -320,3 +320,10 @@ class AgentPlot:
     #     return masked
 
 
+#%%
+import matplotlib.pyplot as plt
+plt.figure(figsize=(30, 10))
+plt.plot([0, 0])
+
+plt.show()
+
