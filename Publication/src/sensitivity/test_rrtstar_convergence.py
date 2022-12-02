@@ -60,17 +60,18 @@ class RRTStarCase:
         pass
 
     def check_convergence_for_rrtstar(self):
-        stepsizes = (np.arange(0, .85, .05) + .05) * np.sqrt((self.xmax-self.xmin)**2 + (self.ymax-self.ymin)**2)
+        # stepsizes = (np.arange(0, .85, .05) + .05) * np.sqrt((self.xmax-self.xmin)**2 + (self.ymax-self.ymin)**2)
         # max_iterations = np.arange(1, 11) * 1000
         # goal_sampling_rates = np.arange(0.01, .8, .025)
         self.distance_traj = []
 
         cnt = 0
-        for ss in stepsizes:
+        # for ss in stepsizes:
+        for ss in [0]:
         # for itr in max_iterations:
         # for gsr in goal_sampling_rates:
             """ Set up simulation parameters. """
-            self.rrtstar.set_stepsize(ss)
+            # self.rrtstar.set_stepsize(ss)
             # self.rrtstar.set_max_expansion_iteraions(itr)
             # self.rrtstar.set_goal_sampling_rate(gsr)
 
