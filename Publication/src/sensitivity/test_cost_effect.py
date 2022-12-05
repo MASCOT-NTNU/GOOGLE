@@ -23,7 +23,7 @@ class Agent:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
-        self.loc_start = np.array([3000, 1500])
+        self.loc_start = np.array([2000, -2000])
         self.planner = Planner(self.loc_start)
 
         # s2: setup AUV simulator.
@@ -162,13 +162,19 @@ class TestCostEffect:
                                                                     self.cv.get_ivr_weight()), self.traj_eq)
 
 
-
-
 if __name__ == "__main__":
 
     t = TestCostEffect()
     t.test_agent_run()
 
-#%% Simulation analysis
+# #%% Simulation analysis
+# import matplotlib.pyplot as plt
+# from Config import Config
+# c = Config()
+# plg_b = c.get_polygon_border()
+# plg_o = c.get_polygon_obstacle()
+# plt.plot(plg_b[:, 1], plg_b[:, 0], 'r-.')
+# plt.plot(plg_o[:, 1], plg_o[:, 0], 'r-.')
+# [plt.plot(t.traj_eibv[i, :, 1], t.traj_eibv[i, :, 0], 'k.-', alpha=.4) for i in range(len(t.traj_eibv))]; plt.show()
 
-[plt.plot(t.traj_eibv[i, :, 1], t.traj_eibv[i, :, 0], 'k.-', alpha=.4) for i in range(len(t.traj_eibv))]; plt.show()
+
