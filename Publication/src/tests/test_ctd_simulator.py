@@ -24,7 +24,7 @@ class TestCTDSimulator(TestCase):
         self.c = Config()
         self.ctd = CTDSimulator()
 
-    def test_get_salinity_at_loc(self):
+    def test_get_salinity_at_loc(self) -> None:
         """
         Test get salinity from location
         """
@@ -40,7 +40,7 @@ class TestCTDSimulator(TestCase):
         plt.figure(figsize=(15, 12))
         # plt.scatter(grid[:, 1], grid[:, 0], c=truth, cmap=get_cmap("BrBG", 10), vmin=10, vmax=35)
         # plt.colorbar()
-        plotf_vector(grid[:, 1], grid[:, 0], values=truth, cmap=get_cmap("RdBu", 10),
+        plotf_vector(grid[:, 1], grid[:, 0], values=truth, cmap=get_cmap("BrBG", 10),
                      vmin=10, vmax=36, stepsize=1.5, threshold=27, cbar_title="Value",
                      title="Ground field", xlabel="East", ylabel="North", polygon_border=plg)
         # plt.plot(plg[:, 1], plg[:, 0], 'r-.')
@@ -48,6 +48,14 @@ class TestCTDSimulator(TestCase):
         # plt.scatter(grid[:, 0], grid[:, 1], c=truth, cmap=get_cmap("RdBu", 10), vmin=0, vmax=1.1)
         # plt.colorbar()
         plt.show()
+
+        # # show prior
+        # plt.figure(figsize=(15, 12))
+        # plotf_vector(grid[:, 1], grid[:, 0], values=self.grf.get_mu(), cmap=get_cmap("BrBG", 10),
+        #              vmin=10, vmax=36, stepsize=1.5, threshold=27, cbar_title="Value",
+        #              title="Prior field", xlabel="East", ylabel="North", polygon_border=plg)
+        # plt.gca().set_aspect('equal')
+        # plt.show()
 
 
 

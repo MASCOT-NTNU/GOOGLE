@@ -39,8 +39,8 @@ class RRTStarCV:
         self.__nodes = []  # all nodes in the tree.
         self.__trajectory = np.empty([0, 2])  # to save trajectory.
         self.__goal_sampling_rate = .01
-        self.__max_expansion_iteration = 1000  # TODO: to run simulation and see if it is able to converage
-        self.__stepsize = self.__field.get_neighbour_distance()
+        self.__max_expansion_iteration = 1500  # TODO: to run simulation and see if it is able to converage
+        self.__stepsize = self.__field.get_neighbour_distance() * 3  # hard-coded values, need to be checked.
         self.__home_radius = self.__stepsize * .8
         self.__rrtstar_neighbour_radius = self.__stepsize * 1.12
 
@@ -210,10 +210,12 @@ class RRTStarCV:
     def __get_cost_between_nodes(self, n1: 'TreeNode', n2: 'TreeNode') -> float:
         """ Get cost between nodes. """
         # if self.is_path_legal(n1.get_location(), n2.get_location()):
-        cost_distance = TreeNode.get_distance_between_nodes(n1, n2)
+        cost_distance = TreeNode.get_distance_between_nodes(n1, n2) / self.__stepsize * .25
         cost_costvalley = self.__cost_valley.get_cost_along_path(n1.get_location(), n2.get_location())
+        # print("cost_distance: ", cost_distance)
         # cost = n1.get_cost() + cost_distance + cost_costvalley
-        cost = n1.get_cost() + cost_distance
+        cost = n1.get_cost() + cost_costvalley
+        # cost = n1.get_cost() + cost_distance
         # cost = .0
         # else:
         #     cost = np.inf
