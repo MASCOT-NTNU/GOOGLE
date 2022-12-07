@@ -27,7 +27,7 @@ class GRF:
         self.__sigma = .3
 
         # spatial correlation
-        self.__lateral_range = 480  # 680 in the experiment
+        self.__lateral_range = 1200  # 680 in the experiment, 480 in the simulation
 
         # measurement noise
         self.__nugget = .01

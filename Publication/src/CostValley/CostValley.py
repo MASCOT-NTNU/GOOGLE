@@ -37,8 +37,7 @@ class CostValley:
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field()
         self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
 
-    def update_cost_valley(self, loc_now: np.ndarray):
-        x_now, y_now = loc_now
+    def update_cost_valley(self) -> None:
         # t1 = time.time()
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field()
         self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)

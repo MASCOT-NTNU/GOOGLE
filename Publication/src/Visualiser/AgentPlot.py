@@ -27,7 +27,7 @@ class AgentPlot:
         self.mu_truth = self.ctd.get_ground_truth()
         self.figpath = figpath
         self.planner = self.agent.planner
-        self.rrtstarcv = self.planner.get_rrstarcv()
+        self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
         self.budget = self.cv.get_Budget()
         self.grf = self.cv.get_grf_model()

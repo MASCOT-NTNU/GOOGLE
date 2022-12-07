@@ -42,8 +42,8 @@ class Planner:
         self.__grf = self.__cv.get_grf_model()
         self.__grid = self.__grf.grid
 
-        # s3: update the current waypoint location and append to traj and then get the minimum cost location.
-        self.__wp_now = self.__config.get_loc_start()
+        # s3: update the current waypoint location and append to trajectory and then get the minimum cost location.
+        self.__wp_now = loc_start
 
         # s4: compute angle between the starting location to the minimum cost location.
         angle = np.math.atan2(self.__wp_min_cv[0] - self.__wp_now[0],
@@ -79,7 +79,7 @@ class Planner:
         self.__grf.assimilate_data(ctd_data)
 
         # s2: update cost valley
-        self.__cv.update_cost_valley(self.__wp_next)
+        self.__cv.update_cost_valley()
 
         # s3: get minimum cost location.
         self.__wp_min_cv = self.__cv.get_minimum_cost_location()
@@ -99,7 +99,7 @@ class Planner:
     def get_trajectory(self) -> list:
         return self.__trajectory
 
-    def get_rrstarcv(self) -> 'RRTStarCV':
+    def get_rrtstarcv(self) -> 'RRTStarCV':
         return self.__rrtstarcv
 
 
