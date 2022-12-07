@@ -2,6 +2,11 @@
 Planner plans the next waypoint according to Sense, Plan, Act process.
 It wraps all the essential components together to ease the procedure for the agent during adaptive sampling.
 
+- It first updates the cost valley based on the conditional field.
+- It then computes the next waypoint based on two strategies
+    - If it has enough budget, then it will employ rrtstar with cost valley.
+    - It the budget is running out, it will then use straight line planer instead.
+
 Args:
     _wp_now: current waypoint
     _wp_next: next waypoint
