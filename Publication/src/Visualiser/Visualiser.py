@@ -1,17 +1,15 @@
 """
 Plotting func to interpolate the scattered dots.
 """
+from Field import Field
+field = Field()
 from matplotlib import tri
 from matplotlib.cm import get_cmap
-from shapely.geometry import Polygon, Point
 import matplotlib.pyplot as plt
-from matplotlib import transforms
 import numpy as np
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 20
 
-from Field import Field
-field = Field()
 
 def plotf_vector(xplot, yplot, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
                  cbar_title='test', colorbar=True, vmin=None, vmax=None, ticks=None,
@@ -76,7 +74,6 @@ def plotf_vector(xplot, yplot, values, title=None, alpha=None, cmap=get_cmap("Br
 
     if np.any(polygon_obstacle):
         plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-.', lw=2)
-
     return ax, value_refined
 
 
@@ -91,5 +88,4 @@ def is_masked(xgrid, ygrid) -> bool:
     if field.obstacle_contains(loc) or not field.border_contains(loc):
         masked = True
     return masked
-
 

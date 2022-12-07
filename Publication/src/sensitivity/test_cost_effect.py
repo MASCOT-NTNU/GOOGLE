@@ -90,7 +90,7 @@ class TestCostEffect:
 
     def __init__(self) -> None:
         self.ag = Agent()
-        self.rrts = self.ag.planner.get_rrstarcv()
+        self.rrts = self.ag.planner.get_rrtstarcv()
         self.cv = self.rrts.get_CostValley()
 
         self.filepath = "./../sim_result/"

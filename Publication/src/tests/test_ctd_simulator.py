@@ -1,19 +1,15 @@
 """ Unit test for CTD simulator
 """
-
-from unittest import TestCase
-from AUVSimulator.CTDSimulator import CTDSimulator
+from Simulators.CTD import CTD
+from Visualiser.Visualiser import plotf_vector
 from GRF.GRF import GRF
 from Field import Field
 from Config import Config
+
+from unittest import TestCase
 import numpy as np
-from numpy import testing
-import pandas as pd
-import os
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
-from Visualiser.Visualiser import plotf_vector
-from usr_func.normalize import normalize
 
 
 class TestCTDSimulator(TestCase):
@@ -22,7 +18,7 @@ class TestCTDSimulator(TestCase):
         self.grf = GRF()
         self.f = Field()
         self.c = Config()
-        self.ctd = CTDSimulator()
+        self.ctd = CTD()
 
     def test_get_salinity_at_loc(self) -> None:
         """
@@ -34,28 +30,51 @@ class TestCTDSimulator(TestCase):
         loc = np.array([7000, 8000])
         self.ctd.get_salinity_at_loc(loc)
         truth = self.ctd.get_ground_truth()
-        # value = normalize(truth, 16, 32)
         value = truth
         plg = self.c.get_polygon_border()
         plt.figure(figsize=(15, 12))
-        # plt.scatter(grid[:, 1], grid[:, 0], c=truth, cmap=get_cmap("BrBG", 10), vmin=10, vmax=35)
-        # plt.colorbar()
         plotf_vector(grid[:, 1], grid[:, 0], values=truth, cmap=get_cmap("BrBG", 10),
                      vmin=10, vmax=36, stepsize=1.5, threshold=27, cbar_title="Value",
                      title="Ground field", xlabel="East", ylabel="North", polygon_border=plg)
-        # plt.plot(plg[:, 1], plg[:, 0], 'r-.')
         plt.gca().set_aspect('equal')
-        # plt.scatter(grid[:, 0], grid[:, 1], c=truth, cmap=get_cmap("RdBu", 10), vmin=0, vmax=1.1)
-        # plt.colorbar()
         plt.show()
 
-        # # show prior
-        # plt.figure(figsize=(15, 12))
-        # plotf_vector(grid[:, 1], grid[:, 0], values=self.grf.get_mu(), cmap=get_cmap("BrBG", 10),
-        #              vmin=10, vmax=36, stepsize=1.5, threshold=27, cbar_title="Value",
-        #              title="Prior field", xlabel="East", ylabel="North", polygon_border=plg)
-        # plt.gca().set_aspect('equal')
-        # plt.show()
+        # show prior
+        plt.figure(figsize=(15, 12))
+        plotf_vector(grid[:, 1], grid[:, 0], values=self.grf.get_mu(), cmap=get_cmap("BrBG", 10),
+                     vmin=10, vmax=36, stepsize=1.5, threshold=27, cbar_title="Value",
+                     title="Prior field", xlabel="East", ylabel="North", polygon_border=plg)
+        plt.gca().set_aspect('equal')
+        plt.show()
 
+    def test_get_data_along_path(self) -> None:
+        # c1: move to one step
+        data = self.ctd.get_ctd_data(np.array([3000, -1000]))
+        grid = self.grf.grid
+        truth = self.ctd.get_ground_truth()
+        plt.figure()
+        plt.scatter(grid[:, 1], grid[:, 0], c=truth, cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        plt.scatter(data[:, 1], data[:, 0], c=data[:, -1], cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        plt.colorbar()
+        plt.show()
 
+        # c2: move to another direction
+        data = self.ctd.get_ctd_data(np.array([4000, -500]))
+        grid = self.grf.grid
+        truth = self.ctd.get_ground_truth()
+        plt.figure()
+        plt.scatter(grid[:, 1], grid[:, 0], c=truth, cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        plt.scatter(data[:, 1], data[:, 0], c=data[:, -1], cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        plt.colorbar()
+        plt.show()
+
+        # c2: move to another direction
+        data = self.ctd.get_ctd_data(np.array([2000, 2000]))
+        grid = self.grf.grid
+        truth = self.ctd.get_ground_truth()
+        plt.figure()
+        plt.scatter(grid[:, 1], grid[:, 0], c=truth, cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        plt.scatter(data[:, 1], data[:, 0], c=data[:, -1], cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        plt.colorbar()
+        plt.show()
 
