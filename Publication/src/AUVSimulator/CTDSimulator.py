@@ -24,7 +24,7 @@ class CTDSimulator:
         self.__grf = GRF()
         self.__field = self.__grf.field
         mu_prior = self.__grf.get_mu()
-        Sigma_prior = self.__grf.get_Sigma()
+        Sigma_prior = self.__grf.get_covariance_matrix()
         self.__truth = mu_prior + np.linalg.cholesky(Sigma_prior) @ np.random.randn(len(mu_prior)).reshape(-1, 1)
 
     def get_salinity_at_loc(self, loc: np.ndarray) -> Union[np.ndarray, None]:
