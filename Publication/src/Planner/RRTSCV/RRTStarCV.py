@@ -13,21 +13,23 @@ from shapely.geometry import Polygon, Point, LineString
 
 
 class RRTStarCV:
+    """ RRT* CV planning strategy """
 
     def __init__(self) -> None:
         """
-
+        Initialize the planner.
         """
+
         self.__config = Config()
         self.__field = Field()
 
-        # load pre_generated locations
+        """ Load pre-generated random indices and locations to speed up the computation. """
         self.__filepath = os.getcwd() + "/Planner/RRTSCV/"
         self.__random_locations = np.load(self.__filepath + "RRT_Random_Locations.npy")
         self.__goal_indices = np.load(self.__filepath + "Goal_indices.npy")
         self.__N_random_locations = len(self.__random_locations)
 
-        # setup cost valley
+        """ Cost valley """
         self.__cost_valley = CostValley()
 
         # loc
@@ -47,11 +49,9 @@ class RRTStarCV:
         # polygons and lines
         self.__polygon_border_shapely = self.__config.get_polygon_border_shapely()
         self.__line_border_shapely = self.__config.get_line_border_shapely()
+
         self.__polygon_obstacle_shapely = self.__config.get_polygon_obstacle_shapely()
         self.__line_obstacle_shapely = self.__config.get_line_obstacle_shapely()
-
-        self.__polygon_ellipse_shapely = None  # budget
-        self.__line_ellipse_shapely = None
 
         # nodes
         self.__starting_node = TreeNode(self.__loc_start)
@@ -62,9 +62,6 @@ class RRTStarCV:
 
         # field
         self.__xlim, self.__ylim = self.__field.get_border_limits()
-
-        # budget
-        self.__Budget = False
 
     def get_next_waypoint(self, loc_start: np.ndarray, loc_target: np.ndarray) -> np.ndarray:
         """
@@ -81,13 +78,8 @@ class RRTStarCV:
         # s1: set starting location and target location in rrt*.
         self.__loc_start = loc_start
         self.__loc_target = loc_target
-        self.__Budget = self.__cost_valley.get_Budget()
         self.__starting_node = TreeNode(self.__loc_start)
         self.__target_node = TreeNode(self.__loc_target)
-
-        # update polygons from budget.
-        self.__polygon_ellipse_shapely = self.__Budget.get_polygon_ellipse()
-        self.__line_ellipse_shapely = self.__Budget.get_line_ellipse()
 
         # s2: expand the trees.
         self.__expand_trees()
@@ -209,16 +201,10 @@ class RRTStarCV:
 
     def __get_cost_between_nodes(self, n1: 'TreeNode', n2: 'TreeNode') -> float:
         """ Get cost between nodes. """
-        # if self.is_path_legal(n1.get_location(), n2.get_location()):
         cost_distance = TreeNode.get_distance_between_nodes(n1, n2) / self.__stepsize * .25
         cost_costvalley = self.__cost_valley.get_cost_along_path(n1.get_location(), n2.get_location())
-        # print("cost_distance: ", cost_distance)
         # cost = n1.get_cost() + cost_distance + cost_costvalley
         cost = n1.get_cost() + cost_costvalley
-        # cost = n1.get_cost() + cost_distance
-        # cost = .0
-        # else:
-        #     cost = np.inf
         return cost
 
     def __isarrived(self) -> bool:
@@ -252,7 +238,7 @@ class RRTStarCV:
         x, y = loc
         point = Point(x, y)
         islegal = True
-        if self.__polygon_obstacle_shapely.contains(point) or not self.__polygon_ellipse_shapely.contains(point):  # TODO: add polygon_obstacle
+        if self.__polygon_obstacle_shapely.contains(point):
             islegal = False
         return islegal
 
@@ -262,9 +248,8 @@ class RRTStarCV:
         line = LineString([(x1, y1), (x2, y2)])
         islegal = True
         c1 = self.__line_border_shapely.intersects(line)  # TODO: tricky to detect, since cannot have points on border.
-        c2 = self.__line_ellipse_shapely.intersects(line)
-        c3 = self.__line_obstacle_shapely.intersects(line)
-        if c1 or c2 or c3:
+        c2 = self.__line_obstacle_shapely.intersects(line)
+        if c1 or c2:
             islegal = False
         return islegal
 

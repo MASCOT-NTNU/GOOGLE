@@ -48,7 +48,7 @@ class AgentPlot:
         # s0: get updated field
         mu = self.grf.get_mu()
 
-        Sigma = self.grf.get_Sigma()
+        Sigma = self.grf.get_covariance_matrix()
         threshold = self.grf.get_threshold()
         self.cnt = self.agent.get_counter()
         traj_past = np.array(self.planner.get_trajectory())

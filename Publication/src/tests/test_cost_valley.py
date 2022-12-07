@@ -4,7 +4,6 @@ Unittest for cost valley.
 from unittest import TestCase
 from CostValley.CostValley import CostValley
 from Config import Config
-from usr_func.set_resume_state import set_resume_state
 # from Visualiser.Visualiser import plotf_vector
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
