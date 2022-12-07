@@ -28,7 +28,6 @@ class Agent:
 
         # s2: setup AUV simulator.
         self.auv = AUVSimulator()
-        pass
 
         # s4: setup Visualiser.
         # self.tp = TreePlotter()
@@ -49,9 +48,6 @@ class Agent:
 
         # a1: move to current location
         self.auv.move_to_location(wp_start)
-
-        t_start = time.time()
-        t_pop_last = time.time()
 
         # self.ap.plot_agent()
 
