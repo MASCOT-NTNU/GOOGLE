@@ -36,6 +36,10 @@ class Config:
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
 
+        """ Default simulation parameter seteup. """
+        self.__num_steps = 4  # number of steps.
+        self.__num_replicates = 3  # number of replicates
+
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:
         """ Convert polygon containing wgs coordinates to polygon containing xy coordinates. """
@@ -74,6 +78,14 @@ class Config:
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
 
+    def set_num_steps(self, value: int) -> None:
+        """ Set the number of steps in the simulation to be an integer value. """
+        self.__num_steps = value
+
+    def set_num_replicates(self, value: int) -> None:
+        """ Set the number of replicates in the simulation study. """
+        self.__num_replicates = value
+
     def get_polygon_border(self) -> np.ndarray:
         """ Return polygon for opa in x y coordinates. """
         return self.__polygon_border
@@ -101,6 +113,14 @@ class Config:
     def get_loc_start(self) -> np.ndarray:
         """ Return starting location in (x, y). """
         return self.__loc_start
+
+    def get_num_steps(self) -> int:
+        """ Return the number of steps in the simulation study. """
+        return self.__num_steps
+
+    def get_num_replicates(self) -> int:
+        """ Return the number of replicates in the simulation study. """
+        return self.__num_replicates
 
     def get_wgs_polygon_border(self) -> np.ndarray:
         """ Return polygon for the oprational area in wgs coordinates. """
