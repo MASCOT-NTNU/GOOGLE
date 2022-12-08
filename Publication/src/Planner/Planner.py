@@ -2,6 +2,11 @@
 Planner plans the next waypoint according to Sense, Plan, Act process.
 It wraps all the essential components together to ease the procedure for the agent during adaptive sampling.
 
+- It first updates the cost valley based on the conditional field.
+- It then computes the next waypoint based on two strategies
+    - If it has enough budget, then it will employ rrtstar with cost valley.
+    - It the budget is running out, it will then use straight line planer instead.
+
 Args:
     _wp_now: current waypoint
     _wp_next: next waypoint
@@ -10,7 +15,6 @@ Args:
 """
 from Config import Config
 from Planner.RRTSCV.RRTStarCV import RRTStarCV
-from Planner.StraightLinePathPlanner import StraightLinePathPlanner
 import numpy as np
 
 
@@ -25,28 +29,21 @@ class Planner:
 
         # s0: load configuration
         self.__config = Config()
-        self.__wp_start = self.__config.get_loc_start()
-        self.__wp_end = self.__config.get_loc_end()
 
         # s1: set up path planning strategies
         self.__rrtstarcv = RRTStarCV()
         self.__stepsize = self.__rrtstarcv.get_stepsize()
-        self.__slpp = StraightLinePathPlanner()
 
         # s1: setup cost valley.
         self.__cv = self.__rrtstarcv.get_CostValley()
-        self.__Budget = self.__cv.get_Budget()
         self.__wp_min_cv = self.__cv.get_minimum_cost_location()
 
         # s2: set up data assimilation kernel
         self.__grf = self.__cv.get_grf_model()
         self.__grid = self.__grf.grid
 
-        # s3: update the current waypoint location and append to traj and then get the minimum cost location.
-        self.__wp_start = loc_start
-        self.__wp_now = self.__wp_start
-        self.__traj = [[self.__wp_now[0], self.__wp_now[1]]]
-        self.__wp_min_cv = self.__cv.get_minimum_cost_location()
+        # s3: update the current waypoint location and append to trajectory and then get the minimum cost location.
+        self.__wp_now = loc_start
 
         # s4: compute angle between the starting location to the minimum cost location.
         angle = np.math.atan2(self.__wp_min_cv[0] - self.__wp_now[0],
@@ -61,11 +58,14 @@ class Planner:
         yp = yn + self.__stepsize * np.cos(angle)
         self.__wp_pion = np.array([xp, yp])
 
+        self.__trajectory = [[self.__wp_now[0], self.__wp_now[1]]]
+        self.__wp_min_cv = self.__cv.get_minimum_cost_location()
+
     def update_planning_trackers(self) -> None:
         """ Move the pointer one step ahead. """
         self.__wp_now = self.__wp_next
         self.__wp_next = self.__wp_pion
-        self.__traj.append([self.__wp_now[0], self.__wp_now[1]])
+        self.__trajectory.append([self.__wp_now[0], self.__wp_now[1]])
 
     def update_pioneer_waypoint(self, ctd_data: np.ndarray) -> None:
         """
@@ -79,24 +79,13 @@ class Planner:
         self.__grf.assimilate_data(ctd_data)
 
         # s2: update cost valley
-        self.__cv.update_cost_valley(self.__wp_next)
+        self.__cv.update_cost_valley()
 
         # s3: get minimum cost location.
         self.__wp_min_cv = self.__cv.get_minimum_cost_location()
 
         # s4: plan one step based on cost valley and rrtstar
-        if not self.__Budget.get_go_home_alert():
-            self.__wp_pion = self.__rrtstarcv.get_next_waypoint(self.__wp_next, self.__wp_min_cv)
-        else:
-            self.__wp_pion = self.__slpp.get_waypoint_from_straight_line(self.__wp_next, self.__wp_end)
-
-    def get_starting_waypoint(self) -> np.ndarray:
-        """ Return the starting location in the field. """
-        return self.__wp_start
-
-    def get_end_waypoint(self) -> np.ndarray:
-        """ Return end location for the operation. """
-        return self.__wp_end
+        self.__wp_pion = self.__rrtstarcv.get_next_waypoint(self.__wp_next, self.__wp_min_cv)
 
     def get_pioneer_waypoint(self) -> np.ndarray:
         return self.__wp_pion
@@ -108,9 +97,9 @@ class Planner:
         return self.__wp_now
 
     def get_trajectory(self) -> list:
-        return self.__traj
+        return self.__trajectory
 
-    def get_rrstarcv(self) -> 'RRTStarCV':
+    def get_rrtstarcv(self) -> 'RRTStarCV':
         return self.__rrtstarcv
 
 

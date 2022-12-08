@@ -1,12 +1,11 @@
 """
-Config has the most important parameter setting in the long horizon operation in MASCOT Nidelva mission 2022.
+Config has the most important parameter setting in the long horizon simulation study.
 - polygon_operational_area: the polygon used to define the safe operational area.
 - polygon_operational_area_shapely: shapely object to detect collision or border.
 - polygon_obstalce: polygons used for identifying collisions.
 - polygon_obstalce_shapely: shapely object to detect collision with obstacles.
 
 - starting location: (lat, lon) used to define the starting location for the long horizon operation.
-- home location: (lat, lon) used to define the end location for the home in the long horizon operation.
 """
 from WGS import WGS
 import numpy as np
@@ -16,27 +15,30 @@ from shapely.geometry import Polygon, LineString
 
 
 class Config:
-    """ Config contains essential setup for the simulation or experiment study. """
+    """ Config contains essential setup for the simulation study. """
     def __init__(self) -> None:
-        """ Initializes the crucial parameters used later in the simulation/experiment. """
+        """ Initializes the crucial parameters used later in the simulation. """
 
         """ Set up WGS polygons and starting and end locations. """
         self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
         self.__wgs_loc_start = np.array([63.45582, 10.43287])
-        self.__wgs_loc_end = np.array([63.440323, 10.355410])
 
         """ Convert them to cartesian polygons and starting and end locations. """
         self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)
         self.__polygon_border_shapely = Polygon(self.__polygon_border)
         self.__line_border_shapely = LineString(self.__polygon_border)
+
         self.__polygon_obstacle = self.wgs2xy(self.__wgs_polygon_obstacle)
         self.__polygon_obstacle_shapely = Polygon(self.__polygon_obstacle)
         self.__line_obstacle_shapely = LineString(self.__polygon_obstacle)
+
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
-        x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
-        self.__loc_end = np.array([x, y])
+
+        """ Default simulation parameter seteup. """
+        self.__num_steps = 50  # number of steps.
+        self.__num_replicates = 30  # number of replicates
 
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:
@@ -76,11 +78,13 @@ class Config:
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
 
-    def set_loc_end(self, loc: np.ndarray) -> None:
-        """ Set the home location with (lat, lon). """
-        self.__wgs_loc_end = loc
-        x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
-        self.__loc_end = np.array([x, y])
+    def set_num_steps(self, value: int) -> None:
+        """ Set the number of steps in the simulation to be an integer value. """
+        self.__num_steps = value
+
+    def set_num_replicates(self, value: int) -> None:
+        """ Set the number of replicates in the simulation study. """
+        self.__num_replicates = value
 
     def get_polygon_border(self) -> np.ndarray:
         """ Return polygon for opa in x y coordinates. """
@@ -110,9 +114,13 @@ class Config:
         """ Return starting location in (x, y). """
         return self.__loc_start
 
-    def get_loc_end(self) -> np.ndarray:
-        """ Return home location in (x, y). """
-        return self.__loc_end
+    def get_num_steps(self) -> int:
+        """ Return the number of steps in the simulation study. """
+        return self.__num_steps
+
+    def get_num_replicates(self) -> int:
+        """ Return the number of replicates in the simulation study. """
+        return self.__num_replicates
 
     def get_wgs_polygon_border(self) -> np.ndarray:
         """ Return polygon for the oprational area in wgs coordinates. """
@@ -125,10 +133,6 @@ class Config:
     def get_wgs_loc_start(self) -> np.ndarray:
         """ Return starting location in (lat, lon). """
         return self.__wgs_loc_start
-
-    def get_wgs_loc_end(self) -> np.ndarray:
-        """ Return end location in (lat, lon). """
-        return self.__wgs_loc_end
 
 
 if __name__ == "__main__":

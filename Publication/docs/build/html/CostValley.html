@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>CostValley package &#8212; GOOGLE 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="costvalley-package">
+<h1>CostValley package<a class="headerlink" href="#costvalley-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="costvalley-budget-module">
+<h2>CostValley.Budget module<a class="headerlink" href="#costvalley-budget-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-CostValley.CostValley">
+<span id="costvalley-costvalley-module"></span><h2>CostValley.CostValley module<a class="headerlink" href="#module-CostValley.CostValley" title="Permalink to this heading">¶</a></h2>
+<p>CostValley module computes the overall cost field associated with a given grid.
+For the simulation study, I only use two components to construct the cost field to guide the agent to conduct
+the adaptive sampling with a goal of balancing exploration and exploitation.</p>
+<p>Cost components:
+- EIBV reward: exploitation component
+- IVR reward: exploration component</p>
+<p>Another critical construction is to select a suitable weightset for all the components. Different weights on different
+component might lead to different patterns of the final behaviour.</p>
+<p>It is flexible to add or remove elements from its construction. One can add their own component
+to make the system adaptive to their specific need and application.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CostValley.CostValley.</span></span><span class="sig-name descname"><span class="pre">CostValley</span></span><a class="headerlink" href="#CostValley.CostValley.CostValley" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Cost fields construction.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_cost_along_path">
+<span class="sig-name descname"><span class="pre">get_cost_along_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_cost_along_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return cost associated with a path.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_cost_at_location">
+<span class="sig-name descname"><span class="pre">get_cost_at_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_cost_at_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return cost associated with location.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_cost_field">
+<span class="sig-name descname"><span class="pre">get_cost_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_cost_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_eibv_field">
+<span class="sig-name descname"><span class="pre">get_eibv_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_eibv_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_eibv_weight">
+<span class="sig-name descname"><span class="pre">get_eibv_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_eibv_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return weight for EIBV field.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_field">
+<span class="sig-name descname"><span class="pre">get_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_grf_model">
+<span class="sig-name descname"><span class="pre">get_grf_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="GRF.html#GRF.GRF.GRF" title="GRF.GRF.GRF"><span class="pre">GRF</span></a></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_grf_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_ivr_field">
+<span class="sig-name descname"><span class="pre">get_ivr_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_ivr_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_ivr_weight">
+<span class="sig-name descname"><span class="pre">get_ivr_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_ivr_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return weight for IVR field.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.get_minimum_cost_location">
+<span class="sig-name descname"><span class="pre">get_minimum_cost_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CostValley.CostValley.CostValley.get_minimum_cost_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return minimum cost location.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.set_weight_eibv">
+<span class="sig-name descname"><span class="pre">set_weight_eibv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.set_weight_eibv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set weight for EIBV field.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.set_weight_ivr">
+<span class="sig-name descname"><span class="pre">set_weight_ivr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#CostValley.CostValley.CostValley.set_weight_ivr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set weight for IVR field.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.CostValley.CostValley.update_cost_valley">
+<span class="sig-name descname"><span class="pre">update_cost_valley</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_now</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CostValley.CostValley.CostValley.update_cost_valley" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-CostValley.Direction">
+<span id="costvalley-direction-module"></span><h2>CostValley.Direction module<a class="headerlink" href="#module-CostValley.Direction" title="Permalink to this heading">¶</a></h2>
+<p>Direction module computes the directional penalty based on the current location, and previous location.
+It calculates the dot product between the vector from the previous location to the current location and
+the vector from the current location to the rest of the possible field. Based on this, it gives penalty to
+location which is located behind the agent’s inertial path.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="CostValley.Direction.Direction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CostValley.Direction.</span></span><span class="sig-name descname"><span class="pre">Direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CostValley.Direction.Direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Direction filter gives high penalty to locations which are not desirable.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.Direction.Direction.get_current_location">
+<span class="sig-name descname"><span class="pre">get_current_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#CostValley.Direction.Direction.get_current_location" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.Direction.Direction.get_direction_field">
+<span class="sig-name descname"><span class="pre">get_direction_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_now</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_now</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#CostValley.Direction.Direction.get_direction_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>It updates the current location to the given location and then computes the directional penalty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.Direction.Direction.get_previous_location">
+<span class="sig-name descname"><span class="pre">get_previous_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#CostValley.Direction.Direction.get_previous_location" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.Direction.Direction.set_current_location">
+<span class="sig-name descname"><span class="pre">set_current_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#CostValley.Direction.Direction.set_current_location" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CostValley.Direction.Direction.set_previous_location">
+<span class="sig-name descname"><span class="pre">set_previous_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#CostValley.Direction.Direction.set_previous_location" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-CostValley">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-CostValley" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GOOGLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Yaolin Ge.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/CostValley.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
