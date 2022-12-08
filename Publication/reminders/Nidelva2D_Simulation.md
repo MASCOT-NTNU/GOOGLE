@@ -1,5 +1,14 @@
 # Notes for Simulation study for long horizon path planning given different cost fields.
 
+### Checklist for simulation study.
+- RRTStar has big tree iteration number
+- simulator itself has enough steps.
+- replicator has enough replicate studies.
+- debug mode is False, so no figures will be saved.
+-
+
+
+
 ---
 
 ## RRTStar convergence study
