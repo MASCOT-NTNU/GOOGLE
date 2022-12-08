@@ -27,7 +27,7 @@ class AgentPlot:
         self.mu_truth = self.ctd.get_ground_truth()
         self.figpath = figpath
         self.planner = self.agent.planner
-        self.rrtstarcv = self.planner.get_rrstarcv()
+        self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
         self.budget = self.cv.get_Budget()
         self.grf = self.cv.get_grf_model()
@@ -48,7 +48,7 @@ class AgentPlot:
         # s0: get updated field
         mu = self.grf.get_mu()
 
-        Sigma = self.grf.get_Sigma()
+        Sigma = self.grf.get_covariance_matrix()
         threshold = self.grf.get_threshold()
         self.cnt = self.agent.get_counter()
         traj_past = np.array(self.planner.get_trajectory())

@@ -1,10 +1,8 @@
 """
-GRF handles the following functions
+GRF builds the kernel for simulation study.
 - udpate the field.
 - assimilate data.
 - get eibv for a specific location.
-
-It does not employ the temporal effect for now.
 """
 from Field import Field
 from usr_func.vectorize import vectorize
@@ -19,35 +17,48 @@ import pandas as pd
 
 class GRF:
     """
-    GRF
+    GRF kernel
     """
     def __init__(self) -> None:
-        # parameters
-        self.__distance_matrix = None
-        self.__sigma = .1
-        self.__lateral_range = 2800  # 680 in the experiment
+        """ Initializes the parameters in GRF kernel. """
+
+        """ Empirical parameters """
+        # spatial variability
+        self.__sigma = .3
+
+        # spatial correlation
+        self.__lateral_range = 1200  # 680 in the experiment, 480 in the simulation
+
+        # measurement noise
         self.__nugget = .01
+
+        # threshold
         self.__threshold = 27
 
-        # computed
+        # matern coefficients
         self.__eta = 4.5 / self.__lateral_range  # decay factor
         self.__tau = np.sqrt(self.__nugget)  # measurement noise
 
-        # properties
+        """ Conditional field """
+        # kernel mean
         self.__mu = None
+
+        # kernel covariance matrix
         self.__Sigma = None
+
+        """ Cost valley """
+        # cost valley fields
         self.__eibv_field = None
         self.__ivr_field = None
 
-        # field and grid
+        # s0: construct grf covariance matrix.
         self.field = Field()
         self.grid = self.field.get_grid()
         self.Ngrid = len(self.grid)
         self.__Fgrf = np.ones([1, self.Ngrid])
         self.__xg = vectorize(self.grid[:, 0])
         self.__yg = vectorize(self.grid[:, 1])
-
-        # s0: compute matern kernel
+        self.__distance_matrix = None
         self.__construct_grf_field()
 
         # s1: update prior mean
@@ -111,7 +122,7 @@ class GRF:
         self.__mu = self.__mu + self.__Sigma @ F.T @ np.linalg.solve(C, (salinity_measured - F @ self.__mu))
         self.__Sigma = self.__Sigma - self.__Sigma @ F.T @ np.linalg.solve(C, F @ self.__Sigma)
 
-    def get_ei_field_total(self) -> tuple:
+    def get_ei_field(self) -> tuple:
         t1 = time.time()
         eibv_field = np.zeros([self.Ngrid])
         ivr_field = np.zeros([self.Ngrid])
@@ -128,29 +139,6 @@ class GRF:
         t2 = time.time()
         # print("Total EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
-
-    # def get_ei_field_partial(self, indices: np.ndarray) -> tuple:
-    #     """ Get EI field only for selected indices.
-    #     Only compute EI field for the designated indices. Then the rest EI field is large numbers.
-    #     """
-    #     t1 = time.time()
-    #     eibv_field = np.ones([self.Ngrid]) * maxsize
-    #     ivr_field = np.ones([self.Ngrid]) * maxsize
-    #     for idx in indices:
-    #         SF = self.__Sigma[:, idx].reshape(-1, 1)
-    #         MD = 1 / (self.__Sigma[idx, idx] + self.__nugget)
-    #         VR = SF @ SF.T * MD
-    #         SP = self.__Sigma - VR
-    #         sigma_diag = np.diag(SP).reshape(-1, 1)
-    #         eibv_field[idx] = self.__get_ibv(self.__mu, sigma_diag)
-    #         ivr_field[idx] = np.sum(np.diag(VR))
-    #     eibv_field[indices] = normalize(eibv_field[indices])
-    #     ivr_field[indices] = 1 - normalize(ivr_field[indices])
-    #     self.__eibv_field = eibv_field
-    #     self.__ivr_field = ivr_field
-    #     t2 = time.time()
-    #     print("Partial EI field takes: ", t2 - t1, " seconds.")
-    #     return self.__eibv_field, self.__ivr_field
 
     def __get_ibv(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.
@@ -204,7 +192,7 @@ class GRF:
         """ Return mean vector. """
         return self.__mu
 
-    def get_Sigma(self) -> np.ndarray:
+    def get_covariance_matrix(self) -> np.ndarray:
         """ Return Covariance. """
         return self.__Sigma
 

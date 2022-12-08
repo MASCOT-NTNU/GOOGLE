@@ -4,13 +4,10 @@ This module tests the field object.
 from unittest import TestCase
 from Field import Field
 from Config import Config
-from numpy import testing
-from shapely.geometry import Polygon, Point, LineString
+from shapely.geometry import Polygon, Point
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import testing
-from WGS import WGS
 
 
 class TestField(TestCase):
@@ -127,8 +124,8 @@ class TestField(TestCase):
         self.assertTrue(c)
 
         # c2: close
-        x1, y1 = -20, -20
-        x2, y2 = -100, -100
+        x1, y1 = 0, 0
+        x2, y2 = 5000, 10
         c = self.f.is_border_in_the_way(np.array([x1, y1]), np.array([x2, y2]))
         self.assertTrue(c)
 
@@ -161,7 +158,7 @@ class TestField(TestCase):
                 loc = self.f.get_location_from_ind(idn)
                 dist = np.sqrt((loc[0] - loc_now[0]) ** 2 +
                                (loc[1] - loc_now[1]) ** 2)
-                self.assertLess(dist, nd + .01 * nd)
+                self.assertLess(dist, nd + .01*nd)
 
         # c3: multiple neighbour test.
         # loc = np.array([6000, 8000])

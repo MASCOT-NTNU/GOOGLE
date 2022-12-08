@@ -1,7 +1,7 @@
 """
-Field handles
-- check legal conditions of given locations.
+Field handles field discretization and validation.
 - generate grid discretization.
+- check legal conditions of given locations.
 - check collision with obstacles.
 """
 from Config import Config
@@ -17,15 +17,18 @@ class Field:
     Field handles everything with regarding to the field element.
     """
     def __init__(self):
+        # config element
         self.__config = Config()
-        self.__grid = np.empty([0, 2])
-        self.__neighbour_hash_table = dict()
         self.__neighbour_distance = 120  # metres between neighbouring locations.
+
+        # border element
         self.__polygon_border = self.__config.get_polygon_border()
         self.__polygon_border_shapely = self.__config.get_polygon_border_shapely()
+        self.__line_border_shapely = LineString(self.__polygon_border)
+
+        # obstacle element
         self.__polygon_obstacle = self.__config.get_polygon_obstacle()
         self.__polygon_obstacle_shapely = self.__config.get_polygon_obstacle_shapely()
-        self.__line_border_shapely = LineString(self.__polygon_border)
         self.__line_obstacle_shapely = LineString(self.__polygon_obstacle)
         
         """ Get the xy limits and gaps for the bigger box """
@@ -37,7 +40,13 @@ class Field:
         self.__ylim = np.array([self.__ymin, self.__ymax])
         self.__ygap = self.__neighbour_distance * cos(radians(60)) * 2
         self.__xgap = self.__neighbour_distance * sin(radians(60))
+
+        # grid element
+        self.__grid = np.empty([0, 2])
         self.__construct_grid()
+
+        # neighbour element
+        self.__neighbour_hash_table = dict()
         self.__construct_hash_neighbours()
 
     def set_neighbour_distance(self, value: float) -> None:
