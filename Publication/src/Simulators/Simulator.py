@@ -24,10 +24,6 @@ class Simulator:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
-        # load default configuration.
-        self.config = Config()
-        self.num_steps = self.config.get_num_steps()
-
         # s0: load parameters
         self.weight_eibv = weight_eibv
         self.weight_ivr = weight_ivr
@@ -60,7 +56,7 @@ class Simulator:
             self.figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/"
             checkfolder(self.figpath)
 
-    def run_simulator(self) -> np.ndarray:
+    def run_simulator(self, num_steps: int = 5) -> np.ndarray:
         """
         Run the autonomous operation according to Sense, Plan, Act philosophy.
         """
@@ -68,7 +64,7 @@ class Simulator:
         self.trajectory = np.append(self.trajectory, self.loc_start.reshape(1, -1), axis=0)
 
         t1 = time()
-        for i in range(self.num_steps):
+        for i in range(num_steps):
             t2 = time()
             print("Step: ", i, " takes ", t2 - t1, " seconds. ")
             t1 = time()
