@@ -8,7 +8,6 @@ from Simulators.CTD import CTD
 from Config import Config
 import numpy as np
 from time import time
-from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 from Visualiser.Visualiser import plotf_vector
 from matplotlib.cm import get_cmap
@@ -20,16 +19,20 @@ class Simulator:
     """
     Simulator
     """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., case: str = "Equal") -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 case: str = "Equal", debug: bool = False) -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
+        # load default configuration.
+        self.config = Config()
+        self.num_steps = self.config.get_num_steps()
+
         # s0: load parameters
         self.weight_eibv = weight_eibv
         self.weight_ivr = weight_ivr
-        self.num_steps = 50
-        self.num_replicates = 30
         self.case = case
+        self.debug = debug
 
         # s1: set up planner.
         self.loc_start = np.array([1200, -1500])
@@ -39,7 +42,7 @@ class Simulator:
         self.ctd = CTD()
 
         # s4: set up data storage
-        self.traj_sim = np.empty([0, self.num_steps+1, 2])
+        # self.traj_sim = np.empty([0, self.num_steps+1, 2])
 
         self.rrtstar = self.planner.get_rrtstarcv()
         self.cv = self.rrtstar.get_CostValley()
@@ -47,28 +50,15 @@ class Simulator:
         self.cv.set_weight_ivr(self.weight_ivr)
         self.cv.update_cost_valley()  # update right after the weights are refreshed.
 
-        # self.grf = self.cv.get_grf_model()
-        # self.field = self.cv.get_field()
-        # self.grid = self.field.get_grid()
-        # self.config = Config()
-        # self.polygon_border = self.config.get_polygon_border()
-        # self.polygon_obstacle = self.config.get_polygon_obstacle()
-        # self.figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/"
-        # checkfolder(self.figpath)
-
-    def run_replicates(self) -> None:
-        # res = Parallel(n_jobs=3)(delayed(self.run_simulator)(i) for i in range(self.num_replicates))
-        # for i in range(len(res)):
-        #     self.traj_sim = np.append(self.traj_sim, res[0].reshape(1, self.num_steps+1, 2), axis=0)
-
-        t1 = time()
-        for i in range(self.num_replicates):
-            t2 = time()
-            print("Replicate: ", i, " takes ", t2 - t1, " seconds.")
-            t1 = time()
-            traj = self.run_simulator()
-            self.traj_sim = np.append(self.traj_sim, traj.reshape(1, self.num_steps+1, 2), axis=0)
-        np.save("npy/" + self.case + ".npy", self.traj_sim)
+        if self.debug:
+            self.grf = self.cv.get_grf_model()
+            self.field = self.cv.get_field()
+            self.grid = self.field.get_grid()
+            self.config = Config()
+            self.polygon_border = self.config.get_polygon_border()
+            self.polygon_obstacle = self.config.get_polygon_obstacle()
+            self.figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/"
+            checkfolder(self.figpath)
 
     def run_simulator(self) -> np.ndarray:
         """
@@ -84,18 +74,19 @@ class Simulator:
             t1 = time()
 
             """ plotting seciton. """
-            # plt.figure(figsize=(15, 12))
-            # cv = self.cv.get_cost_field()
-            # plotf_vector(self.grid[:, 1], self.grid[:, 0], cv, xlabel='East', ylabel='North', title='RRTCV',
-            #              cbar_title="Cost", cmap=get_cmap("RdBu", 10), vmin=0, vmax=2.2, stepsize=.25)
-            # if len(self.trajectory) > 0:
-            #     plt.plot(self.trajectory[:, 1], self.trajectory[:, 0], 'k.-')
-            # plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'r-.')
-            # plt.plot(self.polygon_obstacle[:, 1], self.polygon_obstacle[:, 0], 'r-.')
-            # plt.xlabel("East")
-            # plt.ylabel("North")
-            # plt.savefig(self.figpath + "P_{:03d}.png".format(i))
-            # plt.close("all")
+            if self.debug:
+                plt.figure(figsize=(15, 12))
+                cv = self.cv.get_cost_field()
+                plotf_vector(self.grid[:, 1], self.grid[:, 0], cv, xlabel='East', ylabel='North', title='RRTCV',
+                             cbar_title="Cost", cmap=get_cmap("RdBu", 10), vmin=0, vmax=2.2, stepsize=.25)
+                if len(self.trajectory) > 0:
+                    plt.plot(self.trajectory[:, 1], self.trajectory[:, 0], 'k.-')
+                plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'r-.')
+                plt.plot(self.polygon_obstacle[:, 1], self.polygon_obstacle[:, 0], 'r-.')
+                plt.xlabel("East")
+                plt.ylabel("North")
+                plt.savefig(self.figpath + "P_{:03d}.png".format(i))
+                plt.close("all")
 
             self.planner.update_planning_trackers()
 
