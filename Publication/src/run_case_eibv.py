@@ -16,7 +16,7 @@ if weight_eibv > weight_ivr:
 elif weight_eibv < weight_ivr:
     case = "IVR"
 else:
-    case = "Equal"
+    case = "EQUAL"
 
 config = Config()
 num_steps = config.get_num_steps()
@@ -28,8 +28,8 @@ def run_replicates():
     s = Simulator(weight_eibv=weight_eibv,
                   weight_ivr=weight_ivr,
                   case=case)
-
-    res = Parallel(n_jobs=3)(delayed(s.run_simulator) for i in range(num_replicates))
+    steps = num_steps * np.ones(num_replicates).astype(int)
+    res = Parallel(n_jobs=3)(delayed(s.run_simulator)(step) for step in steps)
 
     traj_sim = np.empty([0, num_steps+1, 2])
 
@@ -45,10 +45,9 @@ def run_replicates():
     #     traj_sim = np.append(traj_sim, traj.reshape(1, num_steps+1, 2), axis=0)
 
     np.save("npy/" + case + ".npy", traj_sim)
+    return 0
 
 
 if __name__ == "__main__":
     run_replicates()
-
-
 
