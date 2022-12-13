@@ -30,7 +30,7 @@ def run_replicates():
                   weight_ivr=weight_ivr,
                   case=case)
     steps = num_steps * np.ones(num_replicates).astype(int)
-    res = Parallel(n_jobs=3)(delayed(s.run_simulator)(step) for step in steps)  # The return values are tuple
+    res = Parallel(n_jobs=8)(delayed(s.run_simulator)(step) for step in steps)  # The return values are tuple
     """
     Return values are tuple and hereby need careful check with smaller steps 
     of replicates to extract the result correctly. 
