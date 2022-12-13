@@ -5,5 +5,7 @@
 **/.ipynb_checkpoints
 **.zip
 **/DockerTest
-**.npy
-*.npy
+*Goal_indices.npy
+**Goal_indices.npy
+*RRT_Random_Locations.npy
+**RRT_Random_Locations.npy
