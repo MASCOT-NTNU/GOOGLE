@@ -105,6 +105,5 @@ class Simulator:
 if __name__ == "__main__":
     s = Simulator(weight_eibv=1.9, weight_ivr=.1, case="equal")
     s.run_simulator()
-    # s.run_replicates()
 
 
