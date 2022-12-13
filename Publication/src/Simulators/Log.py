@@ -22,8 +22,9 @@ class Log:
 
     def append_log(self, grf) -> None:
         mu = grf.get_mu()
-        sigma_diag = np.diag(grf.get_covariance_matrix())
         threshold = grf.get_threshold()
+        sigma_diag = np.diag(grf.get_covariance_matrix())
+
         ibv = self.get_ibv(mu, sigma_diag, threshold)
         self.ibv
 
