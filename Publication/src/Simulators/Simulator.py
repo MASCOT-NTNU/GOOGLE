@@ -5,6 +5,7 @@ Simulator handles the simulation task.
 """
 from Planner.Planner import Planner
 from Simulators.CTD import CTD
+from Simulators.Log import Log
 from Config import Config
 import numpy as np
 from time import time
@@ -38,16 +39,17 @@ class Simulator:
         self.ctd = CTD()
 
         # s4: set up data storage
-        # self.traj_sim = np.empty([0, self.num_steps+1, 2])
+        self.log = Log()
 
         self.rrtstar = self.planner.get_rrtstarcv()
         self.cv = self.rrtstar.get_CostValley()
         self.cv.set_weight_eibv(self.weight_eibv)
         self.cv.set_weight_ivr(self.weight_ivr)
         self.cv.update_cost_valley()  # update right after the weights are refreshed.
+        self.grf = self.cv.get_grf_model()
 
         if self.debug:
-            self.grf = self.cv.get_grf_model()
+
             self.field = self.cv.get_field()
             self.grid = self.field.get_grid()
             self.config = Config()
@@ -56,7 +58,10 @@ class Simulator:
             self.figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/"
             checkfolder(self.figpath)
 
-    def run_simulator(self, num_steps: int = 5) -> np.ndarray:
+        # s5: append data
+        self.log.append_log(self.cv.get_grf_model())  # append data to storage
+
+    def run_simulator(self, num_steps: int = 5) -> tuple:
         """
         Run the autonomous operation according to Sense, Plan, Act philosophy.
         """
@@ -99,7 +104,10 @@ class Simulator:
             # t2 = time.time()
             # print("Update pioneer waypoint takes: ", t2 - t1)
 
-        return self.trajectory
+            # s4: update simulation data
+            self.log.append_log(self.grf)
+
+        return self.trajectory, self.log
 
 
 if __name__ == "__main__":
