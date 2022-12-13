@@ -14,6 +14,7 @@ from matplotlib.cm import get_cmap
 from usr_func.checkfolder import checkfolder
 import os
 print("hello")
+print("hello")
 
 #%%
 
