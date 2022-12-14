@@ -6,16 +6,12 @@ from Config import Config
 from Simulators.CTD import CTD
 import numpy as np
 from scipy.stats import norm
-<<<<<<< HEAD
-=======
 from sklearn.metrics import mean_squared_error
->>>>>>> refs/remotes/origin/main
 
 
 class Log:
     """ Log """
     def __init__(self) -> None:
-<<<<<<< HEAD
         self.rmse = np.empty([0, 1])
         self.ibv = np.empty([0, 1])
 
@@ -23,17 +19,6 @@ class Log:
         self.ctd = CTD()
 
         self.mu_truth = self.ctd.get_ground_truth()
-        self.mu_truth
-
-    def append_log(self, grf) -> None:
-        mu = grf.get_mu()
-        sigma_diag = np.diag(grf.get_covariance_matrix())
-        threshold = grf.get_threshold()
-        ibv = self.get_ibv(mu, sigma_diag, threshold)
-        self.ibv
-
-        pass
-=======
         self.rmse = []
         self.ibv = []
         self.vr = []
@@ -50,7 +35,6 @@ class Log:
         self.ibv.append(self.get_ibv(mu, sigma_diag, threshold))
         self.rmse.append(mean_squared_error(self.mu_truth, mu, squared=False))
         self.vr.append(np.sum(sigma_diag))
->>>>>>> refs/remotes/origin/main
 
     def get_ibv(self, mu: np.ndarray, sigma_diag: np.ndarray, threshold: float) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.

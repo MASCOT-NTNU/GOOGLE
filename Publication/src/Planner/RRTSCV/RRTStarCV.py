@@ -3,12 +3,14 @@ RRTStar object produces the possible tree generation in the constrained field.
 It employs RRT as the building block, and the cost associated with each tree branch is used to
 determine the final tree discretization.
 """
+from Simulators.T import T
 from Planner.RRTSCV.TreeNode import TreeNode
 from Field import Field
 from Config import Config
 from CostValley.CostValley import CostValley
 import numpy as np
 import os
+from time import time
 from shapely.geometry import Polygon, Point, LineString
 
 
@@ -40,9 +42,11 @@ class RRTStarCV:
         # tree
         self.__nodes = []  # all nodes in the tree.
         self.__trajectory = np.empty([0, 2])  # to save trajectory.
+        self.__cost_trajectory = .0  # cost along the trajectory.
+        self.__distance_trajectory = .0  # distance along the trajectory.
         self.__goal_sampling_rate = .01
         self.__max_expansion_iteration = 1700  # TODO: to run simulation and see if it is able to converage
-        self.__stepsize = self.__field.get_neighbour_distance() * 1  # hard-coded values, need to be checked.
+        self.__stepsize = self.__field.get_neighbour_distance() * 3  # hard-coded values, need to be checked.
         self.__home_radius = self.__stepsize * .8
         self.__rrtstar_neighbour_radius = self.__stepsize * 1.12
 
@@ -63,6 +67,9 @@ class RRTStarCV:
         # field
         self.__xlim, self.__ylim = self.__field.get_border_limits()
 
+        # simulation_metrics:
+        self.T = T()
+
     def get_next_waypoint(self, loc_start: np.ndarray, loc_target: np.ndarray) -> np.ndarray:
         """
         Get the next waypoint according to RRT* path planning philosophy.
@@ -71,9 +78,9 @@ class RRTStarCV:
         :param cost_valley: cost valley contains the cost field.
         :return next waypoint: np.array([x, y])
         """
+        t_start = time()
         # s0: clean all nodes
         self.__nodes = []
-        self.__trajectory = np.empty([0, 2])
 
         # s1: set starting location and target location in rrt*.
         self.__loc_start = loc_start
@@ -109,10 +116,14 @@ class RRTStarCV:
                 if self.is_location_legal(ln) and self.is_path_legal(loc_start, ln):
                     wp_next = ln
                     break
+        t_end = time()
+
+        """ monitor simulation metrics. """
+        self.T.set_t_total(t_end - t_start)
+
         return wp_next
 
     def __expand_trees(self):
-        # t1 = time.time()
         # start by appending the starting node to the nodes list.
         self.__nodes.append(self.__starting_node)
 
@@ -121,6 +132,7 @@ class RRTStarCV:
         x_random = self.__random_locations[ind_selected, 0]
         y_random = self.__random_locations[ind_selected, 1]
         goal_indices = self.__goal_indices[ind_selected]
+
         for i in range(self.__max_expansion_iteration):
             # print("tree: ", i)
 
@@ -158,10 +170,9 @@ class RRTStarCV:
             # s7: check connection to the goal node.
             if self.__isarrived():
                 self.__target_node.set_parent(self.__new_node)
+                self.__target_node.set_cost(self.__get_cost_between_nodes(self.__target_node, self.__new_node))
             else:
                 self.__nodes.append(self.__new_node)
-        # t2 = time.time()
-        # print("Tree expansion takes: ", t2 - t1)
 
     def __get_nearest_node(self) -> None:
         """ Return nearest node in the tree graph, only use distance. """
@@ -201,10 +212,10 @@ class RRTStarCV:
 
     def __get_cost_between_nodes(self, n1: 'TreeNode', n2: 'TreeNode') -> float:
         """ Get cost between nodes. """
-        cost_distance = TreeNode.get_distance_between_nodes(n1, n2) / self.__stepsize * .25
+        cost_distance = TreeNode.get_distance_between_nodes(n1, n2) / self.__stepsize
         cost_costvalley = self.__cost_valley.get_cost_along_path(n1.get_location(), n2.get_location())
-        # cost = n1.get_cost() + cost_distance + cost_costvalley
-        cost = n1.get_cost() + cost_costvalley
+        cost = n1.get_cost() + cost_distance + cost_costvalley
+        # cost = n1.get_cost() + cost_costvalley
         return cost
 
     def __isarrived(self) -> bool:
@@ -215,24 +226,48 @@ class RRTStarCV:
             return False
 
     def __get_shortest_trajectory(self):
+        wp_old = self.__target_node.get_location().reshape(1, -1)
         self.__trajectory = np.empty([0, 2])
-        self.__trajectory = np.append(self.__trajectory, self.__target_node.get_location().reshape(1, -1), axis=0)
+        self.__trajectory = np.append(self.__trajectory, wp_old, axis=0)
+        self.__cost_trajectory = self.__target_node.get_cost()
+
         pointer_node = self.__target_node
         cnt = 0
         while pointer_node.get_parent() is not None:
             cnt += 1
             node = pointer_node.get_parent()
-            self.__trajectory = np.append(self.__trajectory, pointer_node.get_location().reshape(1, -1), axis=0)
-            pointer_node = node
-            if cnt > self.__max_expansion_iteration:
-                break
-        self.__trajectory = np.append(self.__trajectory, self.__starting_node.get_location().reshape(1, -1), axis=0)
+            wp_new = pointer_node.get_location().reshape(1, -1)
+            self.__trajectory = np.append(self.__trajectory, wp_new, axis=0)
+            self.__distance_trajectory += np.sqrt((wp_new[0, 0] - wp_old[0, 0])**2 +
+                                                  (wp_new[0, 1] - wp_new[0, 1])**2)
 
-    def get_tree_nodes(self):
+            pointer_node = node
+            wp_old = wp_new
+
+            if cnt > self.__max_expansion_iteration:
+                self.__distance_trajectory = np.inf
+                break
+
+        wp_new = self.__starting_node.get_location().reshape(1, -1)
+        self.__trajectory = np.append(self.__trajectory, wp_new, axis=0)
+        self.__cost_trajectory += self.__starting_node.get_cost()
+        self.__distance_trajectory += np.sqrt((wp_new[0, 0] - wp_old[0, 0]) ** 2 +
+                                              (wp_new[0, 1] - wp_old[0, 1]) ** 2)
+
+    def get_tree_nodes(self) -> list:
+        """ Return all the tree nodes. """
         return self.__nodes
 
-    def get_trajectory(self):
+    def get_trajectory(self) -> np.ndarray:
+        """ Return the trajectory from the starting location to the target location. """
         return self.__trajectory
+
+    def get_cost_along_trajectory(self) -> float:
+        """ Get the cost along the desired trajectory. """
+        return self.__cost_trajectory
+
+    def get_distance_along_trajectory(self) -> float:
+        return self.__distance_trajectory
 
     def is_location_legal(self, loc: np.ndarray) -> bool:
         x, y = loc
@@ -277,23 +312,23 @@ class RRTStarCV:
         self.__home_radius = value
 
     def get_goal_sampling_rate(self) -> float:
-        """ Set the goal sampling rate. """
+        """ Get the goal sampling rate. """
         return self.__goal_sampling_rate
 
     def get_stepsize(self) -> float:
-        """ Set the step size of the trees. """
+        """ Get the step size of the trees. """
         return self.__stepsize
 
     def get_max_expansion_iteraions(self) -> int:
-        """ Set the maximum expansion itersions. """
+        """ Get the maximum expansion itersions. """
         return self.__max_expansion_iteration
 
     def get_rrtstar_neighbour_radius(self) -> float:
-        """ Set the neighbour radius for tree searching. """
+        """ Get the neighbour radius for tree searching. """
         return self.__rrtstar_neighbour_radius
 
     def get_home_radius(self) -> float:
-        """ Set the home radius for path convergence. """
+        """ Get the home radius for path convergence. """
         return self.__home_radius
 
 

@@ -58,6 +58,24 @@ class Simulator:
             self.figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/"
             checkfolder(self.figpath)
 
+            plt.figure(figsize=(15, 12))
+            plotf_vector(self.grid[:, 1], self.grid[:, 0], self.grf.get_mu(), xlabel='East', ylabel='North',
+                         title='Prior', cbar_title="Salinity", cmap=get_cmap("RdBu", 10), vmin=10, vmax=33, stepsize=1.5)
+            plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'r-.')
+            plt.plot(self.polygon_obstacle[:, 1], self.polygon_obstacle[:, 0], 'r-.')
+            plt.xlabel("East")
+            plt.ylabel("North")
+            plt.show()
+
+            plt.figure(figsize=(15, 12))
+            plotf_vector(self.grid[:, 1], self.grid[:, 0], self.ctd.get_ground_truth(), xlabel='East', ylabel='North',
+                         title='GroundTruth', cbar_title="Salinity", cmap=get_cmap("RdBu", 10), vmin=10, vmax=33, stepsize=1.5)
+            plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'r-.')
+            plt.plot(self.polygon_obstacle[:, 1], self.polygon_obstacle[:, 0], 'r-.')
+            plt.xlabel("East")
+            plt.ylabel("North")
+            plt.show()
+
         # s5: append data
         self.log.append_log(self.cv.get_grf_model())  # append data to storage
 
@@ -111,7 +129,7 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    s = Simulator(weight_eibv=1.9, weight_ivr=.1, case="equal")
-    s.run_simulator()
+    s = Simulator(weight_eibv=1.9, weight_ivr=.1, case="equal", debug=True)
+    # s.run_simulator()
 
 
