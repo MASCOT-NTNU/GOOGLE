@@ -59,7 +59,7 @@ class TestCTDSimulator(TestCase):
         plt.show()
 
         # c2: move to another direction
-        data = self.ctd.get_ctd_data(np.array([4000, -500]))
+        data = self.ctd.get_ctd_data(np.array([2000, -2000]))
         grid = self.grf.grid
         truth = self.ctd.get_ground_truth()
         plt.figure()
@@ -69,7 +69,7 @@ class TestCTDSimulator(TestCase):
         plt.show()
 
         # c2: move to another direction
-        data = self.ctd.get_ctd_data(np.array([2000, 2000]))
+        data = self.ctd.get_ctd_data(np.array([1000, -1500]))
         grid = self.grf.grid
         truth = self.ctd.get_ground_truth()
         plt.figure()

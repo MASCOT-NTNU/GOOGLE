@@ -1,5 +1,8 @@
-# Notes for data generated during the simulation. 
+# Notes for data generated during the simulation.
 
-- "EIBV.npy" saves the data for the case where EIBV has higher dominance. 
-- "IVR.npy" saves the data for the case where IVR has higher dominance. 
-- "EQUAL.npy" saves the data when both shares the same weights. 
+- `CV` contains data for cost valley study
+- `RRT` contains data for rrt star simulation study. 
+
+- "EIBV.npy" saves the data for the case where EIBV has higher dominance.
+- "IVR.npy" saves the data for the case where IVR has higher dominance.
+- "EQUAL.npy" saves the data when both shares the same weights.

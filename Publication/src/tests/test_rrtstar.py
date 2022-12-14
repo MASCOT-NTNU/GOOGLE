@@ -23,11 +23,11 @@ class TestRRTStar(TestCase):
         self.polygon_obstacle = self.config.get_polygon_obstacle()
 
     def test_weights_for_cost_on_trees(self) -> None:
-        self.cv.set_weight_eibv(.1)
-        self.cv.set_weight_ivr(1.9)
+        # self.cv.set_weight_eibv(.1)
+        # self.cv.set_weight_ivr(1.9)
 
-        # self.cv.set_weight_eibv(1.9)
-        # self.cv.set_weight_ivr(.1)
+        self.cv.set_weight_eibv(1.9)
+        self.cv.set_weight_ivr(.1)
 
         # self.cv.set_weight_eibv(1.)
         # self.cv.set_weight_ivr(1.)
@@ -36,7 +36,7 @@ class TestRRTStar(TestCase):
 
         loc_now = np.array([1500, -2000])
         # loc_end = np.array([3000, 1000])
-        self.cv.update_cost_valley(loc_now)
+        self.cv.update_cost_valley()
         loc_end = self.cv.get_minimum_cost_location()
 
         wp = self.rrtstar.get_next_waypoint(loc_now, loc_end)
