@@ -36,10 +36,10 @@ class Simulator:
         self.planner = Planner(self.loc_start)
 
         # s2: set up ground truth
-        self.ctd = CTD()
+        self.ctd = CTD(self.loc_start)
 
         # s4: set up data storage
-        self.log = Log()
+        self.log = Log(ctd=self.ctd)
 
         self.rrtstar = self.planner.get_rrtstarcv()
         self.cv = self.rrtstar.get_CostValley()
@@ -87,7 +87,26 @@ class Simulator:
         self.trajectory = np.append(self.trajectory, self.loc_start.reshape(1, -1), axis=0)
 
         t1 = time()
+
+        """ Debug section. """
+        # rmse = []
+        # from sklearn.metrics import mean_squared_error
+        # mu_truth = self.ctd.get_ground_truth()
+        # wps = np.array([[2000, -2000],
+        #                 [2200, -1800],
+        #                 [2400, -1600],
+        #                 [2600, -1400],
+        #                 [2800, -1200],
+                        # [3000, -1000],
+                        # [2900, -1100],
+                        # [2800, -1300],
+                        # [2700, -1200],
+                        # [1500, -800]
+                        # ])
+        """ End """
+
         for i in range(num_steps):
+        # for i in range(len(wps)):
             t2 = time()
             print("Step: ", i, " takes ", t2 - t1, " seconds. ")
             t1 = time()
@@ -109,6 +128,14 @@ class Simulator:
 
             self.planner.update_planning_trackers()
 
+            """ Debug check rmse """
+            # rmse.append(mean_squared_error(mu_truth, self.grf.get_mu(), squared=False))
+            # wp_now = wps[i, :]
+            # ctdd = self.ctd.get_ctd_data(wp_now)
+            # print("CTD: ", ctdd)
+            # self.grf.assimilate_data(ctdd)
+            """ End """
+
             # p1: parallel move AUV to the first location
             wp_now = self.planner.get_current_waypoint()
             self.trajectory = np.append(self.trajectory, wp_now.reshape(1, -1), axis=0)
@@ -117,19 +144,25 @@ class Simulator:
             ctd_data = self.ctd.get_ctd_data(wp_now)
 
             # s3: update pioneer waypoint
-            # t1 = time.time()
+            t1 = time()
+            # print("CTD: ", ctd_data)
             self.planner.update_pioneer_waypoint(ctd_data)
-            # t2 = time.time()
-            # print("Update pioneer waypoint takes: ", t2 - t1)
+            t2 = time()
+            print("Update pioneer waypoint takes: ", t2 - t1)
 
             # s4: update simulation data
             self.log.append_log(self.grf)
+
+        # plt.plot(rmse)
+        # plt.title("RMSE in")
+        # plt.show()
 
         return self.trajectory, self.log
 
 
 if __name__ == "__main__":
-    s = Simulator(weight_eibv=1.9, weight_ivr=.1, case="equal", debug=True)
+    s = Simulator(weight_eibv=1.9, weight_ivr=.1, case="equal", debug=False)
+    t, l = s.run_simulator()
     # s.run_simulator()
 
 

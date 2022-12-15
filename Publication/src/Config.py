@@ -39,6 +39,7 @@ class Config:
         """ Default simulation parameter seteup. """
         self.__num_steps = 80  # number of steps.
         self.__num_replicates = 50  # number of replicates
+        self.__num_cores = 8  # number of cores to use
 
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:
@@ -86,6 +87,10 @@ class Config:
         """ Set the number of replicates in the simulation study. """
         self.__num_replicates = value
 
+    def set_num_cores(self, value: int) -> None:
+        """ Set the number of cores to use in the simulation study. """
+        self.__num_cores = value
+
     def get_polygon_border(self) -> np.ndarray:
         """ Return polygon for opa in x y coordinates. """
         return self.__polygon_border
@@ -121,6 +126,10 @@ class Config:
     def get_num_replicates(self) -> int:
         """ Return the number of replicates in the simulation study. """
         return self.__num_replicates
+
+    def get_num_cores(self) -> int:
+        """ Return the number of cores in the simulation study. """
+        return self.__num_cores
 
     def get_wgs_polygon_border(self) -> np.ndarray:
         """ Return polygon for the oprational area in wgs coordinates. """
