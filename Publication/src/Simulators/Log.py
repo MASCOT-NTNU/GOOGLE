@@ -21,7 +21,6 @@ class Log:
         sigma_diag = np.diag(grf.get_covariance_matrix())
 
         self.ibv.append(self.get_ibv(mu, sigma_diag, threshold))
-        # self.rmse.append(np.sum((self.mu_truth - mu)**2) / len(mu))
         self.rmse.append(mean_squared_error(self.mu_truth, mu, squared=False))
         self.vr.append(np.sum(sigma_diag))
 
