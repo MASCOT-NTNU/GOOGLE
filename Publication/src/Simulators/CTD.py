@@ -10,10 +10,11 @@ class CTD:
     """
     CTD module handles the simulated truth value at each specific location.
     """
-    def __init__(self):
+    def __init__(self, loc_start: np.ndarray = np.array([0, 0])):
         # np.random.seed(0)
         """
         Set up the CTD simulated truth field.
+        TODO: Check the starting location, it can induce serious problems.
         """
         self.grf = GRF()
         self.field = self.grf.field
@@ -24,16 +25,31 @@ class CTD:
         """
         Set up CTD data gathering
         """
-        self.loc_now = np.array([0, 0])
+        self.loc_now = loc_start
         self.loc_prev = np.array([0, 0])
         self.ctd_data = np.empty([0, 3])
         self.speed = 1.5  # m/s
+
+    def get_ctd_data_1hz(self, loc: np.ndarray) -> np.ndarray:
+        """
+        Simulate CTD data gathering at 1hz.
+        It means that it returns only one sample.
+        Args:
+            loc: np.array([x, y])
+        Return:
+            data: np.array([x, y, sal])
+        """
+        sal = self.get_salinity_at_loc(loc)
+        self.ctd_data = np.stack((loc[0], loc[1], sal[0])).reshape(1, -1)
+        return self.ctd_data
 
     def get_ctd_data(self, loc: np.ndarray) -> np.ndarray:
         """
         Simulate CTD data gathering.
         Args:
             loc: np.array([x, y])
+        Return:
+            dataset: np.array([x, y, sal])
         """
         self.loc_prev = self.loc_now
         self.loc_now = loc
@@ -42,15 +58,14 @@ class CTD:
         dx = x_end - x_start
         dy = y_end - y_start
         dist = np.sqrt(dx ** 2 + dy ** 2)
-        # N = 10
-        N = int(np.ceil(dist / self.speed) * 2)
+        N = 20
+        # N = int(np.ceil(dist / self.speed) * 2)
         if N != 0:
             x_path = np.linspace(x_start, x_end, N)
             y_path = np.linspace(y_start, y_end, N)
-            depth = np.zeros_like(x_path)
             loc = np.stack((x_path, y_path), axis=1)
             sal = self.get_salinity_at_loc(loc)
-            self.ctd_data = np.stack((x_path, y_path, depth, sal.flatten()), axis=1)
+            self.ctd_data = np.stack((x_path, y_path, sal.flatten()), axis=1)
         return self.ctd_data
 
     def get_salinity_at_loc(self, loc: np.ndarray) -> Union[np.ndarray, None]:

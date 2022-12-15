@@ -22,6 +22,7 @@ print(case)
 config = Config()
 num_steps = config.get_num_steps()
 num_replicates = config.get_num_replicates()
+num_cores = config.get_num_cores()
 
 
 def run_replicates():
@@ -30,7 +31,7 @@ def run_replicates():
                   weight_ivr=weight_ivr,
                   case=case)
     steps = num_steps * np.ones(num_replicates).astype(int)
-    res = Parallel(n_jobs=8)(delayed(s.run_simulator)(step) for step in steps)  # The return values are tuple
+    res = Parallel(n_jobs=num_cores)(delayed(s.run_simulator)(step) for step in steps)  # The return values are tuple
     """
     Return values are tuple and hereby need careful check with smaller steps 
     of replicates to extract the result correctly. 
@@ -55,10 +56,10 @@ def run_replicates():
     #     traj = run_simulator()
     #     traj_sim = np.append(traj_sim, traj.reshape(1, num_steps+1, 2), axis=0)
 
-    np.save("npy/" + case + ".npy", traj_sim)
-    np.save("npy/" + case + "_ibv.npy", ibv)
-    np.save("npy/" + case + "_vr.npy", vr)
-    np.save("npy/" + case + "_rmse.npy", rmse)
+    np.save("npy/CV/" + case + ".npy", traj_sim)
+    np.save("npy/CV/" + case + "_ibv.npy", ibv)
+    np.save("npy/CV/" + case + "_vr.npy", vr)
+    np.save("npy/CV/" + case + "_rmse.npy", rmse)
     return 0
 
 

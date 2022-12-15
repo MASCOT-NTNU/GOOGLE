@@ -1,8 +1,6 @@
 """
 Log object logs the data generated during the simulation process.
 """
-
-from Config import Config
 from Simulators.CTD import CTD
 import numpy as np
 from scipy.stats import norm
@@ -11,21 +9,11 @@ from sklearn.metrics import mean_squared_error
 
 class Log:
     """ Log """
-    def __init__(self) -> None:
-        self.rmse = np.empty([0, 1])
-        self.ibv = np.empty([0, 1])
-
-        self.config = Config()
-        self.ctd = CTD()
-
-        self.mu_truth = self.ctd.get_ground_truth()
+    def __init__(self, ctd: 'CTD' = None) -> None:
         self.rmse = []
         self.ibv = []
         self.vr = []
-
-        self.config = Config()
-        self.ctd = CTD()
-        self.mu_truth = self.ctd.get_ground_truth()
+        self.mu_truth = ctd.get_ground_truth()
 
     def append_log(self, grf) -> None:
         mu = grf.get_mu()
@@ -33,6 +21,7 @@ class Log:
         sigma_diag = np.diag(grf.get_covariance_matrix())
 
         self.ibv.append(self.get_ibv(mu, sigma_diag, threshold))
+        # self.rmse.append(np.sum((self.mu_truth - mu)**2) / len(mu))
         self.rmse.append(mean_squared_error(self.mu_truth, mu, squared=False))
         self.vr.append(np.sum(sigma_diag))
 

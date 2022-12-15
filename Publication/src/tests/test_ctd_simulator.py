@@ -20,6 +20,22 @@ class TestCTDSimulator(TestCase):
         self.c = Config()
         self.ctd = CTD()
 
+    def test_rmse(self) -> None:
+        self.mu_truth = self.ctd.get_ground_truth()
+        ind = np.random.randint(0, len(self.mu_truth), 100)
+        wp = self.f.get_location_from_ind(ind)
+
+        rmse = []
+        from sklearn.metrics import mean_squared_error
+        for i in range(len(wp)):
+            ctd = self.ctd.get_ctd_data_1hz(wp[i])
+            # print(ctd)
+            self.grf.assimilate_data(ctd)
+            rmse.append(mean_squared_error(self.mu_truth, self.grf.get_mu(), squared=False))
+        import matplotlib.pyplot as plt
+        plt.plot(rmse)
+        plt.show()
+
     def test_get_salinity_at_loc(self) -> None:
         """
         Test get salinity from location
