@@ -5,8 +5,7 @@
 - simulator itself has enough steps.
 - replicator has enough replicate studies.
 - debug mode is False, so no figures will be saved.
--
-
+- 
 
 
 ---

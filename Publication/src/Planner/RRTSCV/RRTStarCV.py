@@ -245,7 +245,6 @@ class RRTStarCV:
             wp_old = wp_new
 
             if cnt > self.__max_expansion_iteration:
-                self.__distance_trajectory = np.inf
                 break
 
         wp_new = self.__starting_node.get_location().reshape(1, -1)
