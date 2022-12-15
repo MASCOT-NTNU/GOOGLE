@@ -89,7 +89,8 @@ class Simulator:
         """
         trajectory = np.empty([0, 2])
         trajectory = np.append(trajectory, self.loc_start.reshape(1, -1), axis=0)
-
+        self.log.append_log(self.grf)
+        
         t1 = time()
 
         """ Debug section. """
