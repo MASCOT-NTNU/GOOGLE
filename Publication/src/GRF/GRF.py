@@ -77,8 +77,8 @@ class GRF:
         sal_sinmod = dataset_sinmod[:, -1]
 
         # s1: interpolate onto grid.
-        dm_grid_delft3d = cdist(self.grid, grid_sinmod)
-        ind_close = np.argmin(dm_grid_delft3d, axis=1)
+        dm_grid_sinmod = cdist(self.grid, grid_sinmod)
+        ind_close = np.argmin(dm_grid_sinmod, axis=1)
         self.__mu = vectorize(sal_sinmod[ind_close])
 
     def assimilate_data(self, dataset: np.ndarray) -> None:
