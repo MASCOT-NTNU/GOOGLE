@@ -37,9 +37,9 @@ class Config:
         self.__loc_start = np.array([x, y])
 
         """ Default simulation parameter seteup. """
-        self.__num_steps = 80  # number of steps.
-        self.__num_replicates = 50  # number of replicates
-        self.__num_cores = 40  # number of cores to use
+        self.__num_steps = 40  # number of steps.
+        self.__num_replicates = 5  # number of replicates
+        self.__num_cores = 5  # number of cores to use
 
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:
