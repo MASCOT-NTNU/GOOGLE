@@ -150,7 +150,7 @@ class Field:
         """
         return self.__grid[ind, :]
 
-    def get_ind_from_location(self, location: np.ndarray) -> Union[int, np.ndarray, None]:
+    def get_ind_from_location(self, location: np.ndarray) -> Union[np.ndarray, None]:
         """
         Args:
             location: np.array([xp, yp])
@@ -161,7 +161,7 @@ class Field:
             dm = location.ndim
             if dm == 1:
                 d = cdist(self.__grid, location.reshape(1, -1))
-                return np.argmin(d, axis=0)[0]
+                return np.argmin(d, axis=0)
             elif dm == 2:
                 d = cdist(self.__grid, location)
                 return np.argmin(d, axis=0)
