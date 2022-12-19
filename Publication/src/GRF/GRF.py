@@ -11,6 +11,7 @@ from scipy.spatial.distance import cdist
 import numpy as np
 from scipy.stats import norm
 from usr_func.normalize import normalize
+from joblib import Parallel, delayed
 import time
 import pandas as pd
 
@@ -137,7 +138,29 @@ class GRF:
         self.__eibv_field = normalize(eibv_field)
         self.__ivr_field = 1 - normalize(ivr_field)
         t2 = time.time()
-        # print("Total EI field takes: ", t2 - t1, " seconds.")
+        print("Total EI field takes: ", t2 - t1, " seconds.")
+        return self.__eibv_field, self.__ivr_field
+
+    def get_ei_at_locations(self, locs: np.ndarray) -> tuple:
+        """ Get EI values at given locations. """
+        ind = self.field.get_ind_from_location(locs)
+        N = len(ind)
+        t1 = time.time()
+        eibv = np.zeros(N)
+        ivr = np.zeros(N)
+        for i in range(N):
+            id = ind[i]
+            SF = self.__Sigma[:, id].reshape(-1, 1)
+            MD = 1 / (self.__Sigma[id, id] + self.__nugget)
+            VR = SF @ SF.T * MD
+            SP = self.__Sigma - VR
+            sigma_diag = np.diag(SP).reshape(-1, 1)
+            eibv[i] = self.__get_ibv(self.__mu, sigma_diag)
+            ivr[i] = np.sum(np.diag(VR))
+        self.__eibv_field = normalize(eibv)
+        self.__ivr_field = 1 - normalize(ivr)
+        t2 = time.time()
+        print("Calcuating EI at given locations takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
 
     def __get_ibv(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:

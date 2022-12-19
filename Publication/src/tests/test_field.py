@@ -173,5 +173,3 @@ class TestField(TestCase):
         # plt.plot(self.grid[ind, 1], self.grid[ind, 0], 'b.')
         # plt.show()
 
-
-

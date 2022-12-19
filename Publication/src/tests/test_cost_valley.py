@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import numpy as np
 from numpy import testing
+from matplotlib.cm import get_cmap
 
 
 # def plotf_vector(x, y, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
@@ -40,6 +41,7 @@ class TestCostValley(TestCase):
         self.cv = CostValley()
         self.grf = self.cv.get_grf_model()
         self.field = self.grf.field
+        self.grid = self.field.get_grid()
         self.polygon_border = self.c.get_polygon_border()
         self.polygon_obstacle = self.c.get_polygon_obstacle()
         self.xlim, self.ylim = self.field.get_border_limits()
@@ -48,21 +50,21 @@ class TestCostValley(TestCase):
         loc_now = np.array([1000, -1000])
         # c1: equal weights
         print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
-        self.cv.update_cost_valley(loc_now)
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
 
         # c2: more EIBV
         self.cv.set_weight_eibv(1.9)
         self.cv.set_weight_ivr(.1)
         print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
-        self.cv.update_cost_valley(loc_now)
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
 
         # c3: more IVR
         self.cv.set_weight_eibv(.1)
         self.cv.set_weight_ivr(1.9)
         print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
-        self.cv.update_cost_valley(loc_now)
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
 
     def test_minimum_cost_location(self):
@@ -121,25 +123,59 @@ class TestCostValley(TestCase):
         # s1: move and sample
         dataset = np.array([[1000, -1000, 0, 20]])
         self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
 
         # s2: move more and sample
         dataset = np.array([[1500, -1500, 0, 15]])
         self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
 
         # s3: move more and sample
         dataset = np.array([[2000, -2000, 0, 20]])
         self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
 
         # s4: move more and sample
         dataset = np.array([[2500, -1500, 0, 22]])
         self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
+        self.cv.update_cost_valley()
         self.plot_cost_valley()
         print("End S4")
 
+    def test_update_cost_valley_for_locations(self) -> None:
+        print("S5")
+        xv = np.arange(1000, 2000, 120)
+        yv = np.arange(-2000, -1000, 120)
+        xx, yy = np.meshgrid(xv, yv)
+        x = xx.flatten()
+        y = yy.flatten()
+        locs = np.stack((x, y), axis=1)
+
+        self.plot_cost_valley()
+
+        # s1: move and sample
+        dataset = np.array([[1000, -1000, 0, 20]])
+        self.grf.assimilate_data(dataset)
+        self.cv.update_cost_valley_for_locations(locs)
+        plt.scatter(locs[:, 1], locs[:, 0], c=self.cv.get_cost_field(),
+                    cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        self.cv.update_cost_valley()
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=self.cv.get_cost_field(),
+                    cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2., alpha=.4)
+        plt.show()
+
+        # s2: move more and sample
+        dataset = np.array([[1500, -1500, 0, 15]])
+        self.grf.assimilate_data(dataset)
+        self.cv.update_cost_valley_for_locations(locs)
+        plt.scatter(locs[:, 1], locs[:, 0], c=self.cv.get_cost_field(),
+                    cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        self.cv.update_cost_valley()
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=self.cv.get_cost_field(),
+                    cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2., alpha=.4)
+        plt.show()
+        print("End S5")
+        pass

@@ -40,6 +40,7 @@ class TestGRF(TestCase):
         self.cov = self.g.get_covariance_matrix()
         self.mu = self.g.get_mu()
         self.sigma = self.g.get_sigma()
+        self.polygon_border = self.c.get_polygon_border()
 
     def test_prior_matern_covariance(self):
         print("S1")
@@ -86,4 +87,59 @@ class TestGRF(TestCase):
               vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma,
               cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
         print("End S3")
+
+    def test_get_ei_at_locations(self):
+        # c1: no data assimilation
+        print("S4")
+        """ For now, it takes too much time to compute the entire EI field. """
+        xv = np.arange(1000, 2000, 120)
+        yv = np.arange(-2000, -1000, 120)
+        xx, yy = np.meshgrid(xv, yv)
+        x = xx.flatten()
+        y = yy.flatten()
+        locs = np.stack((x, y), axis=1)
+        eibv, ivr = self.g.get_ei_at_locations(locs)
+        eibv_full, ivr_full = self.g.get_ei_field()
+
+        plt.figure(figsize=(10, 5))
+        plt.subplot(121)
+        plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
+        plt.scatter(locs[:, 1], locs[:, 0], c=eibv, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=eibv_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        plt.colorbar()
+        plt.title("EIBV")
+        plt.subplot(122)
+        plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
+        plt.scatter(locs[:, 1], locs[:, 0], c=ivr, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=ivr_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0,
+                    vmax=2.)
+        plt.colorbar()
+        plt.title("IVR")
+        plt.show()
+
+        # c2: with data assimilation
+        dataset = np.array([[2000, -1000,  0, 15],
+                            [1500, -1500, 0, 10],
+                            [1400, -1800, 0, 25],
+                            [2500, -1400, 0, 20]])
+        self.g.assimilate_data(dataset)
+        eibv, ivr = self.g.get_ei_at_locations(locs)
+        eibv_full, ivr_full = self.g.get_ei_field()
+
+        plt.figure(figsize=(10, 5))
+        plt.subplot(121)
+        plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
+        plt.scatter(locs[:, 1], locs[:, 0], c=eibv, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=eibv_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0,
+                    vmax=2.)
+        plt.colorbar()
+        plt.title("EIBV")
+        plt.subplot(122)
+        plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
+        plt.scatter(locs[:, 1], locs[:, 0], c=ivr, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=ivr_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0,
+                    vmax=2.)
+        plt.colorbar()
+        plt.title("IVR")
+        plt.show()
 
