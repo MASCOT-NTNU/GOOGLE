@@ -44,6 +44,13 @@ class CostValley:
         # t2 = time.time()
         # print("Update cost valley takes: ", t2 - t1)
 
+    def update_cost_valley_for_locations(self, locs: np.ndarray) -> None:
+        # t1 = time.time()
+        self.__eibv_field, self.__ivr_field = self.__grf.get_ei_at_locations(locs)
+        self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
+        # t2 = time.time()
+        # print("Update cost valley takes: ", t2 - t1)
+
     def get_cost_field(self) -> np.ndarray:
         return self.__cost_field
 

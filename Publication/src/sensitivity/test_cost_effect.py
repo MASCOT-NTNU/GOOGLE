@@ -5,10 +5,8 @@ This script handles the cost effect in the simulation study.
 from Planner.Planner import Planner
 from AUVSimulator.AUVSimulator import AUVSimulator
 import numpy as np
-import os
 import time
 # from Visualiser.AgentPlot import AgentPlot
-import matplotlib.pyplot as plt
 
 
 class Agent:
