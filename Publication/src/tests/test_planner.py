@@ -10,9 +10,7 @@ from Planner.RRTSCV.RRTStarCV import RRTStarCV
 from usr_func.set_resume_state import set_resume_state
 from Field import Field
 from Config import Config
-from numpy import testing
 import numpy as np
-from numpy import testing
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 
