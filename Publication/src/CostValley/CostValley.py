@@ -69,7 +69,7 @@ class CostValley:
     def get_cost_at_location(self, loc: np.ndarray) -> float:
         """ Return cost associated with location. """
         ind = self.__field.get_ind_from_location(loc)
-        return self.__cost_field[ind] ** 10
+        return self.__cost_field[ind]
 
     def get_cost_along_path(self, loc_start: np.ndarray, loc_end: np.ndarray) -> float:
         """ Return cost associated with a path. """

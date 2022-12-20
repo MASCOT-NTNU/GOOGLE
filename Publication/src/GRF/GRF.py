@@ -31,7 +31,7 @@ class GRF:
         self.__lateral_range = 700  # 680 in the experiment, 480 in the simulation
 
         # measurement noise
-        self.__nugget = .1
+        self.__nugget = .01
 
         # threshold
         self.__threshold = 27
