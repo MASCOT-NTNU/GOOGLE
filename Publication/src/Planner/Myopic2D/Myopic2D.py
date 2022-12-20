@@ -45,17 +45,18 @@ class Myopic2D:
         """
         # s0: update grf kernel
         self.__grf.assimilate_data(ctd_data)
+        self.__cost_valley.update_cost_valley()
 
         # s1: find candidate locations
         id_smooth, id_neighbours = self.get_candidates_indices()
 
-        # s2: update cost valley for given locations
-        self.__loc_cand = self.__field.get_location_from_ind(id_smooth)
-        self.__cost_valley.update_cost_valley_for_locations(self.__loc_cand)
-
         if not is_list_empty(id_smooth):
-            cost_field = self.__cost_valley.get_cost_field()
-            id_next = id_smooth[np.argmin(cost_field)]
+            # get cost associated with those valid candidate locations.
+            costs = []
+            self.__loc_cand = self.__field.get_location_from_ind(id_smooth)
+            for loc in self.__loc_cand:
+                costs.append(self.__cost_valley.get_cost_at_location(loc))
+            id_next = id_smooth[np.argmin(costs)]
         else:
             rng_ind = np.random.randint(0, len(id_neighbours))
             id_next = id_neighbours[rng_ind]

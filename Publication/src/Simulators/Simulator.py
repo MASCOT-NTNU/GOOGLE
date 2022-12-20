@@ -1,8 +1,5 @@
 """
-Simulator generates the simulation result using three different methodolgies.
-- EIBV dominant
-- IVR dominant
-- Equal weights
+Simulator generates the simulation result based on the weight set.
 """
 from Planner.Planner import Planner
 from Simulators.CTD import CTD
@@ -16,12 +13,14 @@ from matplotlib.cm import get_cmap
 from usr_func.checkfolder import checkfolder
 import os
 
+# TODO: fix simulator issues.
+
 
 class Simulator:
     """
     Simulator
     """
-    def __init__(self, debug: bool = False) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., ctd: 'CTD' = None, debug: bool = False) -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
@@ -31,10 +30,7 @@ class Simulator:
         self.config = Config()
 
         # s1: set the starting location.
-        self.loc_start = np.array([1200, -1500])
-
-        # s2: set up ground truth.
-        self.ctd = CTD(self.loc_start)
+        self.loc_start = self.config.get_loc_start()
 
     def run_simulator(self, num_steps: int = 5) -> tuple:
         """
