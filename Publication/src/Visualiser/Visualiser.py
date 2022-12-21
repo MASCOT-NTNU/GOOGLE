@@ -4,7 +4,8 @@ Plotting func to interpolate the scattered dots.
 from Field import Field
 field = Field()
 from matplotlib import tri
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 import matplotlib.pyplot as plt
 import numpy as np
 plt.rcParams["font.family"] = "Times New Roman"

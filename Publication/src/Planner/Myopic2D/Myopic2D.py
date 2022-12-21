@@ -8,20 +8,18 @@ It utilizes the three-waypoint system to smooth out the planned trajectory.
 - Next waypoint: contains the next waypoint, and the AUV should go to next waypoint once it arrives at the current one.
 """
 from CostValley.CostValley import CostValley
-from usr_func.sort_polygon_vertices import sort_polygon_vertices
 from usr_func.is_list_empty import is_list_empty
 import numpy as np
 import os
-from typing import Union
 
 
 class Myopic2D:
     """
     Myopic2D planner determines the next waypoint according to minimum EIBV criterion.
     """
-    def __init__(self, loc_start: np.ndarray) -> None:
+    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
         # s0: set up default environment
-        self.__cost_valley = CostValley()
+        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr)
         self.__grf = self.__cost_valley.get_grf_model()
         self.__field = self.__grf.field
 
@@ -40,6 +38,8 @@ class Myopic2D:
         If no possible candidate locations were found. Then a random location in the neighbourhood is selected.
         Also the pioneer index can be modified here.
 
+        Para:
+            ctd_data: np.array([[x, y, sal]])
         Returns:
             id_pioneer: designed pioneer waypoint index.
         """

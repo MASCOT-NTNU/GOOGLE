@@ -21,7 +21,7 @@ import time
 
 class CostValley:
     """ Cost fields construction. """
-    def __init__(self) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
         """ """
 
         """ GRF """
@@ -30,8 +30,8 @@ class CostValley:
         self.__grid = self.__field.get_grid()
 
         """ Weights """
-        self.__weight_eibv = 1.
-        self.__weight_ivr = 1.
+        self.__weight_eibv = weight_eibv
+        self.__weight_ivr = weight_ivr
 
         """ Cost field """
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field()
@@ -44,12 +44,12 @@ class CostValley:
         # t2 = time.time()
         # print("Update cost valley takes: ", t2 - t1)
 
-    def update_cost_valley_for_locations(self, locs: np.ndarray) -> None:
-        # t1 = time.time()
-        self.__eibv_field, self.__ivr_field = self.__grf.get_ei_at_locations(locs)
-        self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
-        # t2 = time.time()
-        # print("Update cost valley takes: ", t2 - t1)
+    # def update_cost_valley_for_locations(self, locs: np.ndarray) -> None:
+    #     # t1 = time.time()
+    #     self.__eibv_field, self.__ivr_field = self.__grf.get_ei_at_locations(locs)
+    #     self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
+    #     # t2 = time.time()
+    #     # print("Update cost valley takes: ", t2 - t1)
 
     def get_cost_field(self) -> np.ndarray:
         return self.__cost_field
@@ -81,7 +81,7 @@ class CostValley:
         ct = ((c1 + c2) / 2 * dist)
         return ct
 
-    def get_minimum_cost_location(self):
+    def get_minimum_cost_location(self) -> np.ndarray:
         """ Return minimum cost location. """
         ind = np.argmin(self.__cost_field)
         return self.__grid[ind]
