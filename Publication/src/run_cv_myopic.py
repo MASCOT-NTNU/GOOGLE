@@ -22,14 +22,15 @@ of replicates to extract the result correctly.
 def run_replicates(i):
     print("R: ", i)
     ctd = CTD()
-    s1 = Simulator(weight_eibv=1.9, weight_ivr=.1, ctd=ctd)
-    t1, l1 = s1.run_simulator(num_steps=num_steps)
 
     s2 = Simulator(weight_eibv=1., weight_ivr=1., ctd=ctd)
     t2, l2 = s2.run_simulator(num_steps=num_steps)
 
     s3 = Simulator(weight_eibv=.1, weight_ivr=1.9, ctd=ctd)
     t3, l3 = s3.run_simulator(num_steps=num_steps)
+
+    s1 = Simulator(weight_eibv=1.9, weight_ivr=.1, ctd=ctd)
+    t1, l1 = s1.run_simulator(num_steps=num_steps)
 
     return t1, t2, t3, l1, l2, l3
 
