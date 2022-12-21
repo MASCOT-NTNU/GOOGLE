@@ -6,7 +6,8 @@ from Config import Config
 from Visualiser.TreePlotter import TreePlotter
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 from numpy import testing
 import time
 import os

@@ -7,7 +7,8 @@ from Visualiser.TreePlotter import TreePlotter
 from usr_func.checkfolder import checkfolder
 from Visualiser.Visualiser import plotf_vector
 import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 import numpy as np
 import os
 from time import time

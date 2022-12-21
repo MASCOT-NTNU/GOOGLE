@@ -12,7 +12,8 @@ from Field import Field
 from Config import Config
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 
 
 class TestPlanner(TestCase):

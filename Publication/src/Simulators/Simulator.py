@@ -9,7 +9,8 @@ import numpy as np
 from time import time
 import matplotlib.pyplot as plt
 from Visualiser.Visualiser import plotf_vector
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 from usr_func.checkfolder import checkfolder
 import os
 
