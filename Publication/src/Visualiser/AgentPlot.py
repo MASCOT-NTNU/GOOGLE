@@ -6,7 +6,8 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from matplotlib import tri
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 from shapely.geometry import Polygon, Point
 from matplotlib.gridspec import GridSpec
 import numpy as np
@@ -28,7 +29,7 @@ class AgentPlot:
         self.figpath = figpath
         self.planner = self.agent.planner
         self.rrtstarcv = self.planner.get_rrtstarcv()
-        self.cv = self.rrtstarcv.get_CostValley()
+        self.cv = self.rrtstarcv.getCostValley()
         self.budget = self.cv.get_Budget()
         self.grf = self.cv.get_grf_model()
         self.field = self.grf.field

@@ -1,5 +1,6 @@
 from matplotlib import tri
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 
 # def is_masked(value) -> bool:
 #     """

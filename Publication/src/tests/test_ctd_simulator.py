@@ -9,8 +9,8 @@ from Config import Config
 from unittest import TestCase
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
-
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 
 class TestCTDSimulator(TestCase):
 

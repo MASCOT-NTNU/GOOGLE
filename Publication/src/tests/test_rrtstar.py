@@ -6,7 +6,8 @@ import numpy as np
 from Visualiser.TreePlotter import TreePlotter
 from usr_func.set_resume_state import set_resume_state
 from Visualiser.Visualiser import plotf_vector
-from matplotlib.cm import get_cmap
+# from matplotlib.cm import get_cmap
+from matplotlib.pyplot import get_cmap
 
 
 class TestRRTStar(TestCase):

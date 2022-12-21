@@ -27,3 +27,6 @@ class TestConfig(TestCase):
         plt.plot(loc_start[1], loc_start[0], 'k.')
         plt.show()
 
+    # def test_num_cores(self) -> None:
+    #     pass
+
