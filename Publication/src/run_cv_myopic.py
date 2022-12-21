@@ -21,7 +21,7 @@ of replicates to extract the result correctly.
 
 def run_replicates(i):
     print("R: ", i)
-    ctd = CTD()
+    ctd = CTD(config.get_loc_start())
 
     s2 = Simulator(weight_eibv=1., weight_ivr=1., ctd=ctd)
     t2, l2 = s2.run_simulator(num_steps=num_steps)
