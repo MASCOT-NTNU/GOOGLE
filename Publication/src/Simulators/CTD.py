@@ -42,7 +42,7 @@ class CTD:
             data: np.array([x, y, sal])
         """
         sal = self.get_salinity_at_loc(loc)
-        self.ctd_data = np.stack((loc[0], loc[1], sal[0])).reshape(1, -1)
+        self.ctd_data = np.stack((loc[0], loc[1], sal.flatten()[0])).reshape(1, -1)
         return self.ctd_data
 
     def get_ctd_data(self, loc: np.ndarray) -> np.ndarray:
