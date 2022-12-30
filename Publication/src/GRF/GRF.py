@@ -25,13 +25,13 @@ class GRF:
 
         """ Empirical parameters """
         # spatial variability
-        self.__sigma = .5
+        self.__sigma = 1.
 
         # spatial correlation
         self.__lateral_range = 700  # 680 in the experiment
 
         # measurement noise
-        self.__nugget = .1
+        self.__nugget = .25
 
         # threshold
         self.__threshold = 27
