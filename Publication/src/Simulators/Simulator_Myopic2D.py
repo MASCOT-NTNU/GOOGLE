@@ -8,8 +8,8 @@ import numpy as np
 class Simulator:
 
     def __init__(self, seed: int = 0, debug: bool = False) -> None:
-        self.ag_eibv = Agent(weight_eibv=2.0, weight_ivr=.0, random_seed=seed, debug=debug, name="EIBV")
-        self.ag_ivr = Agent(weight_eibv=.0, weight_ivr=2.0, random_seed=seed, debug=debug, name="IVR")
+        self.ag_eibv = Agent(weight_eibv=1.99, weight_ivr=.01, random_seed=seed, debug=debug, name="EIBV")
+        self.ag_ivr = Agent(weight_eibv=.01, weight_ivr=1.99, random_seed=seed, debug=debug, name="IVR")
         self.ag_eq = Agent(weight_eibv=1., weight_ivr=1., random_seed=seed, debug=debug, name="Equal")
 
     def run_all(self, num_steps: int = 10) -> None:

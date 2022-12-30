@@ -22,7 +22,8 @@ class Config:
         """ Set up WGS polygons and starting and end locations. """
         self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
-        self.__wgs_loc_start = np.array([63.438611, 10.374487])  # lower west.
+        # self.__wgs_loc_start = np.array([63.438611, 10.374487])  # lower west.
+        self.__wgs_loc_start = np.array([63.439921, 10.389458])  # lower middle.
         # self.__wgs_loc_start = np.array([63.44912, 10.35067])  # upper west.
         # self.__wgs_loc_start = np.array([63.46236, 10.41938])  # middle east.
         # self.__wgs_loc_start = np.array([63.46674, 10.39385])  # upper middle above munkholm.
@@ -42,7 +43,7 @@ class Config:
 
         """ Default simulation parameter seteup. """
         self.__num_steps = 80  # number of steps.
-        self.__num_replicates = 100  # number of replicates
+        self.__num_replicates = 50  # number of replicates
         self.__num_cores = 45  # number of cores to use
 
     @staticmethod

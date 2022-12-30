@@ -12,7 +12,8 @@ num_replicates = config.get_num_replicates()
 num_cores = config.get_num_cores()
 num_steps = config.get_num_steps()
 # reps = 1 * np.ones(num_replicates).astype(int)
-seeds = np.random.randint(0, 10000, num_replicates)
+# seeds = np.random.randint(0, 10000, num_replicates)
+seeds = np.random.choice(10000, num_replicates, replace=False)  # to generate non-repetitive seeds.
 
 """
 Return values are tuple and hereby need careful check with smaller steps 
