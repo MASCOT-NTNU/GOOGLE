@@ -22,7 +22,11 @@ class Config:
         """ Set up WGS polygons and starting and end locations. """
         self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
-        self.__wgs_loc_start = np.array([63.438611, 10.374487])
+        self.__wgs_loc_start = np.array([63.438611, 10.374487])  # lower west.
+        # self.__wgs_loc_start = np.array([63.44912, 10.35067])  # upper west.
+        # self.__wgs_loc_start = np.array([63.46236, 10.41938])  # middle east.
+        # self.__wgs_loc_start = np.array([63.46674, 10.39385])  # upper middle above munkholm.
+        # self.__wgs_loc_start = np.array([63.439385, 10.356280])  # far west close to margin of boundary.
 
         """ Convert them to cartesian polygons and starting and end locations. """
         self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)

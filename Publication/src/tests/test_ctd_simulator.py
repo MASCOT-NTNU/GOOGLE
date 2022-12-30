@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 # from matplotlib.cm import get_cmap
 from matplotlib.pyplot import get_cmap
 
+
 class TestCTDSimulator(TestCase):
 
     def setUp(self) -> None:
