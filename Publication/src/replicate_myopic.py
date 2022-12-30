@@ -55,9 +55,9 @@ if __name__ == "__main__":
         rmse_r = np.stack((res_eibv[3], res_ivr[3], res_eq[3]), axis=0)
         rmse = np.append(rmse, rmse_r.reshape(1, 3, num_steps), axis=0)
 
-    np.save("npy/CV/Myopic/PTRAJ.npy", traj_sim)
-    np.save("npy/CV/Myopic/PRMSE.npy", rmse)
-    np.save("npy/CV/Myopic/PIBV.npy", ibv)
-    np.save("npy/CV/Myopic/PVR.npy", vr)
+    np.save("npy/CV/Myopic/TRAJ.npy", traj_sim)
+    np.save("npy/CV/Myopic/RMSE.npy", rmse)
+    np.save("npy/CV/Myopic/IBV.npy", ibv)
+    np.save("npy/CV/Myopic/VR.npy", vr)
 
 
