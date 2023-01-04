@@ -4,7 +4,6 @@ from Config import Config
 import matplotlib.pyplot as plt
 import numpy as np
 from Visualiser.TreePlotter import TreePlotter
-from usr_func.set_resume_state import set_resume_state
 from Visualiser.Visualiser import plotf_vector
 # from matplotlib.cm import get_cmap
 from matplotlib.pyplot import get_cmap
@@ -13,9 +12,10 @@ from matplotlib.pyplot import get_cmap
 class TestRRTStar(TestCase):
 
     def setUp(self) -> None:
-        set_resume_state(False)
         self.config = Config()
         self.rrtstar = RRTStarCV()
+        # self.rrtstar = RRTStarCV(weight_eibv=2., weight_ivr=.0)
+        # self.rrtstar = RRTStarCV(weight_eibv=.0, weight_ivr=2.)
         self.tp = TreePlotter()
         self.cv = self.rrtstar.get_CostValley()
         self.field = self.cv.get_field()
@@ -24,15 +24,6 @@ class TestRRTStar(TestCase):
         self.polygon_obstacle = self.config.get_polygon_obstacle()
 
     def test_weights_for_cost_on_trees(self) -> None:
-        # self.cv.set_weight_eibv(.1)
-        # self.cv.set_weight_ivr(1.9)
-
-        self.cv.set_weight_eibv(1.9)
-        self.cv.set_weight_ivr(.1)
-
-        # self.cv.set_weight_eibv(1.)
-        # self.cv.set_weight_ivr(1.)
-
         print("weight_EIBV: ", self.cv.get_eibv_weight(), " weight IVR: ", self.cv.get_ivr_weight())
 
         loc_now = np.array([1500, -2000])

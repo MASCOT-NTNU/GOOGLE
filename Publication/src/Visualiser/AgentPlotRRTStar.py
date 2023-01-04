@@ -6,7 +6,6 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from matplotlib import tri
-# from matplotlib.cm import get_cmap
 from matplotlib.pyplot import get_cmap
 from shapely.geometry import Polygon, Point
 from matplotlib.gridspec import GridSpec
@@ -23,14 +22,12 @@ class AgentPlot:
 
     def __init__(self, agent, figpath) -> None:
         self.agent = agent
-        self.auv = self.agent.auv
-        self.ctd = self.auv.ctd
+        self.ctd = self.agent.ctd
         self.mu_truth = self.ctd.get_ground_truth()
         self.figpath = figpath
         self.planner = self.agent.planner
         self.rrtstarcv = self.planner.get_rrtstarcv()
-        self.cv = self.rrtstarcv.getCostValley()
-        self.budget = self.cv.get_Budget()
+        self.cv = self.rrtstarcv.get_CostValley()
         self.grf = self.cv.get_grf_model()
         self.field = self.grf.field
         self.grid = self.field.get_grid()
@@ -42,7 +39,6 @@ class AgentPlot:
         self.ylim, self.xlim = self.field.get_border_limits()
 
         self.c = Config()
-        self.loc_home = self.c.get_loc_end()
         self.loc_start = self.c.get_loc_start()
 
     def plot_agent(self):
@@ -51,15 +47,8 @@ class AgentPlot:
 
         Sigma = self.grf.get_covariance_matrix()
         threshold = self.grf.get_threshold()
-        self.cnt = self.agent.get_counter()
+        self.cnt = self.agent.counter
         traj_past = np.array(self.planner.get_trajectory())
-
-        ba = self.budget.get_ellipse_a()
-        bb = self.budget.get_ellipse_b()
-        balpha = self.budget.get_ellipse_rotation_angle()
-        bloc = self.budget.get_ellipse_middle_location()
-        be = Ellipse(xy=(bloc[1], bloc[0]), width=2 * ba, height=2 * bb, angle=np.math.degrees(balpha),
-                     edgecolor='r', fc='None', lw=2)
 
         # s1: get updated waypoints
         wp_now = self.planner.get_current_waypoint()
@@ -85,7 +74,6 @@ class AgentPlot:
             ax.plot(wp_now[1], wp_now[0], 'r.', markersize=20, label="Current waypoint")
             ax.plot(wp_next[1], wp_next[0], 'b.', markersize=20, label="Next waypoint")
             ax.plot(wp_pion[1], wp_pion[0], 'g.', markersize=20, label="Pioneer waypoint")
-            ax.plot(self.loc_home[1], self.loc_home[0], 'ys', markersize=40, label="Home")
             ax.plot(self.loc_start[1], self.loc_start[0], 'rs', markersize=40, label="Deploy")
             ax.plot(traj_past[:, 1], traj_past[:, 0], 'y.-', label="Trajectory", linewidth=3, markersize=20)
             ax.set_xlabel("East [m]")
@@ -117,13 +105,8 @@ class AgentPlot:
 
         """ plot cost valley and trees. """
         ax = fig.add_subplot(gs[3])
-        if not self.budget.get_go_home_alert():
-            self.plotf_vector(self.ygrid, self.xgrid, cost_valley, title="Cost Valley",
-                              cmap=get_cmap("GnBu", 10), vmin=0, vmax=4, stepsize=.25, cbar_title="Cost")
-            ax.add_patch(be)
-        else:
-            im = ax.scatter(self.ygrid, self.xgrid, c=cost_valley, s=400, cmap=get_cmap("GnBu", 10), vmin=0, vmax=4)
-            plt.colorbar(im)
+        self.plotf_vector(self.ygrid, self.xgrid, cost_valley, title="Cost Valley",
+                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=4, stepsize=.25, cbar_title="Cost")
         plot_waypoints()
 
         ax.set_xlim([self.xlim[0], self.xlim[1]])
@@ -138,13 +121,8 @@ class AgentPlot:
 
         """ plot eibv field. """
         ax = fig.add_subplot(gs[4])
-        if not self.budget.get_go_home_alert():
-            self.plotf_vector(self.ygrid, self.xgrid, cost_eibv, title="EIBV cost field",
-                              cmap=get_cmap("GnBu", 10), vmin=-.1, vmax=1.1, stepsize=.1, cbar_title="Cost")
-            # ax.add_patch(be)
-        else:
-            im = ax.scatter(self.ygrid, self.xgrid, c=cost_eibv, s=400, cmap=get_cmap("GnBu", 10), vmin=0, vmax=1)
-            plt.colorbar(im)
+        self.plotf_vector(self.ygrid, self.xgrid, cost_eibv, title="EIBV cost field",
+                          cmap=get_cmap("GnBu", 10), vmin=-.1, vmax=1.1, stepsize=.1, cbar_title="Cost")
         ax.set_title("EIBV field")
         plot_waypoints()
         for node in tree_nodes:
@@ -157,13 +135,8 @@ class AgentPlot:
 
         """ plot ivr field. """
         ax = fig.add_subplot(gs[5])
-        if not self.budget.get_go_home_alert():
-            self.plotf_vector(self.ygrid, self.xgrid, cost_ivr, title="IVR cost field",
-                              cmap=get_cmap("GnBu", 10), vmin=-.1, vmax=1.1, stepsize=.1, cbar_title="Cost")
-            # ax.add_patch(be)
-        else:
-            im = ax.scatter(self.ygrid, self.xgrid, c=cost_ivr, s=200, cmap=get_cmap("GnBu", 10), vmin=0, vmax=1)
-            plt.colorbar(im)
+        self.plotf_vector(self.ygrid, self.xgrid, cost_ivr, title="IVR cost field",
+                          cmap=get_cmap("GnBu", 10), vmin=-.1, vmax=1.1, stepsize=.1, cbar_title="Cost")
         ax.set_title("IVR field")
         plot_waypoints()
         for node in tree_nodes:
@@ -322,9 +295,9 @@ class AgentPlot:
 
 
 #%%
-import matplotlib.pyplot as plt
-plt.figure(figsize=(30, 10))
-plt.plot([0, 0])
-
-plt.show()
-
+# import matplotlib.pyplot as plt
+# plt.figure(figsize=(30, 10))
+# plt.plot([0, 0])
+#
+# plt.show()
+#
