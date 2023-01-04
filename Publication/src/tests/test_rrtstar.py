@@ -13,9 +13,11 @@ class TestRRTStar(TestCase):
 
     def setUp(self) -> None:
         self.config = Config()
-        self.rrtstar = RRTStarCV()
-        # self.rrtstar = RRTStarCV(weight_eibv=2., weight_ivr=.0)
-        # self.rrtstar = RRTStarCV(weight_eibv=.0, weight_ivr=2.)
+        sigma = .1
+        nugget = .01
+        # self.rrtstar = RRTStarCV(sigma=sigma, nugget=nugget)
+        self.rrtstar = RRTStarCV(weight_eibv=2., weight_ivr=.0, sigma=sigma, nugget=nugget)
+        # self.rrtstar = RRTStarCV(weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.tp = TreePlotter()
         self.cv = self.rrtstar.get_CostValley()
         self.field = self.cv.get_field()

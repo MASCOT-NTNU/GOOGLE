@@ -19,9 +19,11 @@ class TestPlanner(TestCase):
 
     def setUp(self) -> None:
         loc_start = np.array([1000, -1000])
-        # self.planner = Planner(loc_start)
-        # self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0)
-        self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2.)
+        sigma = .1
+        nugget = .01
+        # self.planner = Planner(loc_start, sigma=sigma, nugget=nugget)
+        self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0, sigma=sigma, nugget=nugget)
+        # self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
         self.stepsize = self.rrtstarcv.get_stepsize()
@@ -64,7 +66,7 @@ class TestPlanner(TestCase):
         plt.plot(yn, xn, 'r.')
         plt.plot(self.plg_border[:, 1], self.plg_border[:, 0], 'r-.')
         plt.scatter(self.grid[:, 1], self.grid[:, 0], c=self.cv.get_cost_field(), s=300,
-                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=4, alpha=.1)
+                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.1)
         plt.colorbar()
         plt.show()
 
@@ -87,7 +89,7 @@ class TestPlanner(TestCase):
         plt.plot(ynn, xnn, 'b.')
         plt.plot(yn, xn, 'r.')
         plt.scatter(self.grid[:, 1], self.grid[:, 0], c=self.cv.get_cost_field(), s=300,
-                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=4, alpha=.1)
+                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.1)
         plt.colorbar()
         plt.plot(self.plg_border[:, 1], self.plg_border[:, 0], 'r-.')
         plt.show()
@@ -111,7 +113,7 @@ class TestPlanner(TestCase):
         plt.plot(ynn, xnn, 'b.')
         plt.plot(yn, xn, 'r.')
         plt.scatter(self.grid[:, 1], self.grid[:, 0], c=self.cv.get_cost_field(), s=300,
-                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=4, alpha=.1)
+                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.1)
         plt.colorbar()
         plt.plot(self.plg_border[:, 1], self.plg_border[:, 0], 'r-.')
         plt.show()

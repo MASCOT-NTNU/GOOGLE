@@ -16,8 +16,8 @@ class Agent:
     """
     Agent
     """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., random_seed: int = 1, debug=False,
-                 name: str = "Equal") -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = .1,
+                 nugget: float = .01, random_seed: int = 1, debug=False, name: str = "Equal") -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
@@ -28,19 +28,20 @@ class Agent:
         self.loc_start = self.config.get_loc_start()
 
         # s2: load CTD
-        self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed)
+        self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
 
         # s3: set up planning strategies
-        self.planner = Planner(self.loc_start, weight_eibv=weight_eibv, weight_ivr=weight_ivr)
-        # self.myopic = Myopic2D(self.loc_start, weight_eibv, weight_ivr)
+        self.planner = Planner(self.loc_start, weight_eibv=weight_eibv, weight_ivr=weight_ivr,
+                               sigma=sigma, nugget=nugget)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
         self.grf = self.cv.get_grf_model()
 
         # s4: set up visualiser
         self.debug = debug
-        figpath = os.getcwd() + "/../../../Docs/fig/Sim_2DNidelva/Simulator/RRT/" + name + "/"
-        print("Figpath: ", figpath)
+        figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects" \
+                                "/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/RRT/" + name + "/"
+        # print("figpath: ", figpath)
         checkfolder(figpath)
         self.ap = AgentPlot(self, figpath)
         self.counter = 0
@@ -101,7 +102,7 @@ class Agent:
         :param sigma_diag: n x 1 dimension
         :return:
         """
-        p = norm.cdf(threshold, mu, np.sqrt(sigma_diag))
+        p = norm.cdf(threshold, mu.flatten(), np.sqrt(sigma_diag))
         bv = p * (1 - p)
         ibv = np.sum(bv)
         return ibv

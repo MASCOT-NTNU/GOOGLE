@@ -16,8 +16,8 @@ class Agent:
     """
     Agent
     """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., random_seed: int = 1, debug=False,
-                 name: str = "Equal") -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
+                 random_seed: int = 1, debug=False, name: str = "Equal") -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
@@ -28,15 +28,17 @@ class Agent:
         self.loc_start = self.config.get_loc_start()
 
         # s2: load CTD
-        self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed)
+        self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
 
         # s3: set up planning strategies
-        self.myopic = Myopic2D(self.loc_start, weight_eibv, weight_ivr)
+        self.myopic = Myopic2D(self.loc_start, weight_eibv=weight_eibv, weight_ivr=weight_ivr,
+                               sigma=sigma, nugget=nugget)
         self.cv = self.myopic.getCostValley()
         self.grf = self.cv.get_grf_model()
 
         # s4: set up visualiser
-        figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/Myopic/" + name + "/"
+        figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects" \
+                                "/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/Myopic/" + name + "/"
         checkfolder(figpath)
         self.ap = AgentPlot(self, figpath)
         self.debug = debug
@@ -76,6 +78,7 @@ class Agent:
             self.ibv.append(ibv)
             self.vr.append(vr)
             self.rmse.append(rmse)
+            # self.bv = np.append(self.bv, bv.reshape(1, -1), axis=0)
 
             self.counter += 1
 
@@ -90,11 +93,11 @@ class Agent:
     def get_ibv(self, threshold, mu, sigma_diag) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.
         !!! Be careful with standard deviation is not variance, so it does not cause significant issues tho.
-        :param mu: n x 1 dimension
-        :param sigma_diag: n x 1 dimension
+        :param mu: (n, ) dimension
+        :param sigma_diag: (n, ) dimension
         :return:
         """
-        p = norm.cdf(threshold, mu, np.sqrt(sigma_diag))
+        p = norm.cdf(threshold, mu.flatten(), np.sqrt(sigma_diag))
         bv = p * (1 - p)
         ibv = np.sum(bv)
         return ibv

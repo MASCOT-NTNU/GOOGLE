@@ -15,7 +15,7 @@ class TestCostValley(TestCase):
 
     def setUp(self) -> None:
         self.c = Config()
-        self.cv = CostValley()
+        self.cv = CostValley(weight_eibv=1., weight_ivr=1., sigma=1., nugget=.4)
         self.grf = self.cv.get_grf_model()
         self.field = self.grf.field
         self.grid = self.field.get_grid()
@@ -51,10 +51,16 @@ class TestCostValley(TestCase):
     def test_init(self) -> None:
         self.plot_cost_valley()
 
-        self.cv = CostValley(2.0, .0)
+        self.cv = CostValley(weight_eibv=2.0, weight_ivr=.0, sigma=1., nugget=.4)
         self.plot_cost_valley()
 
-        self.cv = CostValley(.0, 2.0)
+        self.cv = CostValley(weight_eibv=.0, weight_ivr=2.0, sigma=1., nugget=.4)
+        self.plot_cost_valley()
+
+        self.cv = CostValley(weight_eibv=2.0, weight_ivr=.0, sigma=.1, nugget=.01)
+        self.plot_cost_valley()
+
+        self.cv = CostValley(weight_eibv=.0, weight_ivr=2.0, sigma=.1, nugget=.01)
         self.plot_cost_valley()
 
     def test_weights(self):

@@ -17,9 +17,10 @@ class Myopic2D:
     """
     Myopic2D planner determines the next waypoint according to minimum EIBV criterion.
     """
-    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
+    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 sigma: float = .1, nugget: float = .01) -> None:
         # s0: set up default environment
-        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr)
+        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget)
         self.__grf = self.__cost_valley.get_grf_model()
         self.__field = self.__grf.field
 

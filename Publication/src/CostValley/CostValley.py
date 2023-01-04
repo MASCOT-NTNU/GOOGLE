@@ -21,11 +21,11 @@ import time
 
 class CostValley:
     """ Cost fields construction. """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4) -> None:
         """ """
 
         """ GRF """
-        self.__grf = GRF()
+        self.__grf = GRF(sigma=sigma, nugget=nugget)
         self.__field = self.__grf.field
         self.__grid = self.__field.get_grid()
 

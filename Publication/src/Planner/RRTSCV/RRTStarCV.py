@@ -16,7 +16,7 @@ from shapely.geometry import Polygon, Point, LineString
 class RRTStarCV:
     """ RRT* CV planning strategy """
 
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = .1, nugget: float = .01) -> None:
         """
         Initialize the planner.
         """
@@ -30,7 +30,7 @@ class RRTStarCV:
         self.__N_random_locations = len(self.__random_locations)
 
         """ Cost valley """
-        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr)
+        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget)
 
         # loc
         self.__loc_start = np.array([1000, 1000])
