@@ -9,30 +9,6 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import numpy as np
 from numpy import testing
-# from matplotlib.cm import get_cmap
-from matplotlib.pyplot import get_cmap
-
-
-# def plotf_vector(x, y, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
-#                  cbar_title='test', colorbar=True, vmin=None, vmax=None, ticks=None,
-#                  stepsize=None, threshold=None, polygon_border=None,
-#                  polygon_obstacle=None, xlabel=None, ylabel=None):
-#     """
-#     Remember x, y is plotting x, y, thus x along horizonal and y along vertical.
-#     """
-#     plt.scatter(x, y, c=values, cmap=get_cmap("BrBG", 10), vmin=vmin, vmax=vmax)
-#     plt.colorbar()
-#     plt.xlim([np.amin(x), np.amax(x)])
-#     plt.ylim([np.amin(y), np.amax(y)])
-#     plt.title(title)
-#     plt.xlabel(xlabel)
-#     plt.ylabel(ylabel)
-#     if np.any(polygon_border):
-#         plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-.', lw=2)
-#         if np.any(polygon_obstacle):
-#             for i in range(len(polygon_obstacle)):
-#                 plt.plot(polygon_obstacle[i][:, 1], polygon_obstacle[i][:, 0], 'k-.', lw=2)
-#     return plt.gca()
 
 
 class TestCostValley(TestCase):
@@ -71,6 +47,15 @@ class TestCostValley(TestCase):
         plotf_vector(grid[:, 1], grid[:, 0], self.grf.get_mu(), vmin=10, vmax=35)
         plt.title("mean")
         plt.show()
+
+    def test_init(self) -> None:
+        self.plot_cost_valley()
+
+        self.cv = CostValley(2.0, .0)
+        self.plot_cost_valley()
+
+        self.cv = CostValley(.0, 2.0)
+        self.plot_cost_valley()
 
     def test_weights(self):
         loc_now = np.array([1000, -1000])

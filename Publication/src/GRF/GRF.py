@@ -20,18 +20,18 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self) -> None:
+    def __init__(self, sigma: float = 1., nugget: float = .4) -> None:
         """ Initializes the parameters in GRF kernel. """
 
         """ Empirical parameters """
         # spatial variability
-        self.__sigma = .1
+        self.__sigma = sigma
 
         # spatial correlation
         self.__lateral_range = 700  # 680 in the experiment
 
         # measurement noise
-        self.__nugget = .01
+        self.__nugget = nugget
 
         # threshold
         self.__threshold = 27

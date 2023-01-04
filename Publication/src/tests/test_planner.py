@@ -5,9 +5,6 @@ This module tests the planner object.
 """
 from unittest import TestCase
 from Planner.Planner import Planner
-from CostValley.CostValley import CostValley
-from Planner.RRTSCV.RRTStarCV import RRTStarCV
-from usr_func.set_resume_state import set_resume_state
 from Field import Field
 from Config import Config
 import numpy as np
@@ -21,16 +18,16 @@ class TestPlanner(TestCase):
     """
 
     def setUp(self) -> None:
-        set_resume_state(False)
         loc_start = np.array([1000, -1000])
-        self.planner = Planner(loc_start)
-        self.cv = CostValley()
-        self.rrtstarcv = RRTStarCV()
+        # self.planner = Planner(loc_start)
+        # self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0)
+        self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2.)
+        self.rrtstarcv = self.planner.get_rrtstarcv()
+        self.cv = self.rrtstarcv.get_CostValley()
         self.stepsize = self.rrtstarcv.get_stepsize()
-        self.cv = CostValley()
-        self.field = Field()
+        self.field = self.cv.get_field()
         self.config = Config()
-        self.grid = self.cv.get_grid()
+        self.grid = self.field.get_grid()
         self.plg_border = self.config.get_polygon_border()
         self.plg_obs = self.config.get_polygon_obstacle()
 
