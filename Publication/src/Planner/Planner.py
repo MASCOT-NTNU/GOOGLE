@@ -20,7 +20,8 @@ import numpy as np
 
 class Planner:
 
-    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
+    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 sigma: float = .1, nugget: float = .01) -> None:
         """ Initial phase
         - Update the starting location to be loc.
         - Update current waypoint to be starting location.
@@ -31,7 +32,7 @@ class Planner:
         self.__config = Config()
 
         # s1: set up path planning strategies
-        self.__rrtstarcv = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr)
+        self.__rrtstarcv = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget)
         self.__stepsize = self.__rrtstarcv.get_stepsize()
 
         # s1: setup cost valley.

@@ -2,13 +2,17 @@
 Unittest for simulator
 """
 from unittest import TestCase
-from Simulators.Simulator_RRTStar import Simulator
+from Simulators.Simulator_RRTStar import SimulatorRRTStar
 
 
 class TestSimulator(TestCase):
 
     def setUp(self) -> None:
-        self.s = Simulator(0, True)
+        seed = 0
+        debug = True
+        sigma = 1.
+        nugget = .4
+        self.s = SimulatorRRTStar(sigma=sigma, nugget=nugget, seed=seed, debug=debug)
 
     def test_agent_run(self):
         self.s.run_all(50)
@@ -18,7 +22,7 @@ class TestSimulator(TestCase):
         res_ivr = self.s.extract_data_for_agent(self.s.ag_ivr)
         res_eq = self.s.extract_data_for_agent(self.s.ag_eq)
         plt.plot(res_eibv[1], label="EIBV")
-        plt.plot(res_ivr[1], label="I VR")
+        plt.plot(res_ivr[1], label="IVR")
         plt.plot(res_eq[1], label="EQ")
         plt.legend()
         plt.show()

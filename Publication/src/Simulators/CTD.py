@@ -10,7 +10,8 @@ class CTD:
     """
     CTD module handles the simulated truth value at each specific location.
     """
-    def __init__(self, loc_start: np.ndarray = np.array([0, 0]), random_seed: int = 0):
+    def __init__(self, loc_start: np.ndarray = np.array([0, 0]), random_seed: int = 0,
+                 sigma: float = 1., nugget: float = .1):
         # np.random.seed(0)
         """
         Set up the CTD simulated truth field.
@@ -18,7 +19,7 @@ class CTD:
         """
         np.random.seed(random_seed)
 
-        self.grf = GRF()
+        self.grf = GRF(sigma=sigma, nugget=nugget)
         self.field = self.grf.field
         mu_prior = self.grf.get_mu()
         Sigma_prior = self.grf.get_covariance_matrix()

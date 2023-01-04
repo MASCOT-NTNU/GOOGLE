@@ -1,8 +1,7 @@
-# Notes for data generated during the simulation.
+# Simulation result
 
-- `CV` contains data for cost valley study
-- `RRT` contains data for rrt star simulation study. 
-
-- "EIBV.npy" saves the data for the case where EIBV has higher dominance.
-- "IVR.npy" saves the data for the case where IVR has higher dominance.
-- "EQUAL.npy" saves the data when both shares the same weights.
+Folder structure:
+- `R_000` -> replicate number
+- `R_000/sigma_10` -> sigma coef
+- `R_000/sigma_10/nugget_040` -> nugget coef
+- `R_000/sigma_10/nugget_040/SimulatorRRTStar` -> Simulator

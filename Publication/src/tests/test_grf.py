@@ -35,7 +35,8 @@ class TestGRF(TestCase):
 
     def setUp(self) -> None:
         self.c = Config()
-        self.g = GRF()
+        # self.g = GRF(sigma=.1, nugget=.01)
+        self.g = GRF(sigma=1., nugget=.4)
         self.f = self.g.field
         self.grid = self.f.get_grid()
         self.cov = self.g.get_covariance_matrix()
