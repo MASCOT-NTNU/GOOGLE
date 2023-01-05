@@ -27,8 +27,10 @@ Return values are tuple and hereby need careful check with smaller steps
 of replicates to extract the result correctly. 
 """
 Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
-sigmas = [1., .1]
-nuggets = [.4, .01]
+# sigmas = [1., .1]
+# nuggets = [.4, .01]
+sigmas = [1.5, .5]
+nuggets = [.25, .1]
 datapath = "npy/"
 
 
