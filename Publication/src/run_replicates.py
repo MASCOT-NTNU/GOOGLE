@@ -8,11 +8,14 @@ Simulator replicate study for EIBV case
 
 from Simulators.Simulator_Myopic2D import SimulatorMyopic2D
 from Simulators.Simulator_RRTStar import SimulatorRRTStar
+from Visualiser.AgentPlotMyopic import AgentPlotMyopic
+from Visualiser.AgentPlotRRTStar import AgentPlotRRTStar
 from usr_func.checkfolder import checkfolder
 from Config import Config
 from joblib import Parallel, delayed
 from time import time
 import numpy as np
+from tqdm import tqdm
 
 config = Config()
 num_replicates = config.get_num_replicates()
@@ -27,31 +30,38 @@ Return values are tuple and hereby need careful check with smaller steps
 of replicates to extract the result correctly. 
 """
 Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
-# sigmas = [1., .1]
-# nuggets = [.4, .01]
-sigmas = [1.5, .5]
-nuggets = [.25, .1]
+sigmas = [1.5, 1., .5, .1]
+nuggets = [.4, .25, .1, .01]
 datapath = "npy/"
 
 
 def run_replicates(i: int = 0):
-    print("seed: ", seeds[i])
+    # print("seed: ", seeds[i])
     folderpath = datapath + "R_{:03d}/".format(i)
     checkfolder(folderpath)
     for sigma in sigmas:
-        print("sigma: ", sigma)
+        # print("sigma: ", sigma)
         sigpath = folderpath + "sigma_{:02d}/".format(int(10 * sigma))
         checkfolder(sigpath)
         for nugget in nuggets:
-            print("nugget: ", nugget)
+            # print("nugget: ", nugget)
             nuggetpath = sigpath + "nugget_{:03d}/".format(int(100 * nugget))
             checkfolder(nuggetpath)
             for Simulator in Simulators:
-                print("simulator: ", Simulator.__name__)
+                # print("simulator: ", Simulator.__name__)
                 simpath = nuggetpath + Simulator.__name__ + "/"
                 checkfolder(simpath)
 
                 s = Simulator(sigma=sigma, nugget=nugget, seed=seeds[i], debug=False)
+                """ Save simulation figures. """
+                # if "Myopic" in Simulator.__name__:
+                #     ap = AgentPlotMyopic
+                # else:
+                #     ap = AgentPlotRRTStar
+                # app = ap(s.ag_eq, simpath)
+                # app.plot_ground_truth(title="truth", seed=seeds[i])
+                """ End of plotting. """
+
                 s.run_all(num_steps=num_steps)
                 res_eibv = s.extract_data_for_agent(s.ag_eibv)
                 res_ivr = s.extract_data_for_agent(s.ag_ivr)

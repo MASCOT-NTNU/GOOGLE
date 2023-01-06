@@ -138,7 +138,7 @@ class GRF:
         self.__eibv_field = normalize(eibv_field)
         self.__ivr_field = 1 - normalize(ivr_field)
         t2 = time.time()
-        print("Total EI field takes: ", t2 - t1, " seconds.")
+        # print("Total EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
 
     # def get_ei_at_locations(self, locs: np.ndarray) -> tuple:
