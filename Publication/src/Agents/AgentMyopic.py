@@ -4,7 +4,7 @@ Agent abstract the AUV to conduct the path planning with sense, plan, act philos
 from Planner.Myopic2D.Myopic2D import Myopic2D
 from Config import Config
 from Simulators.CTD import CTD
-from Visualiser.AgentPlotMyopic import AgentPlot
+from Visualiser.AgentPlotMyopic import AgentPlotMyopic
 from usr_func.checkfolder import checkfolder
 from scipy.stats import norm
 from sklearn.metrics import mean_squared_error
@@ -40,7 +40,7 @@ class Agent:
         figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects" \
                                 "/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/Myopic/" + name + "/"
         checkfolder(figpath)
-        self.ap = AgentPlot(self, figpath)
+        self.ap = AgentPlotMyopic(self, figpath)
         self.debug = debug
         self.counter = 0
 
@@ -59,7 +59,7 @@ class Agent:
         self.trajectory = np.empty([0, 2])
 
         for i in range(num_steps):
-            print("Step: ", i)
+            # print("Step: ", i)
             if self.debug:
                 self.ap.plot_agent()
 

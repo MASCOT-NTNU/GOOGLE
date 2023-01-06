@@ -16,7 +16,7 @@ from Field import Field
 field = Field()
 
 
-class AgentPlot:
+class AgentPlotRRTStar:
 
     agent = None
 
@@ -40,6 +40,14 @@ class AgentPlot:
 
         self.c = Config()
         self.loc_start = self.c.get_loc_start()
+
+    def plot_ground_truth(self, title: str = "Equal", seed: int = 0):
+        plt.figure(figsize=(10, 10))
+        self.plotf_vector(self.ygrid, self.xgrid, self.mu_truth, title="Ground truth field under seed {:d}".format(seed),
+                          cmap=get_cmap("BrBG", 10), vmin=15, vmax=36, cbar_title="Salinity", stepsize=1.5,
+                          threshold=self.grf.get_threshold())
+        plt.savefig(self.figpath + title + ".png")
+        plt.close("all")
 
     def plot_agent(self):
         # s0: get updated field

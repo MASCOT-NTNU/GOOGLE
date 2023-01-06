@@ -4,7 +4,7 @@ Agent abstract the AUV to conduct the path planning with sense, plan, act philos
 from Planner.Planner import Planner
 from Config import Config
 from Simulators.CTD import CTD
-from Visualiser.AgentPlotRRTStar import AgentPlot
+from Visualiser.AgentPlotRRTStar import AgentPlotRRTStar
 from usr_func.checkfolder import checkfolder
 from scipy.stats import norm
 from sklearn.metrics import mean_squared_error
@@ -43,7 +43,7 @@ class Agent:
                                 "/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/RRT/" + name + "/"
         # print("figpath: ", figpath)
         checkfolder(figpath)
-        self.ap = AgentPlot(self, figpath)
+        self.ap = AgentPlotRRTStar(self, figpath)
         self.counter = 0
 
         # s5: set up monitoring metrics
@@ -61,7 +61,7 @@ class Agent:
         self.trajectory = np.empty([0, 2])
 
         for i in range(num_steps):
-            print("Step: ", i)
+            # print("Step: ", i)
             if self.debug:
                 self.ap.plot_agent()
 
