@@ -59,7 +59,12 @@ class Agent:
         self.trajectory = np.empty([0, 2])
 
         for i in range(num_steps):
-            # print("Step: ", i)
+            # s0: update simulation data
+            ibv, vr, rmse = self.update_metrics()
+            self.ibv.append(ibv)
+            self.vr.append(vr)
+            self.rmse.append(rmse)
+
             if self.debug:
                 self.ap.plot_agent()
 
@@ -72,13 +77,6 @@ class Agent:
 
             # s3: update pioneer waypoint
             self.myopic.update_next_waypoint(ctd_data)
-
-            # s4: update simulation data
-            ibv, vr, rmse = self.update_metrics()
-            self.ibv.append(ibv)
-            self.vr.append(vr)
-            self.rmse.append(rmse)
-            # self.bv = np.append(self.bv, bv.reshape(1, -1), axis=0)
 
             self.counter += 1
 
