@@ -22,6 +22,8 @@ class GRF:
     """
     def __init__(self, sigma: float = 1., nugget: float = .4) -> None:
         """ Initializes the parameters in GRF kernel. """
+        self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
+        self.__ar1_corr = 600   # [sec], AR1 correlation time range.
 
         """ Empirical parameters """
         # spatial variability
@@ -64,6 +66,8 @@ class GRF:
 
         # s1: update prior mean
         self.__construct_prior_mean()
+        self.__mu_prior = self.__mu
+        self.__Sigma_prior = self.__Sigma
 
     def __construct_grf_field(self) -> None:
         """ Construct distance matrix and thus Covariance matrix for the kernel. """
@@ -122,6 +126,62 @@ class GRF:
         C = F @ self.__Sigma @ F.T + R
         self.__mu = self.__mu + self.__Sigma @ F.T @ np.linalg.solve(C, (salinity_measured - F @ self.__mu))
         self.__Sigma = self.__Sigma - self.__Sigma @ F.T @ np.linalg.solve(C, F @ self.__Sigma)
+
+    def assimilate_temporal_data(self, dataset: np.ndarray) -> None:
+        """
+        Assimilate temporal dataset to GRF kernel.
+        It computes the distance matrix between grf grid and dataset grid. Then the values are averged to each cell.
+        Args:
+            dataset: np.array([timestamp, x, y, sal])
+            cnt_waypoint: int
+        """
+        t_start = dataset[0, 0]
+        t_end = dataset[-1, 0]
+        t_steps = int((t_end - t_start) // self.__ar1_corr)
+        # t1 = time.time()
+        xd = dataset[:, 1].reshape(-1, 1)
+        yd = dataset[:, 2].reshape(-1, 1)
+        Fdata = np.ones([dataset.shape[0], 1])
+        # t1 = time.time()
+        dx = (xd @ self.__Fgrf - Fdata @ self.__xg.T) ** 2
+        dy = (yd @ self.__Fgrf - Fdata @ self.__yg.T) ** 2
+        dist = dx + dy
+        ind_min_distance = np.argmin(dist, axis=1)  # used only for unittest.
+        ind_assimilated = np.unique(ind_min_distance)
+        salinity_assimilated = np.zeros([len(ind_assimilated), 1])
+        for i in range(len(ind_assimilated)):
+            ind_selected = np.where(ind_min_distance == ind_assimilated[i])[0]
+            salinity_assimilated[i] = np.mean(dataset[ind_selected, -1])
+        self.__update_temporal(ind_measured=ind_assimilated, salinity_measured=salinity_assimilated, timestep=t_steps)
+        # t2 = time.time()
+        # print("Data assimilation takes: ", t2 - t1, " seconds")
+
+    def __update_temporal(self, ind_measured: np.ndarray, salinity_measured: np.ndarray, timestep=0):
+        """ Update GRF kernel with AR1 process.
+        timestep here can only be 1, no larger than 1, if it is larger than 1, then the data assimilation needs to be
+        properly adjusted to make sure that they correspond with each other.
+        """
+        #s0, create sampling index matrix
+        msamples = salinity_measured.shape[0]
+        F = np.zeros([msamples, self.Ngrid])
+        for i in range(msamples):
+            F[i, ind_measured[i]] = True
+        R = np.eye(msamples) * self.__tau ** 2
+
+        t1 = time.time()
+        # propagate
+        mt0 = self.__mu_prior + self.__ar1_coef * (self.__mu - self.__mu_prior)
+        St0 = self.__ar1_coef ** 2 * self.__Sigma + (1 - self.__ar1_coef ** 2) * self.__Sigma_prior
+        mts = mt0
+        Sts = St0
+        for s in range(timestep):
+            mts = self.__mu_prior + self.__ar1_coef * (mts - self.__mu_prior)
+            Sts = self.__ar1_coef**2 * Sts + (1 - self.__ar1_coef**2) * self.__Sigma_prior
+
+        self.__mu = mts + Sts @ F.T @ np.linalg.solve(F @ Sts @ F.T + R, salinity_measured - F @ mts)
+        self.__Sigma = Sts - Sts @ F.T @ np.linalg.solve(F @ Sts @ F.T + R, F @ Sts)
+        t2 = time.time()
+        # print("GRF-AR1 model updates takes: ", t2 - t1)
 
     def get_ei_field(self) -> tuple:
         t1 = time.time()

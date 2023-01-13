@@ -36,19 +36,19 @@ datapath = "npy/"
 
 
 def run_replicates(i: int = 0):
-    # print("seed: ", seeds[i])
+    print("seed: ", seeds[i])
     folderpath = datapath + "R_{:03d}/".format(i)
     checkfolder(folderpath)
     for sigma in sigmas:
-        # print("sigma: ", sigma)
+        print("sigma: ", sigma)
         sigpath = folderpath + "sigma_{:02d}/".format(int(10 * sigma))
         checkfolder(sigpath)
         for nugget in nuggets:
-            # print("nugget: ", nugget)
+            print("nugget: ", nugget)
             nuggetpath = sigpath + "nugget_{:03d}/".format(int(100 * nugget))
             checkfolder(nuggetpath)
             for Simulator in Simulators:
-                # print("simulator: ", Simulator.__name__)
+                print("simulator: ", Simulator.__name__)
                 simpath = nuggetpath + Simulator.__name__ + "/"
                 checkfolder(simpath)
 
@@ -80,6 +80,8 @@ def run_replicates(i: int = 0):
 
 
 if __name__ == "__main__":
+    t1 = time()
     res = Parallel(n_jobs=num_cores)(delayed(run_replicates)(i=rep) for rep in range(num_replicates))
-
+    t2 = time()
+    print("Replicate study takes ", t2 - t1)
 

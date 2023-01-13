@@ -61,6 +61,7 @@ class Agent:
         self.trajectory = np.empty([0, 2])
 
         for i in range(num_steps):
+            print("Step: ", i)
             # s0: update simulation data
             ibv, vr, rmse = self.update_metrics()
             self.ibv.append(ibv)

@@ -132,13 +132,15 @@ def make_plots_total(sigma, nugget):
 
             ax = fig.add_subplot(gs[0, col+2])
             plot_simulation_result_comparison_subplot(ibv, i, "IBV", lim_ibv)
-            ax.set_title("Simulator: " + name + " IBV: ", np.mean(ibv[]))
+            ax.set_title("Simulator: " + name + " IBV: " + str(np.mean(ibv[:, :, 0], axis=0)))
 
             ax = fig.add_subplot(gs[1, col+2])
             plot_simulation_result_comparison_subplot(vr, i, "VR", lim_vr)
+            ax.set_title("VR: " + str(np.mean(vr[:, :, 0], axis=0)))
 
             ax = fig.add_subplot(gs[2, col+2])
             plot_simulation_result_comparison_subplot(rmse, i, "RMSE", lim_rmse)
+            ax.set_title("RMSE: " + str(np.mean(rmse[:, :, 0], axis=0)))
 
         plot_simulator(traj=traj_myopic, ibv=ibv_myopic, vr=vr_myopic, rmse=rmse_myopic, col=0, name="Myopic2D")
         plot_simulator(traj=traj_rrt, ibv=ibv_rrt, vr=vr_rrt, rmse=rmse_rrt, col=1, name="RRTStar")
@@ -161,8 +163,8 @@ def make_plots_total(sigma, nugget):
     lim_rmse = [rmse_min, rmse_max]
 
     for i in tqdm(range(num_steps)):
-        if i >= 5:
-            break
+        # if i >= 5:
+        #     break
         plot_comparsion_between_myopic_and_rrt(traj_myopic=traj_myopic, traj_rrt=traj_rrt, ibv_myopic=ibv_myopic,
                                                ibv_rrt=ibv_rrt, vr_myopic=vr_myopic, vr_rrt=vr_rrt,
                                                rmse_myopic=rmse_myopic, rmse_rrt=rmse_rrt,
@@ -170,7 +172,7 @@ def make_plots_total(sigma, nugget):
                                                title="sigma: {:.1f}, nugget: {:.2f}".format(sigma, nugget),
                                                filename=savefig + "P_{:03d}.png".format(i))
 
-make_plots_total(sigma=.1, nugget=.4)
+# make_plots_total(sigma=.1, nugget=.4)
 
-# Parallel(n_jobs=10)(
-#     delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
+Parallel(n_jobs=10)(
+    delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
