@@ -1,5 +1,5 @@
 """
-Generate simulation result images from simualted data.
+EDA in Simulators mainly handles the visualisation for
 """
 
 from Config import Config
@@ -94,7 +94,7 @@ def make_plots_total(sigma, nugget):
                 ax.set_title(title)
                 ax.set_aspect("equal")
 
-        def plot_simulation_result_comparison_subplot(data, steps, ylabel="IBV", lim=None):
+        def plot_simulation_result_comparison_subplot(data, steps, ylabel="IBV", lim=None, std_err: bool = False):
             """
             data: contains result for each case, should be N_replicates x 3 x N_steps.
             0: refers to EIBV dominant case
@@ -102,16 +102,20 @@ def make_plots_total(sigma, nugget):
             2: refers to Equal weight case
             """
             N = data.shape[0]
+            if std_err:
+                divider = 1.645 / np.sqrt(N)
+            else:
+                divider = 1
             ax = plt.gca()
             hx = np.arange(steps)
             ax.errorbar(hx, y=np.mean(data[:, 0, :steps], axis=0),
-                        yerr=np.std(data[:, 0, :steps], axis=0) / np.sqrt(N) * 1.645, fmt="-o", capsize=5,
+                        yerr=np.std(data[:, 0, :steps], axis=0) * divider, fmt="-o", capsize=5,
                         label="EIBV dominant")
             ax.errorbar(hx, y=np.mean(data[:, 1, :steps], axis=0),
-                        yerr=np.std(data[:, 1, :steps], axis=0) / np.sqrt(N) * 1.645, fmt="-o", capsize=5,
+                        yerr=np.std(data[:, 1, :steps], axis=0) * divider, fmt="-o", capsize=5,
                         label="IVR dominant")
             ax.errorbar(hx, y=np.mean(data[:, 2, :steps], axis=0),
-                        yerr=np.std(data[:, 2, :steps], axis=0) / np.sqrt(N) * 1.645, fmt="-o", capsize=5,
+                        yerr=np.std(data[:, 2, :steps], axis=0) * divider, fmt="-o", capsize=5,
                         label="Equal weights")
             plt.legend(loc="lower left")
             plt.ylim(lim)
@@ -139,7 +143,7 @@ def make_plots_total(sigma, nugget):
             ax.set_title("VR: " + str(np.mean(vr[:, :, 0], axis=0)))
 
             ax = fig.add_subplot(gs[2, col+2])
-            plot_simulation_result_comparison_subplot(rmse, i, "RMSE", lim_rmse)
+            plot_simulation_result_comparison_subplot(rmse, i, "RMSE", lim_rmse, std_err=True)
             ax.set_title("RMSE: " + str(np.mean(rmse[:, :, 0], axis=0)))
 
         plot_simulator(traj=traj_myopic, ibv=ibv_myopic, vr=vr_myopic, rmse=rmse_myopic, col=0, name="Myopic2D")
@@ -154,17 +158,31 @@ def make_plots_total(sigma, nugget):
     string_rrt = string + srrt + "/"
     traj_rrt, ibv_rrt, vr_rrt, rmse_rrt = load_data4simulator(string_rrt)
 
-    ibv_min, vr_min, rmse_min = map(np.amin, [np.mean(ibv_rrt, axis=0), np.mean(vr_rrt, axis=0),
-                                              np.mean(rmse_rrt, axis=0)])
-    ibv_max, vr_max, rmse_max = map(np.amax, [np.mean(ibv_rrt, axis=0), np.mean(vr_rrt, axis=0),
-                                              np.mean(rmse_rrt, axis=0)])
-    lim_ibv = [ibv_min, ibv_max]
-    lim_vr = [vr_min, vr_max]
-    lim_rmse = [rmse_min, rmse_max]
+    def get_limits(value_rrt, value_myopic, std_err: bool = False) -> list:
+        vmean_rrt = np.mean(value_rrt, axis=0)
+        if std_err:
+            vstd_rrt = np.std(value_rrt, axis=0) / np.sqrt(value_rrt.shape[0]) * 1.645
+        else:
+            vstd_rrt = np.std(value_rrt, axis=0)
+        vmin_rrt = np.amin(vmean_rrt - vstd_rrt)
+        vmax_rrt = np.amax(vmean_rrt + vstd_rrt)
+
+        vmean_myopic = np.mean(value_myopic, axis=0)
+        if std_err:
+            vstd_myopic = np.std(value_myopic, axis=0) / np.sqrt(value_myopic.shape[0]) * 1.645
+        else:
+            vstd_myopic = np.std(value_myopic, axis=0)
+        vmin_myopic = np.amin(vmean_myopic - vstd_myopic)
+        vmax_myopic = np.amax(vmean_myopic + vstd_myopic)
+        return [min(vmin_rrt, vmin_myopic), max(vmax_rrt, vmax_myopic)]
+
+    lim_ibv = get_limits(ibv_rrt, ibv_myopic)
+    lim_vr = get_limits(vr_rrt, vr_myopic)
+    lim_rmse = get_limits(rmse_rrt, rmse_myopic, std_err=True)
 
     for i in tqdm(range(num_steps)):
-        # if i >= 5:
-        #     break
+        if i >= 5:
+            break
         plot_comparsion_between_myopic_and_rrt(traj_myopic=traj_myopic, traj_rrt=traj_rrt, ibv_myopic=ibv_myopic,
                                                ibv_rrt=ibv_rrt, vr_myopic=vr_myopic, vr_rrt=vr_rrt,
                                                rmse_myopic=rmse_myopic, rmse_rrt=rmse_rrt,
@@ -172,7 +190,7 @@ def make_plots_total(sigma, nugget):
                                                title="sigma: {:.1f}, nugget: {:.2f}".format(sigma, nugget),
                                                filename=savefig + "P_{:03d}.png".format(i))
 
-# make_plots_total(sigma=.1, nugget=.4)
+make_plots_total(sigma=.1, nugget=.4)
 
-Parallel(n_jobs=10)(
-    delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
+# Parallel(n_jobs=10)(
+#     delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
