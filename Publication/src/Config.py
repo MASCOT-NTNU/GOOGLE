@@ -44,8 +44,8 @@ class Config:
 
         """ Default simulation parameter seteup. """
         self.__num_steps = 100  # number of steps.
-        self.__num_replicates = 100  # number of replicates
-        self.__num_cores = 30  # number of cores to use
+        self.__num_replicates = 1  # number of replicates
+        self.__num_cores = 1  # number of cores to use
 
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:
