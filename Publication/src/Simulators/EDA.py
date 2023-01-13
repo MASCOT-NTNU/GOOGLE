@@ -181,8 +181,8 @@ def make_plots_total(sigma, nugget):
     lim_rmse = get_limits(rmse_rrt, rmse_myopic, std_err=True)
 
     for i in tqdm(range(num_steps)):
-        if i >= 5:
-            break
+        # if i >= 5:
+        #     break
         plot_comparsion_between_myopic_and_rrt(traj_myopic=traj_myopic, traj_rrt=traj_rrt, ibv_myopic=ibv_myopic,
                                                ibv_rrt=ibv_rrt, vr_myopic=vr_myopic, vr_rrt=vr_rrt,
                                                rmse_myopic=rmse_myopic, rmse_rrt=rmse_rrt,
