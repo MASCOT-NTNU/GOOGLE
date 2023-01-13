@@ -190,7 +190,7 @@ def make_plots_total(sigma, nugget):
                                                title="sigma: {:.1f}, nugget: {:.2f}".format(sigma, nugget),
                                                filename=savefig + "P_{:03d}.png".format(i))
 
-make_plots_total(sigma=.1, nugget=.4)
+# make_plots_total(sigma=.1, nugget=.4)
 
-# Parallel(n_jobs=10)(
-#     delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
+Parallel(n_jobs=16)(
+    delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
