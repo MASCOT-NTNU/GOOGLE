@@ -192,5 +192,24 @@ def make_plots_total(sigma, nugget):
 
 # make_plots_total(sigma=.1, nugget=.4)
 
-Parallel(n_jobs=16)(
-    delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
+# Parallel(n_jobs=16)(
+#     delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)
+
+
+""" Video generation. """
+def make_animation():
+    import os
+    oldpath = os.getcwd()
+    figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/"
+
+    for sigma in sigmas:
+        for nugget in nuggets:
+            string_fig = "/sigma_{:02d}/".format(int(10 * sigma)) + "nugget_{:03d}/".format(int(100 * nugget))
+            # print(os.listdir(figpath + string_fig))
+            os.chdir(figpath + string_fig)
+            # os.system("rm -rf result.mp4")
+            # print(sigma, nugget)
+            os.system("ffmpeg -r 15 -i P_%03d.png -vcodec libx264 -crf 20 -pix_fmt yuv420p result.mp4")
+
+    os.chdir(oldpath)
+

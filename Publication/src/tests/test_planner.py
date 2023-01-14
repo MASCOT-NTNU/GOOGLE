@@ -22,7 +22,7 @@ class TestPlanner(TestCase):
         sigma = .1
         nugget = .01
         # self.planner = Planner(loc_start, sigma=sigma, nugget=nugget)
-        self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0, sigma=sigma, nugget=nugget)
+        self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0, sigma=sigma, nugget=nugget, budget_mode=True)
         # self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
@@ -118,3 +118,19 @@ class TestPlanner(TestCase):
         plt.plot(self.plg_border[:, 1], self.plg_border[:, 0], 'r-.')
         plt.show()
 
+        # c3, one more step
+        ctd_data = np.array([[2800, -2000, 0, 25],
+                             [3000, -800, 0, 30],
+                             [3300, -900, 0, 28]])
+
+        self.planner.update_pioneer_waypoint(ctd_data)
+        xp, yp = self.planner.get_pioneer_waypoint()
+
+        plt.plot(yp, xp, 'g.')
+        plt.plot(ynn, xnn, 'b.')
+        plt.plot(yn, xn, 'r.')
+        plt.scatter(self.grid[:, 1], self.grid[:, 0], c=self.cv.get_cost_field(), s=300,
+                    cmap=get_cmap("BrBG", 10), vmin=0, vmax=2, alpha=.1)
+        plt.colorbar()
+        plt.plot(self.plg_border[:, 1], self.plg_border[:, 0], 'r-.')
+        plt.show()

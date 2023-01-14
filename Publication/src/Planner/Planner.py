@@ -15,28 +15,33 @@ Args:
 """
 from Config import Config
 from Planner.RRTSCV.RRTStarCV import RRTStarCV
+from Planner.StraightLinePathPlanner import StraightLinePathPlanner
 import numpy as np
 
 
 class Planner:
 
     def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.,
-                 sigma: float = .1, nugget: float = .01) -> None:
+                 sigma: float = .1, nugget: float = .01, budget_mode: bool = False) -> None:
         """ Initial phase
         - Update the starting location to be loc.
         - Update current waypoint to be starting location.
         - Calculate two steps ahead in the pioneer planning.
         """
+        self.__budget_mode = budget_mode
 
         # s0: load configuration
         self.__config = Config()
 
         # s1: set up path planning strategies
-        self.__rrtstarcv = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget)
+        self.__rrtstarcv = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
+                                     budget_mode=budget_mode)
         self.__stepsize = self.__rrtstarcv.get_stepsize()
+        self.__slpp = StraightLinePathPlanner()
 
         # s1: setup cost valley.
         self.__cv = self.__rrtstarcv.get_CostValley()
+        self.__Budget = self.__cv.get_Budget()
         self.__wp_min_cv = self.__cv.get_minimum_cost_location()
 
         # s2: set up data assimilation kernel
@@ -45,6 +50,7 @@ class Planner:
 
         # s3: update the current waypoint location and append to trajectory and then get the minimum cost location.
         self.__wp_now = loc_start
+        self.__wp_end = self.__config.get_loc_end()
 
         # s4: compute angle between the starting location to the minimum cost location.
         angle = np.math.atan2(self.__wp_min_cv[0] - self.__wp_now[0],
@@ -80,13 +86,19 @@ class Planner:
         self.__grf.assimilate_data(ctd_data)
 
         # s2: update cost valley
-        self.__cv.update_cost_valley()
+        self.__cv.update_cost_valley(self.__wp_next)
 
         # s3: get minimum cost location.
         self.__wp_min_cv = self.__cv.get_minimum_cost_location()
 
         # s4: plan one step based on cost valley and rrtstar
-        self.__wp_pion = self.__rrtstarcv.get_next_waypoint(self.__wp_next, self.__wp_min_cv)
+        if self.__budget_mode:
+            if not self.__Budget.get_go_home_alert():
+                self.__wp_pion = self.__rrtstarcv.get_next_waypoint(self.__wp_next, self.__wp_min_cv)
+            else:
+                self.__wp_pion = self.__slpp.get_waypoint_from_straight_line(self.__wp_next, self.__wp_end)
+        else:
+            self.__wp_pion = self.__rrtstarcv.get_next_waypoint(self.__wp_next, self.__wp_min_cv)
 
     def get_pioneer_waypoint(self) -> np.ndarray:
         return self.__wp_pion

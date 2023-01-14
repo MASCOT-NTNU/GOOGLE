@@ -13,7 +13,7 @@ component might lead to different patterns of the final behaviour.
 It is flexible to add or remove elements from its construction. One can add their own component
 to make the system adaptive to their specific need and application.
 """
-
+from CostValley.Budget import Budget
 from GRF.GRF import GRF
 import numpy as np
 import time
@@ -21,13 +21,15 @@ import time
 
 class CostValley:
     """ Cost fields construction. """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
+                 budget_mode: bool = False) -> None:
         """ """
 
         """ GRF """
         self.__grf = GRF(sigma=sigma, nugget=nugget)
         self.__field = self.__grf.field
         self.__grid = self.__field.get_grid()
+        self.__budget_mode = budget_mode
 
         """ Weights """
         self.__weight_eibv = weight_eibv
@@ -35,21 +37,28 @@ class CostValley:
 
         """ Cost field """
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field()
-        self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
 
-    def update_cost_valley(self) -> None:
+        if self.__budget_mode:
+            self.__Budget = Budget(self.__grid)
+            xnow, ynow = self.__Budget.get_loc_now()
+            self.__budget_field = self.__Budget.get_budget_field(xnow, ynow)
+            self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr +
+                                 self.__budget_field)
+        else:
+            self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
+
+    def update_cost_valley(self, loc_now: np.ndarray) -> None:
         # t1 = time.time()
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field()
-        self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
+        if self.__budget_mode:
+            xnow, ynow = loc_now
+            self.__budget_field = self.__Budget.get_budget_field(xnow, ynow)
+            self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr +
+                                 self.__budget_field)
+        else:
+            self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
         # t2 = time.time()
         # print("Update cost valley takes: ", t2 - t1)
-
-    # def update_cost_valley_for_locations(self, locs: np.ndarray) -> None:
-    #     # t1 = time.time()
-    #     self.__eibv_field, self.__ivr_field = self.__grf.get_ei_at_locations(locs)
-    #     self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
-    #     # t2 = time.time()
-    #     # print("Update cost valley takes: ", t2 - t1)
 
     def get_cost_field(self) -> np.ndarray:
         return self.__cost_field
@@ -59,6 +68,12 @@ class CostValley:
 
     def get_ivr_field(self) -> np.ndarray:
         return self.__ivr_field
+
+    def get_budget_field(self) -> np.ndarray:
+        return self.__budget_field
+
+    def get_Budget(self) -> 'Budget':
+        return self.__Budget
 
     def get_grf_model(self) -> 'GRF':
         return self.__grf

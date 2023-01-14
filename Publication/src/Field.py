@@ -16,10 +16,10 @@ class Field:
     """
     Field handles everything with regarding to the field element.
     """
-    def __init__(self):
+    def __init__(self, neighbour_distance: float = 120):
         # config element
         self.__config = Config()
-        self.__neighbour_distance = 120  # metres between neighbouring locations.
+        self.__neighbour_distance = neighbour_distance  # metres between neighbouring locations.
 
         # border element
         self.__polygon_border = self.__config.get_polygon_border()
