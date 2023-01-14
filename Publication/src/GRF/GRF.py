@@ -36,7 +36,7 @@ class GRF:
         self.__nugget = nugget
 
         # threshold
-        self.__threshold = 27
+        self.__threshold = 26.8
 
         # matern coefficients
         self.__eta = 4.5 / self.__lateral_range  # decay factor
@@ -127,13 +127,15 @@ class GRF:
         self.__mu = self.__mu + self.__Sigma @ F.T @ np.linalg.solve(C, (salinity_measured - F @ self.__mu))
         self.__Sigma = self.__Sigma - self.__Sigma @ F.T @ np.linalg.solve(C, F @ self.__Sigma)
 
-    def assimilate_temporal_data(self, dataset: np.ndarray) -> None:
+    def assimilate_temporal_data(self, dataset: np.ndarray) -> tuple:
         """
         Assimilate temporal dataset to GRF kernel.
         It computes the distance matrix between grf grid and dataset grid. Then the values are averged to each cell.
         Args:
             dataset: np.array([timestamp, x, y, sal])
             cnt_waypoint: int
+        Return:
+            (ind, salinity) for visualising eda plots.
         """
         t_start = dataset[0, 0]
         t_end = dataset[-1, 0]
@@ -155,6 +157,8 @@ class GRF:
         self.__update_temporal(ind_measured=ind_assimilated, salinity_measured=salinity_assimilated, timestep=t_steps)
         # t2 = time.time()
         # print("Data assimilation takes: ", t2 - t1, " seconds")
+        """ Just for debugging. """
+        return ind_assimilated, salinity_assimilated
 
     def __update_temporal(self, ind_measured: np.ndarray, salinity_measured: np.ndarray, timestep=0):
         """ Update GRF kernel with AR1 process.

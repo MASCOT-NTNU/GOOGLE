@@ -17,12 +17,14 @@ class Agent:
     Agent
     """
     def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = .1,
-                 nugget: float = .01, random_seed: int = 1, debug=False, name: str = "Equal") -> None:
+                 nugget: float = .01, random_seed: int = 1, debug=False, name: str = "Equal",
+                 budget_mode: bool = False) -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
         # s0: load parameters
         self.config = Config()
+        self.__budget_mode = budget_mode
 
         # s1: set the starting location.
         self.loc_start = self.config.get_loc_start()
@@ -32,7 +34,7 @@ class Agent:
 
         # s3: set up planning strategies
         self.planner = Planner(self.loc_start, weight_eibv=weight_eibv, weight_ivr=weight_ivr,
-                               sigma=sigma, nugget=nugget)
+                               sigma=sigma, nugget=nugget, budget_mode=budget_mode)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
         self.grf = self.cv.get_grf_model()

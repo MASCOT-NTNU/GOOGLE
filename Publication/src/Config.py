@@ -22,13 +22,16 @@ class Config:
         """ Set up WGS polygons and starting and end locations. """
         self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
-        self.__wgs_loc_start = np.array([63.44038447, 10.35675578])  # close to TBS.
+        self.__wgs_loc_start = np.array([63.456232, 10.435198])  # loc used in experiment.
+        # self.__wgs_loc_start = np.array([63.44038447, 10.35675578])  # close to TBS.
         # self.__wgs_loc_start = np.array([63.438611, 10.374487])  # lower west.
         # self.__wgs_loc_start = np.array([63.439921, 10.389458])  # lower middle.
         # self.__wgs_loc_start = np.array([63.44912, 10.35067])  # upper west.
         # self.__wgs_loc_start = np.array([63.46236, 10.41938])  # middle east.
         # self.__wgs_loc_start = np.array([63.46674, 10.39385])  # upper middle above munkholm.
         # self.__wgs_loc_start = np.array([63.439385, 10.356280])  # far west close to margin of boundary.
+
+        self.__wgs_loc_end = np.array([63.4425493, 10.3572617])
 
         """ Convert them to cartesian polygons and starting and end locations. """
         self.__polygon_border = self.wgs2xy(self.__wgs_polygon_border)
@@ -41,6 +44,8 @@ class Config:
 
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
+        x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
+        self.__loc_end = np.array([x, y])
 
         """ Default simulation parameter seteup. """
         self.__num_steps = 100  # number of steps.
@@ -85,6 +90,12 @@ class Config:
         x, y = WGS.latlon2xy(self.__wgs_loc_start[0], self.__wgs_loc_start[1])
         self.__loc_start = np.array([x, y])
 
+    def set_loc_end(self, loc: np.ndarray) -> None:
+        """ Set the starting location with (lat,lon). """
+        self.__wgs_loc_end = loc
+        x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
+        self.__loc_end = np.array([x, y])
+
     def set_num_steps(self, value: int) -> None:
         """ Set the number of steps in the simulation to be an integer value. """
         self.__num_steps = value
@@ -125,6 +136,10 @@ class Config:
         """ Return starting location in (x, y). """
         return self.__loc_start
 
+    def get_loc_end(self) -> np.ndarray:
+        """ Return starting location in (x, y). """
+        return self.__loc_end
+
     def get_num_steps(self) -> int:
         """ Return the number of steps in the simulation study. """
         return self.__num_steps
@@ -148,6 +163,10 @@ class Config:
     def get_wgs_loc_start(self) -> np.ndarray:
         """ Return starting location in (lat, lon). """
         return self.__wgs_loc_start
+
+    def get_wgs_loc_end(self) -> np.ndarray:
+        """ Return starting location in (lat, lon). """
+        return self.__wgs_loc_end
 
 
 if __name__ == "__main__":
