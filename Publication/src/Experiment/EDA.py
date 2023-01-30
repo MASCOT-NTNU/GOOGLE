@@ -6,6 +6,10 @@ from Field import Field
 from GRF.GRF import GRF
 from WGS import WGS
 from Config import Config
+from Visualiser.ValleyPlotter import ValleyPlotter
+from Planner.RRTSCV.RRTStarCV import RRTStarCV
+from Visualiser.TreePlotter import TreePlotter
+from CostValley.Budget import Budget
 from usr_func.checkfolder import checkfolder
 from usr_func.interpolate_2d import interpolate_2d
 from scipy.stats import norm
@@ -49,7 +53,6 @@ class EDA:
         checkfolder(self.figpath)
         # print(os.listdir(self.figpath))
 
-
     def refine_grid(self, resolution: float = 32.) -> None:
         """ Refind the grid with given resolution. """
         field = Field(neighbour_distance=resolution)
@@ -67,6 +70,7 @@ class EDA:
         # return ind_refined
 
     def save_prior(self) -> None:
+        """ Save prior on a refined grid. """
         threshold = self.grf.get_threshold()
         field = Field(neighbour_distance=32)
         grid = field.get_grid()
@@ -82,115 +86,61 @@ class EDA:
         dd = np.stack((lat, lon, v_mu, v_std, v_ep), axis=1)  # xp, yp refers to xplot, yplot, which are not grid
         ddf = pd.DataFrame(dd, columns=['lat', 'lon', 'mu', 'std', 'ep'])
         ddf.to_csv(filepath + "prior.csv", index=False)
-        pass
 
-    def get_costvalley4gis(self) -> None:
+    def get_trees_on_cost_valley(self) -> None:
+        """
+        Plot rrt* trees on the 3D cost valley with different weights.
+        """
+        sigma = .3
+        nugget = .01
+        self.rrtstar = RRTStarCV(weight_eibv=.5, weight_ivr=.5, sigma=sigma, nugget=nugget, budget_mode=True)
+        self.tp = TreePlotter()
+        self.cv = self.rrtstar.get_CostValley()
+        costvalley = self.cv.get_cost_field()
+        vp = ValleyPlotter(self.grid)
+
+        loc_now = np.array([3000, 1000])
+        self.cv.update_cost_valley(loc_now=loc_now)
+        loc_end = self.cv.get_minimum_cost_location()
+        wp = self.rrtstar.get_next_waypoint(loc_now, loc_end)
+        nodes = self.rrtstar.get_tree_nodes()
+        traj = self.rrtstar.get_trajectory()
+        vp.plot_trees_on_3d_valley(costvalley, nodes=nodes, cv=self.cv, traj=traj, wp_now=loc_now, wp_next=loc_end,
+                                   filename=self.figpath + "rrt_cv.html", title="RRTStar and Cost valley illustration")
+
+    def get_3d_cost_valley(self) -> None:
         """
         To plot cost valley in 3d, it requires a different discretization. Thus a different way of producing grid needs
         to be used.
         """
+        # s0, create a small demonstration GRF field.
         grf = GRF(sigma=.3, nugget=.1)
+        vp = ValleyPlotter(self.grid)
+
+        # s1, get the ei field (eibv, ivr)
         eibv, ivr = grf.get_ei_field()
+        vp.plot_3d_valley(eibv, filename=self.figpath + "eibv.html", title="Cost valley illustration, EIBV component",
+                          vmin=.0)
+        vp.plot_3d_valley(ivr, filename=self.figpath + "eibv.html", title="Cost valley illustration, IVR component")
 
-        # s0, refine the original grid.
-        field = Field(neighbour_distance=32)
-        grid = field.get_grid()
-        v_eibv = griddata(self.grid, eibv, (grid[:, 0], grid[:, 1]), method="cubic")
-        v_ivr = griddata(self.grid, ivr, (grid[:, 0], grid[:, 1]), method="cubic")
+        # s2, check budget
 
-        # s1, add a larger rectangular grid.
-        # xp, yp, vp = interpolate_2d(grid[:, 1], grid[:, 0], 100, 100, v_eibv)
-        x = grid[:, 1]
-        y = grid[:, 0]
-        xmin, ymin = map(np.amin, [x, y])
-        xmax, ymax = map(np.amax, [x, y])
-        xv = np.linspace(xmin, xmax, 100)
-        yv = np.linspace(ymin, ymax, 100)
-        grid_x, grid_y = np.meshgrid(xv, yv)
-        grid_value = griddata((x, y), v_eibv, (grid_x, grid_y), method="linear")
+        # self.b = Budget(self.grid)
+        # loc = np.array([3000, 1000])
+        # bf = self.b.get_budget_field(loc[0], loc[1])
+        # # vp.plot_3d_valley(bf, filename=self.figpath + "budget.html", vmin=-.1, vmax=6.)
+        # loc = np.array([2000, 0])
+        # bf = self.b.get_budget_field(loc[0], loc[1])
+        # vp.plot_3d_valley(bf, filename=self.figpath + "budget.html", vmin=-.1, vmax=6.)
 
-
-        # plt.scatter(xp, yp, c=vp, cmap=get_cmap("RdBu", 10), vmin=0, vmax=1)
-        # plt.colorbar()
-        # plt.show()
-
-        # s2, mask out values.
-
-
-        # s3, plot in 3d.
-        fig = make_subplots(rows=1, cols=1, specs = [[{'type': 'scene'}]])
-
-        # scatter plot to check everything is working fine or not
-        # fig.add_trace(go.Scatter3d(
-        #     x = grid_x.flatten(),
-        #     y = grid_y.flatten(),
-        #     z = np.zeros_like(grid_x.flatten()),
-        #     mode="markers",
-        #     marker=dict(
-        #         size=10,
-        #         # color='black',
-        #         color=grid_value.flatten(),
-        #     )),
-        #     row=1, col=1
-        # )
-
-        # surface plot
-        fig.add_trace(go.Surface(
-            x = xv,
-            y = yv,
-            z = grid_value,
-            cmin=.0,
-            cmax=1.,
-            coloraxis="coloraxis",
-            contours={
-                # "x": {"show": True, "start": 1.5, "end": 2, "size": 0.04, "color": "white"},
-                # "z": {"show": True, "start": 0.1, "end": 0.9, "size": 0.1}
-            },
-            # contours_z=dict(show=True, usecolormap=True,
-            #                 highlightcolor="limegreen", project_z=True)
-            # caps=dict(x_show=False, y_show=False, z_show=False),
-            # colorscale="RdBu",
-        ),
-            row=1, col=1
-        )
-
-
-        fig.update_coloraxes(colorscale="RdBu", colorbar=dict(lenmode='fraction', len=.5, thickness=20,
-                                                              tickfont=dict(size=18, family="Times New Roman"),
-                                                              title="Cost",
-                                                              titlefont=dict(size=18, family="Times New Roman")),
-                             colorbar_x=.95)
-        camera = dict(
-            up=dict(x=0, y=0, z=1),
-            center=dict(x=0, y=0, z=0),
-            eye=dict(x=-1.25, y=0, z=.5)
-        )
-        fig.update_layout(
-            title={
-                'text': "Cost Valley Illustration",
-                'y': 0.9,
-                'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font': dict(size=30, family="Times New Roman"),
-            },
-            scene=dict(
-                # xaxis=dict(range=[np.amin(points_int[:, 0]), np.amax(points_int[:, 0])]),
-                # yaxis=dict(range=[np.amin(points_int[:, 1]), np.amax(points_int[:, 1])]),
-                zaxis=dict(nticks=4, range=[0, 1.], ),
-                xaxis_tickfont=dict(size=14, family="Times New Roman"),
-                yaxis_tickfont=dict(size=14, family="Times New Roman"),
-                zaxis_tickfont=dict(size=14, family="Times New Roman"),
-                xaxis_title=dict(text="Y", font=dict(size=18, family="Times New Roman")),
-                yaxis_title=dict(text="X", font=dict(size=18, family="Times New Roman")),
-                zaxis_title=dict(text="Z", font=dict(size=18, family="Times New Roman")),
-            ),
-            scene_aspectmode='manual',
-            scene_aspectratio=dict(x=1, y=1, z=.25),
-            scene_camera=camera,
-        )
-
-        plotly.offline.plot(fig, filename="/Users/yaolin/Downloads/fig/eibv.html", auto_open=True)
+        cv = .5 * eibv + .5 * ivr
+        vp.plot_3d_valley(cv, filename=self.figpath + "cv.html", title="Cost valley illustration, total")
+        # loc = np.array([2000, -1000])
+        # bf = self.b.get_budget_field(loc[0], loc[1])
+        # vp.plot_3d_valley(bf, filename=self.figpath + "budget.html")
+        # loc = np.array([2500, -1500])
+        # bf = self.b.get_budget_field(loc[0], loc[1])
+        # vp.plot_3d_valley(bf, filename=self.figpath + "budget.html")
 
         # plt.scatter(grid[:, 1], grid[:, 0], c=v_eibv, cmap=get_cmap("RdBu", 10), vmin=0, vmax=1);
         # plt.colorbar();
@@ -264,6 +214,26 @@ class EDA:
             ddf.to_csv(filepath + "../indices/P_{:03d}.csv".format(counter), index=False)
 
             counter += 1
+
+    def plot_tiff(self) -> None:
+        """ Test if tiff image can be plotted. """
+        print("hellow")
+        file = "/Users/yaolin/Downloads/test_gis.tiff"
+        import rasterio
+        img = rasterio.open(file)
+        # img = georaster.MultiBandRaster(file)
+        b1 = img.read(1)
+        b2 = img.read(2)
+        b3 = img.read(3)
+        height = b1.shape[0]
+        width = b1.shape[1]
+        cols, rows = np.meshgrid(np.arange(width), np.arange(height))
+        xs, ys = rasterio.transform.xy(img.transform, rows, cols)
+        lons = np.array(xs).flatten()
+        lats = np.array(ys).flatten()
+
+        lats
+        pass
 
     def run_mission_recap(self) -> None:
         """
