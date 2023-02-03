@@ -36,7 +36,7 @@ class GRF:
         self.__nugget = nugget
 
         # threshold
-        self.__threshold = 26.8
+        self.__threshold = 26.81189868
 
         # matern coefficients
         self.__eta = 4.5 / self.__lateral_range  # decay factor

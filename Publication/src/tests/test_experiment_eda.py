@@ -21,9 +21,9 @@ class TestEDA(TestCase):
     # def test_save_prior(self) -> None:
     #     self.e.save_prior()
 
-    def test_get_cost_valley(self) -> None:
-        self.e.get_3d_cost_valley()
-        pass
+    # def test_get_cost_valley(self) -> None:
+    #     self.e.get_3d_cost_valley()
+    #     pass
 
     # def test_get_trees_on_cost_valley(self) -> None:
     #     self.e.get_trees_on_cost_valley()
@@ -32,3 +32,6 @@ class TestEDA(TestCase):
     # def test_plot_tiff(self) -> None:
     #     self.e.plot_tiff()
     #     pass
+
+    def test_simulation_result_discussion(self) -> None:
+        pass

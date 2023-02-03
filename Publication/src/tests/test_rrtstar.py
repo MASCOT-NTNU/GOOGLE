@@ -41,8 +41,6 @@ class TestRRTStar(TestCase):
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
 
-
-
         fig = make_subplots(rows=1, cols=1, specs=[[{'type': 'scene'}]])
 
         # loc = []
