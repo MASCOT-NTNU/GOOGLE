@@ -8,9 +8,10 @@ There are three important parameters used to adjust SINMOD data and for EIBV exp
 - $threshold = 26.81189868$
 
 Here comes the parameters used in the actual test for GRF kernel.
-- `sigma = 1.5`
-- `nugget = .4`
+- $\sigma = 1.5$
+- $\tau = .4$
 - `lateral range = 700m`
+- $\phi = 4.5/700$
 
 
 
