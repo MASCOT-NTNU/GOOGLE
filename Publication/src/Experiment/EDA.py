@@ -254,6 +254,9 @@ class EDA:
         n_samples = len(df)
         threshold = grf.get_threshold()
 
+        # lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
+        # grid_wgs = np.stack((lat, lon), axis=1)
+
         def plot_each_component(value, traj: np.ndarray, ind_assimilated: np.ndarray, ind_gathered: np.ndarray,
                                 title: str = "Salinity", cmap=get_cmap("BrBG", 10), cbar_title="Salinity",
                                 vmin=10, vmax=33., stepsize=1.5, threshold=None) -> tuple:
@@ -267,6 +270,8 @@ class EDA:
                 plt.plot(traj[:, 1], traj[:, 0], 'y.-')
                 plt.plot(self.grid[ind_gathered, 1], self.grid[ind_gathered, 0], 'k.')
                 plt.plot(self.grid[ind_assimilated, 1], self.grid[ind_assimilated, 0], 'b^')
+                # plt.plot(lon[ind_gathered], lat[ind_gathered], 'k.')
+                # plt.plot(lon[ind_assimilated], lat[ind_assimilated], 'b^')
             plt.gca().set_aspect("equal")
             return xre_plot, yre_plot, value_refined
 
@@ -285,7 +290,8 @@ class EDA:
             gs = GridSpec(nrows=1, ncols=2)
             ax = fig.add_subplot(gs[0])
             xp, yp, v_mu = plot_each_component(mu, traj=traj, ind_assimilated=ind_assimilated,
-                                               ind_gathered=ind_gathered, title="Updated salinity field", threshold=threshold)
+                                               ind_gathered=ind_gathered, title="Updated salinity field",
+                                               threshold=threshold)
 
             ax = fig.add_subplot(gs[1])
             cost_field = cv.get_cost_field()
@@ -322,6 +328,8 @@ class EDA:
                 ind_end = -1
 
             ind_assimilated, val_assimilated = grf.assimilate_temporal_data(df[ind_start:ind_end])
+            # lat_t, lon_t = WGS.xy2latlon(df[:ind_end, 1], df[:ind_end, 2])
+            # traj = np.stack((lat_t, lon_t), axis=1)
             traj = df[:ind_end, 1:-1]
             ind_gathered = np.append(ind_gathered, ind_assimilated.reshape(-1, 1), axis=0)
 
@@ -331,6 +339,14 @@ class EDA:
             counter += 1
 
     def is_masked(self, loc: np.ndarray) -> bool:
+        """ loc: np.array([x, y])"""
+        masked = False
+        if self.field.obstacle_contains(loc) or not self.field.border_contains(loc):
+            masked = True
+        return masked
+
+    def is_masked_wgs(self, loc: np.ndarray) -> bool:
+        # TODO: add lat, lon converting thing only for plotting.
         """ loc: np.array([x, y])"""
         masked = False
         if self.field.obstacle_contains(loc) or not self.field.border_contains(loc):
@@ -406,8 +422,6 @@ class EDA:
         if np.any(polygon_obstacle):
             plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-.', lw=2)
         return ax, xre_plot, yre_plot, value_refined
-
-
 
 
 if __name__ == "__main__":

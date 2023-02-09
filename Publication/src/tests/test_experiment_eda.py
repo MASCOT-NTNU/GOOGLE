@@ -8,8 +8,8 @@ class TestEDA(TestCase):
         self.e = EDA()
         pass
 
-    # def test_mission_recap(self):
-    #     self.e.run_mission_recap()
+    def test_mission_recap(self):
+        self.e.run_mission_recap()
 
     # def test_refine_grid(self) -> None:
     #     self.e.refine_grid()
