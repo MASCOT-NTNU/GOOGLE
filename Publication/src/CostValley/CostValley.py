@@ -22,11 +22,11 @@ import time
 class CostValley:
     """ Cost fields construction. """
     def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
-                 budget_mode: bool = False) -> None:
+                 budget_mode: bool = False, approximate_eibv: bool = True) -> None:
         """ """
 
         """ GRF """
-        self.__grf = GRF(sigma=sigma, nugget=nugget)
+        self.__grf = GRF(sigma=sigma, nugget=nugget, approximate_eibv=approximate_eibv)
         self.__field = self.__grf.field
         self.__grid = self.__field.get_grid()
         self.__budget_mode = budget_mode
@@ -47,7 +47,7 @@ class CostValley:
         else:
             self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
 
-    def update_cost_valley(self, loc_now: np.ndarray) -> None:
+    def update_cost_valley(self, loc_now: np.ndarray = np.array([0, 0])) -> None:
         # t1 = time.time()
         self.__eibv_field, self.__ivr_field = self.__grf.get_ei_field()
         if self.__budget_mode:
