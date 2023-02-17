@@ -78,6 +78,8 @@ class TestEIBV(TestCase):
         sn2 = s**2 - k @ np.linalg.solve(sig2, k)
         sn = np.sqrt(sn2)
 
+
+        """ TOCHECK: """
         a = (m - T) / sn
         b = 1 / sn @ np.linalg.solve(sig2, k.T)
         c = 1 + b.T * sig2 * b
@@ -92,6 +94,22 @@ class TestEIBV(TestCase):
         IntA = multivariate_normal.cdf(np.array([a, a]).squeeze(), [0, 0], np.array([[c, 1-c],
                                                                                      [1-c, c]]).squeeze())
 
+        ''' Analytical - version 2 (should give same answer, centered differently) '''
+        sa2 = sn2
+        sa = np.sqrt(sa2)
+        mur = (T - m) / sa
+        sig2r = (1 / sa2) * k * np.linalg.solve(sig2, k)
+        sig2r_1 = 1 + sig2r
+        IntA2 = multivariate_normal.cdf(np.array([0, 0]).squeeze(), np.array([-mur, mur]).squeeze(),
+                                        np.array([[sig2r_1, -sig2r],
+                                                  [-sig2r, sig2r_1]]))
+
+        ''' Analytical - version 3 (should give same answer, centered differently) '''
+        sig2r = k * (np.linalg.solve(sig2, k.T))
+        sig2r_1 = sn2 + sig2r
+        IntA3 = multivariate_normal.cdf(np.array([T, -T]).squeeze(), np.array([m, -m]).squeeze(),
+                                        np.array([[sig2r_1, -sig2r],
+                                                  [-sig2r, sig2r_1]]).squeeze())
 
         px
 
