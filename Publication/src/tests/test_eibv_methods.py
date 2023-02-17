@@ -22,7 +22,6 @@ class TestEIBV(TestCase):
         # self.cov = self.grf.get_covariance_matrix()
         # self.threshold = self.grf.get_threshold()
 
-
     def test_eibv(self) -> None:
 
         """ Section I: check correlation plot. """
@@ -63,59 +62,53 @@ class TestEIBV(TestCase):
 
 
         """ Section II: check EIBV calculation. """
-        m = np.array([[8]])  # mean
-        T = np.array([[8.1]])  # threshold
-        s = np.array([[.8]])  # latent std
-        tt = np.array([[.5]])  # nugget std
-        cco = np.array([[.9]])  # correlation
+        m = 8
+        T = 8.1
+        s = .8
+        tt = .5
+        corr = .9
         sig2 = s**2 + tt**2
         sig = np.sqrt(sig2)
-
         ''' Prior ibv '''
-        ibv = norm.cdf((T - m)/s) * norm.cdf((m - T)/s)
+        # ibv = norm.cdf((T - m)/s) * norm.cdf((m - T)/s)
 
-        k = cco * s ** 2
-        sn2 = s**2 - k @ np.linalg.solve(sig2, k)
+        k = corr * s ** 2
+        sn2 = s**2 - k / sig2 * k
         sn = np.sqrt(sn2)
 
 
         """ TOCHECK: """
-        a = (m - T) / sn
-        b = 1 / sn @ np.linalg.solve(sig2, k.T)
-        c = 1 + b.T * sig2 * b
-
-        ''' MC '''
-        B = 1000000
-        u = sig * np.random.randn(B)
-        IntMC = np.mean(norm.cdf(a + b * u) * norm.cdf(-a - b * u))
-
-
-        ''' Analytical - version 1 (Chevalier et al., 2014) '''
-        IntA = multivariate_normal.cdf(np.array([a, a]).squeeze(), [0, 0], np.array([[c, 1-c],
-                                                                                     [1-c, c]]).squeeze())
+        # a = (m - T) / sn
+        # b = 1 / sn @ np.linalg.solve(sig2, k.T)
+        # c = 1 + b.T * sig2 * b
+        #
+        # ''' MC '''
+        # B = 1000000
+        # u = sig * np.random.randn(B)
+        # IntMC = np.mean(norm.cdf(a + b * u) * norm.cdf(-a - b * u))
+        #
+        # ''' Analytical - version 1 (Chevalier et al., 2014) '''
+        # IntA = multivariate_normal.cdf(np.array([a, a]).squeeze(), [0, 0], np.array([[c, 1-c],
+        #                                                                              [1-c, c]]).squeeze())
 
         ''' Analytical - version 2 (should give same answer, centered differently) '''
-        sa2 = sn2
-        sa = np.sqrt(sa2)
-        mur = (T - m) / sa
-        sig2r = (1 / sa2) * k * np.linalg.solve(sig2, k)
+        mur = (T - m) / sn
+        sig2r = (1 / sn2) * k / sig2 * k
         sig2r_1 = 1 + sig2r
-        IntA2 = multivariate_normal.cdf(np.array([0, 0]).squeeze(), np.array([-mur, mur]).squeeze(),
+        IntA2 = multivariate_normal.cdf(np.array([0, 0]), np.array([-mur, mur]),
                                         np.array([[sig2r_1, -sig2r],
                                                   [-sig2r, sig2r_1]]))
 
         ''' Analytical - version 3 (should give same answer, centered differently) '''
-        sig2r = k * (np.linalg.solve(sig2, k.T))
+        sig2r = k / sig2 * k
         sig2r_1 = sn2 + sig2r
-        IntA3 = multivariate_normal.cdf(np.array([T, -T]).squeeze(), np.array([m, -m]).squeeze(),
+        IntA3 = multivariate_normal.cdf(np.array([T, -T]), np.array([m, -m]),
                                         np.array([[sig2r_1, -sig2r],
-                                                  [-sig2r, sig2r_1]]).squeeze())
+                                                  [-sig2r, sig2r_1]]))
 
         px
 
         pass
-
-
 
     # def test_eibv_calculations(self) -> None:
     #     """

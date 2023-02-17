@@ -9,7 +9,7 @@ from usr_func.vectorize import vectorize
 from usr_func.checkfolder import checkfolder
 from scipy.spatial.distance import cdist
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm, multivariate_normal
 from usr_func.normalize import normalize
 from joblib import Parallel, delayed
 import time
@@ -20,8 +20,10 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4) -> None:
+    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True) -> None:
         """ Initializes the parameters in GRF kernel. """
+        self.__approximate_eibv = approximate_eibv
+
         self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
         self.__ar1_corr = 600   # [sec], AR1 correlation time range.
 
@@ -197,7 +199,11 @@ class GRF:
             VR = SF @ SF.T * MD
             SP = self.__Sigma - VR
             sigma_diag = np.diag(SP).reshape(-1, 1)
-            eibv_field[i] = self.__get_ibv(self.__mu, sigma_diag)
+            if self.__approximate_eibv:
+                eibv_field[i] = self.__get_ibv(self.__mu, sigma_diag)
+            else:
+                vr_diag = np.diag(VR).reshape(-1, 1)
+                eibv_field[i] = self.__get_eibv(self.__mu, sigma_diag, vr_diag)
             ivr_field[i] = np.sum(np.diag(VR))
         self.__eibv_field = normalize(eibv_field)
         self.__ivr_field = 1 - normalize(ivr_field)
@@ -238,6 +244,25 @@ class GRF:
         bv = p * (1 - p)
         ibv = np.sum(bv)
         return ibv
+
+    def __get_eibv(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
+        eibv = .0
+        for i in range(len(mu)):
+            sn2 = sigma_diag[i]
+            vn2 = vr_diag[i]
+
+            sn = np.sqrt(sn2)
+            m = mu[i]
+
+            mur = (self.__threshold - m) / sn
+
+            sig2r_1 = sn2 + vn2
+            sig2r = vn2
+
+            eibv += multivariate_normal.cdf(np.array([0, 0]), np.array([-mur, mur]).squeeze(),
+                                            np.array([[sig2r_1, -sig2r],
+                                                      [-sig2r, sig2r_1]]).squeeze())
+        return eibv
 
     def set_sigma(self, value: float) -> None:
         """ Set space variability. """
