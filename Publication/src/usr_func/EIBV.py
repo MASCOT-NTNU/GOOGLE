@@ -28,7 +28,12 @@ def EIBV_mvn(threshold, mu, Sig, H, R):
     return IntA
 
 
-def EIBV_norm(threshold, mu, Sig, H, R):
+def calc_eibv():
+    pass
+
+
+
+def EIBV_approximate(threshold, mu, Sig, H, R):
     """
     threshold: float number for characterizing the threshold between fresh water and saline water.
     mu: mean vector
