@@ -32,9 +32,9 @@ class TestEIBV(TestCase):
         """ check EIBV calculation. """
         mu = 28
         threshold = 28.1
-        sigma = np.linspace(0.01, 2, 6)
-        tau = np.linspace(0.01, 1, 8)    # sqrt of nugget
-        rho = np.linspace(0, 1, 15)    # correlation coefficient
+        sigma = np.linspace(0.01, 2, 15)
+        tau = np.linspace(0.01, 1, 10)    # sqrt of nugget
+        rho = np.linspace(0, 1, 100)    # correlation coefficient
 
         eibv_appr = np.zeros([len(rho), len(sigma), len(tau)])
         eibv_analy = np.zeros_like(eibv_appr)
@@ -52,6 +52,10 @@ class TestEIBV(TestCase):
 
                     def calc_eibv_approx(threshold, mu, sigma) -> float:
                         """ Calculate EIBV based on the numerical approximation.
+                        Params:
+                            threshold: float number to define the threshold between fresh water and saline water
+                            mu: float number for the mean
+                            sigma: standard deviation!!! not the variance, if feed in variance, then needs to be sqrt
                         """
                         ep = norm.cdf(threshold, mu, sigma)  # excursion probability
                         ibv = ep * (1 - ep)
@@ -64,7 +68,7 @@ class TestEIBV(TestCase):
                                                                   [-variance_reduction, sigma_post + variance_reduction]]))
                         return eibv
 
-                    eibv_appr[i][j][k] = calc_eibv_approx(threshold, mu, sigma_post)
+                    eibv_appr[i][j][k] = calc_eibv_approx(threshold, mu, np.sqrt(sigma_post))
                     eibv_analy[i][j][k] = calc_eibv_analy(threshold, mu, sigma_post, variance_reduction)
 
         filepath = "/Users/yaolin/Downloads/fig/"
