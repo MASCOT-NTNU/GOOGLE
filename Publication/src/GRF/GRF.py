@@ -246,6 +246,10 @@ class GRF:
         return ibv
 
     def __get_eibv(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
+        """
+        Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
+
+        """
         eibv = .0
         for i in range(len(mu)):
             sn2 = sigma_diag[i]
