@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Field module &#8212; GOOGLE 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GRF package" href="GRF.html" />
+    <link rel="prev" title="Experiment package" href="Experiment.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-Field">
+<span id="field-module"></span><h1>Field module<a class="headerlink" href="#module-Field" title="Permalink to this heading">¶</a></h1>
+<p>Field handles field discretization and validation.
+- generate grid discretization.
+- check legal conditions of given locations.
+- check collision with obstacles.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Field.Field">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Field.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbour_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Field.Field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Field handles everything with regarding to the field element.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.border_contains">
+<span class="sig-name descname"><span class="pre">border_contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.border_contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if point is within the border polygon</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_border_limits">
+<span class="sig-name descname"><span class="pre">get_border_limits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Field.Field.get_border_limits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_grid">
+<span class="sig-name descname"><span class="pre">get_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Field.Field.get_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: grf grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_ind_from_location">
+<span class="sig-name descname"><span class="pre">get_ind_from_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.get_ind_from_location" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>location</strong> – np.array([xp, yp])</p>
+</dd>
+</dl>
+<p>Returns: index of the closest waypoint.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_location_from_ind">
+<span class="sig-name descname"><span class="pre">get_location_from_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Field.Field.get_location_from_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return waypoint locations using ind.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_neighbour_distance">
+<span class="sig-name descname"><span class="pre">get_neighbour_distance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Field.Field.get_neighbour_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return neighbour distance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_neighbour_indices">
+<span class="sig-name descname"><span class="pre">get_neighbour_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind_now</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Field.Field.get_neighbour_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return neighbouring indices according to given current index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.is_border_in_the_way">
+<span class="sig-name descname"><span class="pre">is_border_in_the_way</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.is_border_in_the_way" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if border is in the way between loc_start and loc_end.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.is_obstacle_in_the_way">
+<span class="sig-name descname"><span class="pre">is_obstacle_in_the_way</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.is_obstacle_in_the_way" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if border is in the way between loc_start and loc_end.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.obstacle_contains">
+<span class="sig-name descname"><span class="pre">obstacle_contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.obstacle_contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if obstacle contains the point.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.set_neighbour_distance">
+<span class="sig-name descname"><span class="pre">set_neighbour_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.set_neighbour_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the neighbour distance</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GOOGLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Agents.html">Agents package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Config.html">Config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CostValley.html">CostValley package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Experiment.html">Experiment package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Field module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GRF.html">GRF package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OPA.html">OPA module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.html">Planner package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulators.html">Simulators package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Visualiser.html">Visualiser package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WGS.html">WGS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WaypointGraph.html">WaypointGraph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="func_test.html">func_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_replicates.html">run_replicates module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sensitivity.html">sensitivity package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usr_func.html">usr_func package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+      <li>Previous: <a href="Experiment.html" title="previous chapter">Experiment package</a></li>
+      <li>Next: <a href="GRF.html" title="next chapter">GRF package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Yaolin Ge.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Field.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
