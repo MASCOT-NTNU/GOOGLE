@@ -4,7 +4,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../Publication/src'))
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -22,7 +22,7 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']
 templates_path = ['_templates']
 exclude_patterns = []
 
-autodoc_mock_imports = ['numpy', 'scipy', 'pandas', 'shapely', 'matplotlib']
+autodoc_mock_imports = ['numpy', 'scipy', 'pandas', 'shapely', 'matplotlib', 'joblib', 'tqdm', 'geopandas']
 
 
 

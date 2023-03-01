@@ -10,12 +10,12 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulators package" href="Simulators.html" />
+    <link rel="prev" title="Planner.Myopic2D package" href="Planner.Myopic2D.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -37,120 +37,15 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-Planner.RRTSCV.RRTStarCV">
-<span id="planner-rrtscv-rrtstarcv-module"></span><h2>Planner.RRTSCV.RRTStarCV module<a class="headerlink" href="#module-Planner.RRTSCV.RRTStarCV" title="Permalink to this heading">¶</a></h2>
-<p>RRTStar object produces the possible tree generation in the constrained field.
-It employs RRT as the building block, and the cost associated with each tree branch is used to
-determine the final tree discretization.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.RRTSCV.RRTStarCV.</span></span><span class="sig-name descname"><span class="pre">RRTStarCV</span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>RRT* CV planning strategy</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_CostValley">
-<span class="sig-name descname"><span class="pre">get_CostValley</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="CostValley.html#CostValley.CostValley.CostValley" title="CostValley.CostValley.CostValley"><span class="pre">CostValley</span></a></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_CostValley" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_goal_sampling_rate">
-<span class="sig-name descname"><span class="pre">get_goal_sampling_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_goal_sampling_rate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the goal sampling rate.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_home_radius">
-<span class="sig-name descname"><span class="pre">get_home_radius</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_home_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the home radius for path convergence.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_max_expansion_iteraions">
-<span class="sig-name descname"><span class="pre">get_max_expansion_iteraions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_max_expansion_iteraions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the maximum expansion itersions.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_next_waypoint">
-<span class="sig-name descname"><span class="pre">get_next_waypoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_next_waypoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the next waypoint according to RRT* path planning philosophy.
-:param loc_start: current location np.array([x, y])
-:param loc_target: minimum cost location, np.array([x, y])
-:param cost_valley: cost valley contains the cost field.
-:return next waypoint: np.array([x, y])</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_rrtstar_neighbour_radius">
-<span class="sig-name descname"><span class="pre">get_rrtstar_neighbour_radius</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_rrtstar_neighbour_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the neighbour radius for tree searching.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_stepsize">
-<span class="sig-name descname"><span class="pre">get_stepsize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_stepsize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the step size of the trees.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_trajectory">
-<span class="sig-name descname"><span class="pre">get_trajectory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_trajectory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.get_tree_nodes">
-<span class="sig-name descname"><span class="pre">get_tree_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.get_tree_nodes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.is_location_legal">
-<span class="sig-name descname"><span class="pre">is_location_legal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.is_location_legal" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.is_path_legal">
-<span class="sig-name descname"><span class="pre">is_path_legal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.is_path_legal" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.set_goal_sampling_rate">
-<span class="sig-name descname"><span class="pre">set_goal_sampling_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.set_goal_sampling_rate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the goal sampling rate.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.set_home_radius">
-<span class="sig-name descname"><span class="pre">set_home_radius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.set_home_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the home radius for path convergence.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.set_max_expansion_iteraions">
-<span class="sig-name descname"><span class="pre">set_max_expansion_iteraions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.set_max_expansion_iteraions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the maximum expansion itersions.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.set_rrtstar_neighbour_radius">
-<span class="sig-name descname"><span class="pre">set_rrtstar_neighbour_radius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.set_rrtstar_neighbour_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the neighbour radius for tree searching.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.RRTSCV.RRTStarCV.RRTStarCV.set_stepsize">
-<span class="sig-name descname"><span class="pre">set_stepsize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.RRTStarCV.RRTStarCV.set_stepsize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the step size of the trees.</p>
-</dd></dl>
-
-</dd></dl>
-
+<section id="planner-rrtscv-rrtstarcv-module">
+<h2>Planner.RRTSCV.RRTStarCV module<a class="headerlink" href="#planner-rrtscv-rrtstarcv-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-Planner.RRTSCV.TreeNode">
 <span id="planner-rrtscv-treenode-module"></span><h2>Planner.RRTSCV.TreeNode module<a class="headerlink" href="#module-Planner.RRTSCV.TreeNode" title="Permalink to this heading">¶</a></h2>
 <p>TreeNode is the basis for tree expansion during RRT* exploration.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="Planner.RRTSCV.TreeNode.TreeNode">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.RRTSCV.TreeNode.</span></span><span class="sig-name descname"><span class="pre">TreeNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.RRTSCV.TreeNode.TreeNode" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.RRTSCV.TreeNode.</span></span><span class="sig-name descname"><span class="pre">TreeNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.RRTSCV.TreeNode.TreeNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="Planner.RRTSCV.TreeNode.TreeNode.get_cost">
@@ -165,7 +60,7 @@ determine the final tree discretization.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="Planner.RRTSCV.TreeNode.TreeNode.get_location">
-<span class="sig-name descname"><span class="pre">get_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#Planner.RRTSCV.TreeNode.TreeNode.get_location" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Planner.RRTSCV.TreeNode.TreeNode.get_location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the location associated with the tree node.</p>
 </dd></dl>
 
@@ -183,7 +78,7 @@ determine the final tree discretization.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="Planner.RRTSCV.TreeNode.TreeNode.set_location">
-<span class="sig-name descname"><span class="pre">set_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.TreeNode.TreeNode.set_location" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.RRTSCV.TreeNode.TreeNode.set_location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set location for the new tree node.</p>
 </dd></dl>
 
@@ -218,11 +113,40 @@ determine the final tree discretization.</p>
 
 
 <h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Agents.html">Agents package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Config.html">Config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CostValley.html">CostValley package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Experiment.html">Experiment package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Field.html">Field module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GRF.html">GRF package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OPA.html">OPA module</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="Planner.html">Planner package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulators.html">Simulators package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Visualiser.html">Visualiser package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WGS.html">WGS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WaypointGraph.html">WaypointGraph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="func_test.html">func_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_replicates.html">run_replicates module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sensitivity.html">sensitivity package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usr_func.html">usr_func package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="Planner.html">Planner package</a><ul>
+      <li>Previous: <a href="Planner.Myopic2D.html" title="previous chapter">Planner.Myopic2D package</a></li>
+      <li>Next: <a href="Simulators.html" title="next chapter">Simulators package</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -249,10 +173,10 @@ determine the final tree discretization.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, Yaolin Ge.
+      &copy;2023, Yaolin Ge.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

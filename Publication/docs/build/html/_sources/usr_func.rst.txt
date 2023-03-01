@@ -4,6 +4,14 @@ usr\_func package
 Submodules
 ----------
 
+usr\_func.EIBV module
+---------------------
+
+.. automodule:: usr_func.EIBV
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 usr\_func.checkfolder module
 ----------------------------
 

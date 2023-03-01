@@ -1,0 +1,659 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Config module &#8212; GOOGLE 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/readable.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Field module" href="Field.html" />
+    <link rel="prev" title="src" href="modules.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Field.html" title="Field module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="src"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GOOGLE 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">src</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Config module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-Config">
+<span id="config-module"></span><h1>Config module<a class="headerlink" href="#module-Config" title="Permalink to this headline">¶</a></h1>
+<p>Config contains essential setup for the simulation study.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Config.Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><a class="headerlink" href="#Config.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__wgs_polygon_border">
+<span class="sig-name descname"><span class="pre">__wgs_polygon_border</span></span><a class="headerlink" href="#Config.Config.__wgs_polygon_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>the polygon used to define the border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__wgs_polygon_obstacle">
+<span class="sig-name descname"><span class="pre">__wgs_polygon_obstacle</span></span><a class="headerlink" href="#Config.Config.__wgs_polygon_obstacle" title="Permalink to this definition">¶</a></dt>
+<dd><p>polygons used for identifying collisions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__wgs_loc_start">
+<span class="sig-name descname"><span class="pre">__wgs_loc_start</span></span><a class="headerlink" href="#Config.Config.__wgs_loc_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>starting location: (lat, lon) used to define the starting location for the long horizon operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__wgs_loc_end">
+<span class="sig-name descname"><span class="pre">__wgs_loc_end</span></span><a class="headerlink" href="#Config.Config.__wgs_loc_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>end location: (lat, lon) used to define the end location for the long horizon operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__polygon_border">
+<span class="sig-name descname"><span class="pre">__polygon_border</span></span><a class="headerlink" href="#Config.Config.__polygon_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>the polygon used to define the border in local Cartesian coordinate system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__polygon_border_shapely">
+<span class="sig-name descname"><span class="pre">__polygon_border_shapely</span></span><a class="headerlink" href="#Config.Config.__polygon_border_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>shapely object to detect collision or border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.polygon.Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__line_border_shapely">
+<span class="sig-name descname"><span class="pre">__line_border_shapely</span></span><a class="headerlink" href="#Config.Config.__line_border_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>shapely object to detect collision or border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.linestring.LineString</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__polygon_obstacle">
+<span class="sig-name descname"><span class="pre">__polygon_obstacle</span></span><a class="headerlink" href="#Config.Config.__polygon_obstacle" title="Permalink to this definition">¶</a></dt>
+<dd><p>polygons used for identifying collisions in local Cartesian coordinate system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__polygon_obstacle_shapely">
+<span class="sig-name descname"><span class="pre">__polygon_obstacle_shapely</span></span><a class="headerlink" href="#Config.Config.__polygon_obstacle_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>shapely object to detect collision with obstacles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.polygon.Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__line_obstacle_shapely">
+<span class="sig-name descname"><span class="pre">__line_obstacle_shapely</span></span><a class="headerlink" href="#Config.Config.__line_obstacle_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>shapely object to detect collision with obstacles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.linestring.LineString</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__loc_start">
+<span class="sig-name descname"><span class="pre">__loc_start</span></span><a class="headerlink" href="#Config.Config.__loc_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>starting location: (x, y) used to define the starting location for the long horizon operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__loc_end">
+<span class="sig-name descname"><span class="pre">__loc_end</span></span><a class="headerlink" href="#Config.Config.__loc_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>end location: (x, y) used to define the end location for the long horizon operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__num_steps">
+<span class="sig-name descname"><span class="pre">__num_steps</span></span><a class="headerlink" href="#Config.Config.__num_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of steps in the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__num_replicates">
+<span class="sig-name descname"><span class="pre">__num_replicates</span></span><a class="headerlink" href="#Config.Config.__num_replicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of replicates in the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Config.Config.__num_cores">
+<span class="sig-name descname"><span class="pre">__num_cores</span></span><a class="headerlink" href="#Config.Config.__num_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of cores used in the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_line_border_shapely">
+<span class="sig-name descname"><span class="pre">get_line_border_shapely</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.geometry.LineString</span></span></span><a class="headerlink" href="#Config.Config.get_line_border_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return linestring of polygon border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>linestring of polygon border.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>LineString</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_line_obstacle_shapely">
+<span class="sig-name descname"><span class="pre">get_line_obstacle_shapely</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.geometry.LineString</span></span></span><a class="headerlink" href="#Config.Config.get_line_obstacle_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return linestring of polygon obstacle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>linestring of polygon obstacle.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>LineString</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_loc_end">
+<span class="sig-name descname"><span class="pre">get_loc_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_loc_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return starting location in (x, y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>starting location in (x, y).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_loc_start">
+<span class="sig-name descname"><span class="pre">get_loc_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_loc_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return starting location in (x, y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>starting location in (x, y).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_num_cores">
+<span class="sig-name descname"><span class="pre">get_num_cores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#Config.Config.get_num_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of cores in the simulation study.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>number of cores in the simulation study.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_num_replicates">
+<span class="sig-name descname"><span class="pre">get_num_replicates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#Config.Config.get_num_replicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of replicates in the simulation study.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>number of replicates in the simulation study.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_num_steps">
+<span class="sig-name descname"><span class="pre">get_num_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#Config.Config.get_num_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of steps in the simulation study.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>number of steps in the simulation study.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_polygon_border">
+<span class="sig-name descname"><span class="pre">get_polygon_border</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_polygon_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return polygon for the operational area in x y coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>polygon for the operational area in x y coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_polygon_border_shapely">
+<span class="sig-name descname"><span class="pre">get_polygon_border_shapely</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.geometry.Polygon</span></span></span><a class="headerlink" href="#Config.Config.get_polygon_border_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return shapelized polygon for the operational area in xy coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>shapelized polygon for the operational area in xy coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_polygon_obstacle">
+<span class="sig-name descname"><span class="pre">get_polygon_obstacle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_polygon_obstacle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return polygon for the obstacle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>polygon for the obstacle.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_polygon_obstacle_shapely">
+<span class="sig-name descname"><span class="pre">get_polygon_obstacle_shapely</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.geometry.Polygon</span></span></span><a class="headerlink" href="#Config.Config.get_polygon_obstacle_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return shapelized polygon for the obstacle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>shapelized polygon for the obstacle.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_wgs_loc_end">
+<span class="sig-name descname"><span class="pre">get_wgs_loc_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_wgs_loc_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return starting location in (lat, lon).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>starting location in (lat, lon).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_wgs_loc_start">
+<span class="sig-name descname"><span class="pre">get_wgs_loc_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_wgs_loc_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return starting location in (lat, lon).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>starting location in (lat, lon).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_wgs_polygon_border">
+<span class="sig-name descname"><span class="pre">get_wgs_polygon_border</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_wgs_polygon_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return polygon for the oprational area in wgs coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>polygon for the oprational area in wgs coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.get_wgs_polygon_obstacle">
+<span class="sig-name descname"><span class="pre">get_wgs_polygon_obstacle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.get_wgs_polygon_obstacle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return polygon for the oprational area in wgs coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>polygon for the oprational area in wgs coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_loc_end">
+<span class="sig-name descname"><span class="pre">set_loc_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_loc_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the starting location with (lat,lon).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>loc</strong> (<em>np.ndarray</em>) – starting location with (lat,lon).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_loc_start">
+<span class="sig-name descname"><span class="pre">set_loc_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_loc_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the starting location with (lat,lon).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>loc</strong> (<em>np.ndarray</em>) – starting location with (lat,lon).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_num_cores">
+<span class="sig-name descname"><span class="pre">set_num_cores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_num_cores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of cores to use in the simulation study.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – number of cores to use in the simulation study.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_num_replicates">
+<span class="sig-name descname"><span class="pre">set_num_replicates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_num_replicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of replicates in the simulation study.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – number of replicates in the simulation study.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_num_steps">
+<span class="sig-name descname"><span class="pre">set_num_steps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_num_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of steps in the simulation to be an integer value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – number of steps in the simulation.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_polygon_border">
+<span class="sig-name descname"><span class="pre">set_polygon_border</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_polygon_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set operational area using polygon defined by lat lon coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>np.ndarray</em>) – polygon defined by lat lon coordinates.</p></li>
+<li><p><strong>Example</strong> – <dl class="simple">
+<dt>value: np.ndarray([[lat1, lon1],</dt><dd><p>[lat2, lon2],
+…
+[latn, lonn]])</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.set_polygon_obstacle">
+<span class="sig-name descname"><span class="pre">set_polygon_obstacle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Config.Config.set_polygon_obstacle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set polygon obstacle using polygon defined by lat lon coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>np.ndarray</em>) – polygon defined by lat lon coordinates.</p></li>
+<li><p><strong>Example</strong> – <dl class="simple">
+<dt>value: np.ndarray([[lat1, lon1],</dt><dd><p>[lat2, lon2],
+…
+[latn, lonn]])</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Config.Config.wgs2xy">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wgs2xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Config.Config.wgs2xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert polygon containing wgs coordinates to polygon containing xy coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>np.ndarray</em>) – polygon containing wgs coordinates.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>polygon containing xy coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation index</a><ul>
+  <li><a href="modules.html">src</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">src</a></li>
+      <li>Next: <a href="Field.html" title="next chapter">Field module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Config.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2023, Yaolin Ge.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.4.0.
+  </div>
+  
+  </body>
+</html>

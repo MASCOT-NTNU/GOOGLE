@@ -10,12 +10,12 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Planner.Myopic2D package" href="Planner.Myopic2D.html" />
+    <link rel="prev" title="OPA module" href="OPA.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -38,10 +38,28 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="Planner.Myopic2D.html">Planner.Myopic2D package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#planner-myopic2d-myopic2d-module">Planner.Myopic2D.Myopic2D module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#module-Planner.Myopic2D">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Planner.RRTSCV.html">Planner.RRTSCV package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-Planner.RRTSCV.RRTStarCV">Planner.RRTSCV.RRTStarCV module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-Planner.RRTSCV.TreeNode">Planner.RRTSCV.TreeNode module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#planner-rrtscv-rrtstarcv-module">Planner.RRTSCV.RRTStarCV module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-Planner.RRTSCV.TreeNode">Planner.RRTSCV.TreeNode module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode"><code class="docutils literal notranslate"><span class="pre">TreeNode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_cost"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_cost()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_distance_between_nodes"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_distance_between_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_location"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_location()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_parent"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_parent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.set_cost"><code class="docutils literal notranslate"><span class="pre">TreeNode.set_cost()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.set_location"><code class="docutils literal notranslate"><span class="pre">TreeNode.set_location()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.set_parent"><code class="docutils literal notranslate"><span class="pre">TreeNode.set_parent()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-Planner.RRTSCV">Module contents</a></li>
 </ul>
 </li>
@@ -195,79 +213,8 @@ the starting location and the end location.</p>
 </dd></dl>
 
 </section>
-<section id="module-Planner.Planner">
-<span id="planner-planner-module"></span><h2>Planner.Planner module<a class="headerlink" href="#module-Planner.Planner" title="Permalink to this heading">¶</a></h2>
-<p>Planner plans the next waypoint according to Sense, Plan, Act process.
-It wraps all the essential components together to ease the procedure for the agent during adaptive sampling.</p>
-<ul class="simple">
-<li><p>It first updates the cost valley based on the conditional field.</p></li>
-<li><dl class="simple">
-<dt>It then computes the next waypoint based on two strategies</dt><dd><ul>
-<li><p>If it has enough budget, then it will employ rrtstar with cost valley.</p></li>
-<li><p>It the budget is running out, it will then use straight line planer instead.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">param _wp_now<span class="colon">:</span></dt>
-<dd class="field-odd"><p>current waypoint</p>
-</dd>
-<dt class="field-even">param _wp_next<span class="colon">:</span></dt>
-<dd class="field-even"><p>next waypoint</p>
-</dd>
-<dt class="field-odd">param _wp_pion<span class="colon">:</span></dt>
-<dd class="field-odd"><p>pioneer waypoint</p>
-</dd>
-</dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.Planner.Planner">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.Planner.</span></span><span class="sig-name descname"><span class="pre">Planner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.Planner.Planner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.get_current_waypoint">
-<span class="sig-name descname"><span class="pre">get_current_waypoint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#Planner.Planner.Planner.get_current_waypoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.get_next_waypoint">
-<span class="sig-name descname"><span class="pre">get_next_waypoint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#Planner.Planner.Planner.get_next_waypoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.get_pioneer_waypoint">
-<span class="sig-name descname"><span class="pre">get_pioneer_waypoint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#Planner.Planner.Planner.get_pioneer_waypoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.get_rrstarcv">
-<span class="sig-name descname"><span class="pre">get_rrstarcv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.RRTStarCV.RRTStarCV" title="Planner.RRTSCV.RRTStarCV.RRTStarCV"><span class="pre">RRTStarCV</span></a></span></span><a class="headerlink" href="#Planner.Planner.Planner.get_rrstarcv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.get_trajectory">
-<span class="sig-name descname"><span class="pre">get_trajectory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#Planner.Planner.Planner.get_trajectory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.update_pioneer_waypoint">
-<span class="sig-name descname"><span class="pre">update_pioneer_waypoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctd_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.Planner.Planner.update_pioneer_waypoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the next waypoint:
-- Step I: assimilate data to the kernel.
-- Step II: update the cost valley.
-- Step III: get the minimum cost location in the cost field.
-- Step IV: plan one step ahead.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.Planner.Planner.update_planning_trackers">
-<span class="sig-name descname"><span class="pre">update_planning_trackers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.Planner.Planner.update_planning_trackers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Move the pointer one step ahead.</p>
-</dd></dl>
-
-</dd></dl>
-
+<section id="planner-planner-module">
+<h2>Planner.Planner module<a class="headerlink" href="#planner-planner-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-Planner.StraightLinePathPlanner">
 <span id="planner-straightlinepathplanner-module"></span><h2>Planner.StraightLinePathPlanner module<a class="headerlink" href="#module-Planner.StraightLinePathPlanner" title="Permalink to this heading">¶</a></h2>
@@ -278,7 +225,7 @@ It wraps all the essential components together to ease the procedure for the age
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="Planner.StraightLinePathPlanner.StraightLinePathPlanner.get_waypoint_from_straight_line">
-<span class="sig-name descname"><span class="pre">get_waypoint_from_straight_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_now</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.StraightLinePathPlanner.StraightLinePathPlanner.get_waypoint_from_straight_line" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_waypoint_from_straight_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_now</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.StraightLinePathPlanner.StraightLinePathPlanner.get_waypoint_from_straight_line" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -306,11 +253,38 @@ It wraps all the essential components together to ease the procedure for the age
 
 
 <h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Agents.html">Agents package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Config.html">Config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CostValley.html">CostValley package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Experiment.html">Experiment package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Field.html">Field module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GRF.html">GRF package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OPA.html">OPA module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Planner package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulators.html">Simulators package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Visualiser.html">Visualiser package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WGS.html">WGS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WaypointGraph.html">WaypointGraph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="func_test.html">func_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_replicates.html">run_replicates module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sensitivity.html">sensitivity package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usr_func.html">usr_func package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+      <li>Previous: <a href="OPA.html" title="previous chapter">OPA module</a></li>
+      <li>Next: <a href="Planner.Myopic2D.html" title="next chapter">Planner.Myopic2D package</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -337,10 +311,10 @@ It wraps all the essential components together to ease the procedure for the age
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, Yaolin Ge.
+      &copy;2023, Yaolin Ge.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Field module &#8212; GOOGLE 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/readable.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="WGS module" href="WGS.html" />
+    <link rel="prev" title="Config module" href="Config.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="WGS.html" title="WGS module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Config.html" title="Config module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GOOGLE 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">src</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Field module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-Field">
+<span id="field-module"></span><h1>Field module<a class="headerlink" href="#module-Field" title="Permalink to this headline">¶</a></h1>
+<p>Field handles field discretization and validation.
+- generate grid discretization.
+- check legal conditions of given locations.
+- check collision with obstacles.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Field.Field">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Field.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbour_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Field.Field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to handle everything related to the field element, including border, obstacles, grid, and neighbors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__config">
+<span class="sig-name descname"><span class="pre">__config</span></span><a class="headerlink" href="#Field.Field.__config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configuration object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="Config.html#Config.Config" title="Config.Config">Config</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__neighbour_distance">
+<span class="sig-name descname"><span class="pre">__neighbour_distance</span></span><a class="headerlink" href="#Field.Field.__neighbour_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance between neighboring locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__polygon_border">
+<span class="sig-name descname"><span class="pre">__polygon_border</span></span><a class="headerlink" href="#Field.Field.__polygon_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of polygon border vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__polygon_border_shapely">
+<span class="sig-name descname"><span class="pre">__polygon_border_shapely</span></span><a class="headerlink" href="#Field.Field.__polygon_border_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shapely polygon object for border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__line_border_shapely">
+<span class="sig-name descname"><span class="pre">__line_border_shapely</span></span><a class="headerlink" href="#Field.Field.__line_border_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shapely line string object for border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.LineString</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__polygon_obstacle">
+<span class="sig-name descname"><span class="pre">__polygon_obstacle</span></span><a class="headerlink" href="#Field.Field.__polygon_obstacle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of polygon obstacle vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__polygon_obstacle_shapely">
+<span class="sig-name descname"><span class="pre">__polygon_obstacle_shapely</span></span><a class="headerlink" href="#Field.Field.__polygon_obstacle_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shapely polygon object for obstacle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__line_obstacle_shapely">
+<span class="sig-name descname"><span class="pre">__line_obstacle_shapely</span></span><a class="headerlink" href="#Field.Field.__line_obstacle_shapely" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shapely line string object for obstacle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>shapely.geometry.LineString</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__xmin">
+<span class="sig-name descname"><span class="pre">__xmin</span></span><a class="headerlink" href="#Field.Field.__xmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum x value of the border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__ymin">
+<span class="sig-name descname"><span class="pre">__ymin</span></span><a class="headerlink" href="#Field.Field.__ymin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum y value of the border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__xmax">
+<span class="sig-name descname"><span class="pre">__xmax</span></span><a class="headerlink" href="#Field.Field.__xmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum x value of the border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__ymax">
+<span class="sig-name descname"><span class="pre">__ymax</span></span><a class="headerlink" href="#Field.Field.__ymax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum y value of the border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__xlim">
+<span class="sig-name descname"><span class="pre">__xlim</span></span><a class="headerlink" href="#Field.Field.__xlim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of [xmin, xmax].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__ylim">
+<span class="sig-name descname"><span class="pre">__ylim</span></span><a class="headerlink" href="#Field.Field.__ylim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of [ymin, ymax].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__ygap">
+<span class="sig-name descname"><span class="pre">__ygap</span></span><a class="headerlink" href="#Field.Field.__ygap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gap between rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__xgap">
+<span class="sig-name descname"><span class="pre">__xgap</span></span><a class="headerlink" href="#Field.Field.__xgap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gap between columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__grid">
+<span class="sig-name descname"><span class="pre">__grid</span></span><a class="headerlink" href="#Field.Field.__grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of field grid points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Field.Field.__neighbour_hash_table">
+<span class="sig-name descname"><span class="pre">__neighbour_hash_table</span></span><a class="headerlink" href="#Field.Field.__neighbour_hash_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash table for containing neighboring indices around each waypoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__(self,</span> <span class="pre">neighbour_distance</span></span></dt>
+<dd><p>float = 120): Initializes the Field object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">set_neighbour_distance(self,</span> <span class="pre">value</span></span></dt>
+<dd><p>float) -&gt; None: Sets the neighbor distance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">border_contains(self,</span> <span class="pre">loc</span></span></dt>
+<dd><p>np.ndarray) -&gt; bool: Tests if a point is within the border polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">obstacle_contains(self,</span> <span class="pre">loc</span></span></dt>
+<dd><p>np.ndarray) -&gt; bool: Tests if an obstacle contains a point.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">is_border_in_the_way(self,</span> <span class="pre">loc_start</span></span></dt>
+<dd><p>np.ndarray, loc_end: np.ndarray) -&gt; bool:
+Tests if the border is in the way between two locations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">is_obstacle_in_the_way(self,</span> <span class="pre">loc_start</span></span></dt>
+<dd><p>np.ndarray, loc_end: np.ndarray) -&gt; bool:
+Tests if an obstacle is in the way between two locations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.__construct_grid">
+<span class="sig-name descname"><span class="pre">__construct_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the field grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.__construct_hash_neighbours">
+<span class="sig-name descname"><span class="pre">__construct_hash_neighbours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_hash_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the hash table for containing neighbor indices around
+each waypoint.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_neighbour_indices(self,</span> <span class="pre">ind_now</span></span></dt>
+<dd><p>Union[int, np.ndarray]) -&gt; np.ndarray: Returns neighboring indices
+according to the given current index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.border_contains">
+<span class="sig-name descname"><span class="pre">border_contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.border_contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if point is within the border polygon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>loc</strong> – Location (x, y) to test.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if point is within the border polygon, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_border_limits">
+<span class="sig-name descname"><span class="pre">get_border_limits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Field.Field.get_border_limits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the border limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The border limits in tuple format.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>xlim = (xmin, xmax)
+ylim = (ymin, ymax)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_grid">
+<span class="sig-name descname"><span class="pre">get_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Field.Field.get_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>The grid in np.ndarray format.</p>
+<p class="rubric">Examples</p>
+<p>grid = np.array([[x1, y1], [x2, y2], …, [xn, yn]])</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_ind_from_location">
+<span class="sig-name descname"><span class="pre">get_ind_from_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#Field.Field.get_ind_from_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return waypoint index using location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>location</strong> – Waypoint location.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Waypoint index in np.ndarray format.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>ind = 1
+location = np.array([x1, y1])</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_location_from_ind">
+<span class="sig-name descname"><span class="pre">get_location_from_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Field.Field.get_location_from_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return waypoint locations using ind.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ind</strong> – Index of the waypoint.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Waypoint locations in np.ndarray format.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>ind = 1
+location = np.array([x1, y1])</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_neighbour_distance">
+<span class="sig-name descname"><span class="pre">get_neighbour_distance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Field.Field.get_neighbour_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return neighbour distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Neighbour distance as a float number.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.get_neighbour_indices">
+<span class="sig-name descname"><span class="pre">get_neighbour_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind_now</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Field.Field.get_neighbour_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return neighbouring indices according to given current index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ind_now</strong> – Current index.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array of neighbouring indices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.is_border_in_the_way">
+<span class="sig-name descname"><span class="pre">is_border_in_the_way</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.is_border_in_the_way" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if border is in the way between loc_start and loc_end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loc_start</strong> – Start location.</p></li>
+<li><p><strong>loc_end</strong> – End location.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if border is in the way, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.is_obstacle_in_the_way">
+<span class="sig-name descname"><span class="pre">is_obstacle_in_the_way</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.is_obstacle_in_the_way" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if obstacle is in the way between loc_start and loc_end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loc_start</strong> – Start location.</p></li>
+<li><p><strong>loc_end</strong> – End location.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if obstacle is in the way, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.obstacle_contains">
+<span class="sig-name descname"><span class="pre">obstacle_contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.obstacle_contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if obstacle contains the point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>loc</strong> – Location (x, y) to test.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if obstacle contains the point, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.set_neighbour_distance">
+<span class="sig-name descname"><span class="pre">set_neighbour_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.set_neighbour_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the neighbour distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – New neighbour distance in meters.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation index</a><ul>
+  <li><a href="modules.html">src</a><ul>
+      <li>Previous: <a href="Config.html" title="previous chapter">Config module</a></li>
+      <li>Next: <a href="WGS.html" title="next chapter">WGS module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Field.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2023, Yaolin Ge.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.4.0.
+  </div>
+  
+  </body>
+</html>

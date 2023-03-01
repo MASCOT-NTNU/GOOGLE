@@ -4,8 +4,10 @@ src
 .. toctree::
    :maxdepth: 4
 
+   Agents
    Config
    CostValley
+   Experiment
    Field
    GRF
    OPA
@@ -14,6 +16,8 @@ src
    Visualiser
    WGS
    WaypointGraph
+   func_test
+   run_replicates
    sensitivity
    tests
    usr_func

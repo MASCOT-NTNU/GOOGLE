@@ -10,12 +10,12 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Visualiser package" href="Visualiser.html" />
+    <link rel="prev" title="Planner.RRTSCV package" href="Planner.RRTSCV.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -37,23 +37,54 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-Simulators.CTDSimulator">
-<span id="simulators-ctdsimulator-module"></span><h2>Simulators.CTDSimulator module<a class="headerlink" href="#module-Simulators.CTDSimulator" title="Permalink to this heading">¶</a></h2>
+<section id="module-Simulators.CTD">
+<span id="simulators-ctd-module"></span><h2>Simulators.CTD module<a class="headerlink" href="#module-Simulators.CTD" title="Permalink to this heading">¶</a></h2>
 <p>CTDSimulator module simulates the true field.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="Simulators.CTDSimulator.CTDSimulator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Simulators.CTDSimulator.</span></span><span class="sig-name descname"><span class="pre">CTDSimulator</span></span><a class="headerlink" href="#Simulators.CTDSimulator.CTDSimulator" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Simulators.CTD.CTD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Simulators.CTD.</span></span><span class="sig-name descname"><span class="pre">CTD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nugget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Simulators.CTD.CTD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>CTD module handles the simulated truth value at each specific location.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="Simulators.CTDSimulator.CTDSimulator.get_ground_truth">
-<span class="sig-name descname"><span class="pre">get_ground_truth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#Simulators.CTDSimulator.CTDSimulator.get_ground_truth" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Simulators.CTD.CTD.get_ctd_data">
+<span class="sig-name descname"><span class="pre">get_ctd_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Simulators.CTD.CTD.get_ctd_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate CTD data gathering.
+:param loc: np.array([x, y])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array([x, y, sal])</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Simulators.CTD.CTD.get_ctd_data_1hz">
+<span class="sig-name descname"><span class="pre">get_ctd_data_1hz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Simulators.CTD.CTD.get_ctd_data_1hz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate CTD data gathering at 1hz.
+It means that it returns only one sample.
+:param loc: np.array([x, y])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array([x, y, sal])</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Simulators.CTD.CTD.get_ground_truth">
+<span class="sig-name descname"><span class="pre">get_ground_truth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Simulators.CTD.CTD.get_ground_truth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return ground truth.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="Simulators.CTDSimulator.CTDSimulator.get_salinity_at_loc">
-<span class="sig-name descname"><span class="pre">get_salinity_at_loc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#Simulators.CTDSimulator.CTDSimulator.get_salinity_at_loc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Simulators.CTD.CTD.get_salinity_at_loc">
+<span class="sig-name descname"><span class="pre">get_salinity_at_loc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#Simulators.CTD.CTD.get_salinity_at_loc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get CTD measurement at a specific location.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -65,31 +96,75 @@
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Simulators.CTD.CTD.mu_truth">
+<span class="sig-name descname"><span class="pre">mu_truth</span></span><a class="headerlink" href="#Simulators.CTD.CTD.mu_truth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up CTD data gathering</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
-<section id="module-Simulators.Simulator">
-<span id="simulators-simulator-module"></span><h2>Simulators.Simulator module<a class="headerlink" href="#module-Simulators.Simulator" title="Permalink to this heading">¶</a></h2>
-<p>Simulator handles the simulation task.
-- store essential data during simulation.
-- accept different parameters governing the simulation.</p>
+<section id="simulators-eda-module">
+<h2>Simulators.EDA module<a class="headerlink" href="#simulators-eda-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-Simulators.Log">
+<span id="simulators-log-module"></span><h2>Simulators.Log module<a class="headerlink" href="#module-Simulators.Log" title="Permalink to this heading">¶</a></h2>
+<p>Log object logs the data generated during the simulation process.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="Simulators.Simulator.Simulator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Simulators.Simulator.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight_eibv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_ivr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_replicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Simulators.Simulator.Simulator" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Simulators.Log.Log">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Simulators.Log.</span></span><span class="sig-name descname"><span class="pre">Log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#Simulators.CTD.CTD" title="Simulators.CTD.CTD"><span class="pre">CTD</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Simulators.Log.Log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="Simulators.Simulator.Simulator.get_counter">
-<span class="sig-name descname"><span class="pre">get_counter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Simulators.Simulator.Simulator.get_counter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Simulators.Log.Log.append_log">
+<span class="sig-name descname"><span class="pre">append_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Simulators.Log.Log.append_log" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="Simulators.Simulator.Simulator.run_simulator">
-<span class="sig-name descname"><span class="pre">run_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Simulators.Simulator.Simulator.run_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the autonomous operation according to Sense, Plan, Act philosophy.</p>
+<dt class="sig sig-object py" id="Simulators.Log.Log.get_ibv">
+<span class="sig-name descname"><span class="pre">get_ibv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_diag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#Simulators.Log.Log.get_ibv" title="Permalink to this definition">¶</a></dt>
+<dd><p>!!! Be careful with dimensions, it can lead to serious problems.
+!!! Be careful with standard deviation is not variance, so it does not cause significant issues tho.
+:param mu: n x 1 dimension
+:param sigma_diag: n x 1 dimension
+:return:</p>
 </dd></dl>
 
 </dd></dl>
 
+</section>
+<section id="simulators-logmyopic-module">
+<h2>Simulators.LogMyopic module<a class="headerlink" href="#simulators-logmyopic-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-Simulators.RRTLog">
+<span id="simulators-rrtlog-module"></span><h2>Simulators.RRTLog module<a class="headerlink" href="#module-Simulators.RRTLog" title="Permalink to this heading">¶</a></h2>
+<p>Log object logs the data generated during the RRT* simulation study.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Simulators.RRTLog.Log">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Simulators.RRTLog.</span></span><span class="sig-name descname"><span class="pre">Log</span></span><a class="headerlink" href="#Simulators.RRTLog.Log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Simulators.RRTLog.Log.append_log">
+<span class="sig-name descname"><span class="pre">append_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rrt</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Simulators.RRTLog.Log.append_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="simulators-rrtsimulator-module">
+<h2>Simulators.RRTSimulator module<a class="headerlink" href="#simulators-rrtsimulator-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="simulators-simulator-module">
+<h2>Simulators.Simulator module<a class="headerlink" href="#simulators-simulator-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="simulators-simulator-eibv-module">
+<h2>Simulators.Simulator_EIBV module<a class="headerlink" href="#simulators-simulator-eibv-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="simulators-simulator-myopic2d-module">
+<h2>Simulators.Simulator_Myopic2D module<a class="headerlink" href="#simulators-simulator-myopic2d-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="simulators-simulator-rrtstar-module">
+<h2>Simulators.Simulator_RRTStar module<a class="headerlink" href="#simulators-simulator-rrtstar-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-Simulators">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Simulators" title="Permalink to this heading">¶</a></h2>
@@ -113,11 +188,38 @@
 
 
 <h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Agents.html">Agents package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Config.html">Config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CostValley.html">CostValley package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Experiment.html">Experiment package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Field.html">Field module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GRF.html">GRF package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OPA.html">OPA module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.html">Planner package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Simulators package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Visualiser.html">Visualiser package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WGS.html">WGS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WaypointGraph.html">WaypointGraph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="func_test.html">func_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_replicates.html">run_replicates module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sensitivity.html">sensitivity package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usr_func.html">usr_func package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+      <li>Previous: <a href="Planner.RRTSCV.html" title="previous chapter">Planner.RRTSCV package</a></li>
+      <li>Next: <a href="Visualiser.html" title="next chapter">Visualiser package</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -144,10 +246,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, Yaolin Ge.
+      &copy;2023, Yaolin Ge.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

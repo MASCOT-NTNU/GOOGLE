@@ -1,0 +1,500 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>GRF package &#8212; GOOGLE 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/readable.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="WGS module" href="WGS.html" />
+    <link rel="prev" title="Field module" href="Field.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="WGS.html" title="WGS module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Field.html" title="Field module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GOOGLE 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">src</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">GRF package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="grf-package">
+<h1>GRF package<a class="headerlink" href="#grf-package" title="Permalink to this headline">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-GRF.GRF">
+<span id="grf-grf-module"></span><h2>GRF.GRF module<a class="headerlink" href="#module-GRF.GRF" title="Permalink to this headline">¶</a></h2>
+<p>Gaussian Random Field module handles the data assimilation and the cost valley computation.</p>
+<dl>
+<dt>Objectives:</dt><dd><ol class="arabic simple">
+<li><p>Construct the Gaussian Random Field (GRF) kernel.</p></li>
+<li><p>Update the prior mean and covariance matrix.</p></li>
+<li><p>Compute the cost valley fields.</p></li>
+<li><p>Assimilate in-situ data.</p></li>
+</ol>
+</dd>
+<dt>Methodology:</dt><dd><ol class="arabic">
+<li><dl>
+<dt>Construct the GRF kernel.</dt><dd><dl>
+<dt>1.1. Construct the distance matrix using</dt><dd><div class="math notranslate nohighlight">
+\[d_{ij} = \sqrt{(x_i - x_j)^2 + (y_i - y_j)^2}\]</div>
+</dd>
+<dt>1.2. Construct the covariance matrix.</dt><dd><div class="math notranslate nohighlight">
+\[\Sigma_{ij} = \sigma^2 (1 + \eta d_{ij}) \exp(-\eta d_{ij})\]</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Update the prior mean and covariance matrix.</dt><dd><p>2.1. Update the prior mean.
+2.2. Update the prior covariance matrix.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Compute the cost valley fields.</dt><dd><p>3.1. Compute the expected improvement of best value (EIBV).
+3.2. Compute the inverse of the variance reduction (IVR).
+3.3. Compute the cost valley fields by summing weighted EIBV and weighted IVR fields.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="GRF.GRF.GRF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">GRF.GRF.</span></span><span class="sig-name descname"><span class="pre">GRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nugget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approximate_eibv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GRF.GRF.GRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.assimilate_data">
+<span class="sig-name descname"><span class="pre">assimilate_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.assimilate_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assimilate dataset to GRF kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dataset</strong> – np.array([x, y, sal])</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Methodology:</dt><dd><ol class="arabic simple">
+<li><p>Construct the distance matrix between gmrf grid and dataset grid.</p></li>
+<li><p>Average the values to each cell.</p></li>
+<li><p>Update the kernel mean and covariance matrix.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">assimilate_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_mu</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.assimilate_temporal_data">
+<span class="sig-name descname"><span class="pre">assimilate_temporal_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.assimilate_temporal_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assimilate temporal dataset to GRF kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dataset</strong> – np.array([timestamp, x, y, sal])</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Methodology:</dt><dd><ol class="arabic simple">
+<li><p>Construct the distance matrix between grf grid and dataset grid.</p></li>
+<li><p>Average the values to each cell.</p></li>
+<li><p>Update the kernel mean and covariance matrix.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(ind, salinity) for visualising eda plots.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">assimilate_temporal_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_mu</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_covariance_matrix">
+<span class="sig-name descname"><span class="pre">get_covariance_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_covariance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Covariance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Covariance matrix</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Sigma</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_covariance_matrix</span><span class="p">()</span>
+<span class="go">array([[1.00000000e+00, 9.99999998e-01, 9.99999994e-01],</span>
+<span class="go">       [9.99999998e-01, 1.00000000e+00, 9.99999998e-01],</span>
+<span class="go">       [9.99999994e-01, 9.99999998e-01, 1.00000000e+00]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_ei_field">
+<span class="sig-name descname"><span class="pre">get_ei_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_ei_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get expected information field.</p>
+<dl>
+<dt>Methodology:</dt><dd><ol class="arabic">
+<li><p>Loop through each grid point and calculate the EIBV and IVR fields.</p></li>
+<li><dl>
+<dt>Calculate the EI field using</dt><dd><div class="math notranslate nohighlight">
+\[EI = weight * EIBV + (1 - weight) * IVR\]</div>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>expected information based on variance reduction, dimension: Ngrid x 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>eibv_field</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eibv_field</span> <span class="o">=</span> <span class="n">grf</span><span class="o">.</span><span class="n">get_ei_field</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_eibv_field">
+<span class="sig-name descname"><span class="pre">get_eibv_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_eibv_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the computed eibv field, given which method to be called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>eibv field</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>eibv_field</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_eibv_field</span><span class="p">()</span>
+<span class="go">array([0.1, 0.2, 0.3])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_ivr_field">
+<span class="sig-name descname"><span class="pre">get_ivr_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_ivr_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the computed ivr field, given which method to be called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>ivr field</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ivr_field</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_ivr_field</span><span class="p">()</span>
+<span class="go">array([0.1, 0.2, 0.3])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_lateral_range">
+<span class="sig-name descname"><span class="pre">get_lateral_range</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_lateral_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lateral range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>lateral range</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>lateral_range</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_lateral_range</span><span class="p">()</span>
+<span class="go">600.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_mu">
+<span class="sig-name descname"><span class="pre">get_mu</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_mu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return mean vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>mean vector</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>mu</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_mu</span><span class="p">()</span>
+<span class="go">array([0.1, 0.2, 0.3])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_nugget">
+<span class="sig-name descname"><span class="pre">get_nugget</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_nugget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return nugget of the field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>nugget</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>nugget</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_nugget</span><span class="p">()</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_sigma">
+<span class="sig-name descname"><span class="pre">get_sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return variability of the field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>space variability</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>sigma</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">()</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.get_threshold">
+<span class="sig-name descname"><span class="pre">get_threshold</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.get_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>threshold</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>threshold</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_threshold</span><span class="p">()</span>
+<span class="go">27.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.set_lateral_range">
+<span class="sig-name descname"><span class="pre">set_lateral_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.set_lateral_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set lateral range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – lateral range</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">set_lateral_range</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.set_mu">
+<span class="sig-name descname"><span class="pre">set_mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.set_mu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set mean of the field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – mean of the field</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">set_mu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">]))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.set_nugget">
+<span class="sig-name descname"><span class="pre">set_nugget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.set_nugget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set nugget.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – nugget</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">set_nugget</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.set_sigma">
+<span class="sig-name descname"><span class="pre">set_sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.set_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set space variability.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – space variability</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">set_sigma</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.set_threshold">
+<span class="sig-name descname"><span class="pre">set_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.set_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – threshold</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-GRF">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-GRF" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">GRF package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-GRF.GRF">GRF.GRF module</a></li>
+<li><a class="reference internal" href="#module-GRF">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div><h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation index</a><ul>
+  <li><a href="modules.html">src</a><ul>
+      <li>Previous: <a href="Field.html" title="previous chapter">Field module</a></li>
+      <li>Next: <a href="WGS.html" title="next chapter">WGS module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/GRF.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2023, Yaolin Ge.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.4.0.
+  </div>
+  
+  </body>
+</html>

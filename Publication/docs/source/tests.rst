@@ -4,42 +4,34 @@ tests package
 Submodules
 ----------
 
-tests.test\_a2 module
----------------------
+tests.test\_agent\_myopic module
+--------------------------------
 
-.. automodule:: tests.test_a2
+.. automodule:: tests.test_agent_myopic
    :members:
    :undoc-members:
    :show-inheritance:
 
-tests.test\_agent module
-------------------------
-
-.. automodule:: tests.test_agent
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-tests.test\_agent\_plot module
-------------------------------
-
-.. automodule:: tests.test_agent_plot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-tests.test\_astar module
-------------------------
-
-.. automodule:: tests.test_astar
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-tests.test\_auv\_simulator module
+tests.test\_agent\_rrtstar module
 ---------------------------------
 
-.. automodule:: tests.test_auv_simulator
+.. automodule:: tests.test_agent_rrtstar
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.test\_agent\_rrtstarvis module
+------------------------------------
+
+.. automodule:: tests.test_agent_rrtstarvis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.test\_auv module
+----------------------
+
+.. automodule:: tests.test_auv
    :members:
    :undoc-members:
    :show-inheritance:
@@ -76,18 +68,18 @@ tests.test\_ctd\_simulator module
    :undoc-members:
    :show-inheritance:
 
-tests.test\_delft3d module
---------------------------
+tests.test\_eibv\_methods module
+--------------------------------
 
-.. automodule:: tests.test_delft3d
+.. automodule:: tests.test_eibv_methods
    :members:
    :undoc-members:
    :show-inheritance:
 
-tests.test\_direction module
-----------------------------
+tests.test\_experiment\_eda module
+----------------------------------
 
-.. automodule:: tests.test_direction
+.. automodule:: tests.test_experiment_eda
    :members:
    :undoc-members:
    :show-inheritance:
@@ -108,18 +100,18 @@ tests.test\_grf module
    :undoc-members:
    :show-inheritance:
 
-tests.test\_messenger module
-----------------------------
+tests.test\_log module
+----------------------
 
-.. automodule:: tests.test_messenger
+.. automodule:: tests.test_log
    :members:
    :undoc-members:
    :show-inheritance:
 
-tests.test\_mohid module
-------------------------
+tests.test\_myopic2d module
+---------------------------
 
-.. automodule:: tests.test_mohid
+.. automodule:: tests.test_myopic2d
    :members:
    :undoc-members:
    :show-inheritance:
@@ -140,10 +132,34 @@ tests.test\_rrtstar module
    :undoc-members:
    :show-inheritance:
 
-tests.test\_straighlineplanner module
+tests.test\_run\_replicates module
+----------------------------------
+
+.. automodule:: tests.test_run_replicates
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.test\_simulator\_eibv module
+----------------------------------
+
+.. automodule:: tests.test_simulator_eibv
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.test\_simulator\_myopic2d module
+--------------------------------------
+
+.. automodule:: tests.test_simulator_myopic2d
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.test\_simulator\_rrtstar module
 -------------------------------------
 
-.. automodule:: tests.test_straighlineplanner
+.. automodule:: tests.test_simulator_rrtstar
    :members:
    :undoc-members:
    :show-inheritance:
