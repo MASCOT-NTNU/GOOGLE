@@ -32,57 +32,8 @@
 
           <div class="body" role="main">
             
-  <section id="module-WGS">
-<span id="wgs-module"></span><h1>WGS module<a class="headerlink" href="#module-WGS" title="Permalink to this heading">¶</a></h1>
-<p>WGS 84 coordinate system.
-North-East-Down reference is employed.</p>
-<p>It converts (lat, lon) in degrees to (x, y) in meters given a specific origin.
-The selected origin is at Nidarosdomen in Trondheim.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wgs</span> <span class="o">=</span> <span class="n">WGS</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">wgs</span><span class="o">.</span><span class="n">latlon2xy</span><span class="p">(</span><span class="mf">63.42690974</span><span class="p">,</span> <span class="mf">10.3969373</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">wgs</span><span class="o">.</span><span class="n">xy2latlon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="mf">63.43589289658141</span> <span class="mf">10.437112521492383</span>
-</pre></div>
-</div>
-<dl class="py class">
-<dt class="sig sig-object py" id="WGS.WGS">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">WGS.</span></span><span class="sig-name descname"><span class="pre">WGS</span></span><a class="headerlink" href="#WGS.WGS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="WGS.WGS.get_circumference">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_circumference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#WGS.WGS.get_circumference" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the circumference for the earth in meters.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="WGS.WGS.get_origin">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_origin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#WGS.WGS.get_origin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return origin lat, lon in degrees.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="WGS.WGS.latlon2xy">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">latlon2xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#WGS.WGS.latlon2xy" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="WGS.WGS.set_origin">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_origin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#WGS.WGS.set_origin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the origin for the coordinate system.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="WGS.WGS.xy2latlon">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xy2latlon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#WGS.WGS.xy2latlon" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="wgs-module">
+<h1>WGS module<a class="headerlink" href="#wgs-module" title="Permalink to this heading">¶</a></h1>
 </section>
 
 

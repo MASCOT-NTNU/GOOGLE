@@ -41,26 +41,14 @@
 <li class="toctree-l1"><a class="reference internal" href="Planner.Myopic2D.html">Planner.Myopic2D package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#planner-myopic2d-myopic2d-module">Planner.Myopic2D.Myopic2D module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#module-Planner.Myopic2D">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.Myopic2D.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Planner.RRTSCV.html">Planner.RRTSCV package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#planner-rrtscv-rrtstarcv-module">Planner.RRTSCV.RRTStarCV module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-Planner.RRTSCV.TreeNode">Planner.RRTSCV.TreeNode module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode"><code class="docutils literal notranslate"><span class="pre">TreeNode</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_cost"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_cost()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_distance_between_nodes"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_distance_between_nodes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_location"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_location()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.get_parent"><code class="docutils literal notranslate"><span class="pre">TreeNode.get_parent()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.set_cost"><code class="docutils literal notranslate"><span class="pre">TreeNode.set_cost()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.set_location"><code class="docutils literal notranslate"><span class="pre">TreeNode.set_location()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="Planner.RRTSCV.html#Planner.RRTSCV.TreeNode.TreeNode.set_parent"><code class="docutils literal notranslate"><span class="pre">TreeNode.set_parent()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-Planner.RRTSCV">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#planner-rrtscv-treenode-module">Planner.RRTSCV.TreeNode module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Planner.RRTSCV.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -69,170 +57,20 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-Planner.AStar">
-<span id="planner-astar-module"></span><h2>Planner.AStar module<a class="headerlink" href="#module-Planner.AStar" title="Permalink to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.AStar.AStar">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.AStar.</span></span><span class="sig-name descname"><span class="pre">AStar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plg_border</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plg_obstacle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.DISTANCE_TOLERANCE">
-<span class="sig-name descname"><span class="pre">DISTANCE_TOLERANCE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.02</span></em><a class="headerlink" href="#Planner.AStar.AStar.DISTANCE_TOLERANCE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.DISTANCE_TOLERANCE_TARGET">
-<span class="sig-name descname"><span class="pre">DISTANCE_TOLERANCE_TARGET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.075</span></em><a class="headerlink" href="#Planner.AStar.AStar.DISTANCE_TOLERANCE_TARGET" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.get_distance_between_nodes">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_distance_between_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.get_distance_between_nodes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.get_min_cost_node">
-<span class="sig-name descname"><span class="pre">get_min_cost_node</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.get_min_cost_node" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.is_arrived">
-<span class="sig-name descname"><span class="pre">is_arrived</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.is_arrived" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.is_node_in_list">
-<span class="sig-name descname"><span class="pre">is_node_in_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.is_node_in_list" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.is_within_border">
-<span class="sig-name descname"><span class="pre">is_within_border</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.is_within_border" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.is_within_obstacle">
-<span class="sig-name descname"><span class="pre">is_within_obstacle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.is_within_obstacle" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.AStar.search_path">
-<span class="sig-name descname"><span class="pre">search_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.AStar.search_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.AStar.Node">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.AStar.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.Node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.AStar.TestAstar">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.AStar.</span></span><span class="sig-name descname"><span class="pre">TestAstar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.TestAstar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.TestAstar.setUp">
-<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Planner.AStar.TestAstar.setUp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hook method for setting up the test fixture before exercising it.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.AStar.TestAstar.test_astar">
-<span class="sig-name descname"><span class="pre">test_astar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.AStar.TestAstar.test_astar" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="planner-astar-module">
+<h2>Planner.AStar module<a class="headerlink" href="#planner-astar-module" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-Planner.PRM">
-<span id="planner-prm-module"></span><h2>Planner.PRM module<a class="headerlink" href="#module-Planner.PRM" title="Permalink to this heading">¶</a></h2>
-<p>PRM conducts the path planning using probabilistic road map philosophy. It selects the minimum cost path between
-the starting location and the end location.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.PRM.Node">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.PRM.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.Node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.PRM.PRM">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.PRM.</span></span><span class="sig-name descname"><span class="pre">PRM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.get_distance_between_nodes">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_distance_between_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.get_distance_between_nodes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.get_ind_min_cost">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ind_min_cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.get_ind_min_cost" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.get_new_location">
-<span class="sig-name descname"><span class="pre">get_new_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.get_new_location" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.get_road_map">
-<span class="sig-name descname"><span class="pre">get_road_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.get_road_map" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.get_shortest_path_using_dijkstra">
-<span class="sig-name descname"><span class="pre">get_shortest_path_using_dijkstra</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.get_shortest_path_using_dijkstra" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.inRedZone">
-<span class="sig-name descname"><span class="pre">inRedZone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.inRedZone" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.iscollided">
-<span class="sig-name descname"><span class="pre">iscollided</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.iscollided" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.nodes">
-<span class="sig-name descname"><span class="pre">nodes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#Planner.PRM.PRM.nodes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.plot_prm">
-<span class="sig-name descname"><span class="pre">plot_prm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Planner.PRM.PRM.plot_prm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="Planner.PRM.PRM.polygon_obstacles">
-<span class="sig-name descname"><span class="pre">polygon_obstacles</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#Planner.PRM.PRM.polygon_obstacles" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="planner-prm-module">
+<h2>Planner.PRM module<a class="headerlink" href="#planner-prm-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="planner-planner-module">
 <h2>Planner.Planner module<a class="headerlink" href="#planner-planner-module" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-Planner.StraightLinePathPlanner">
-<span id="planner-straightlinepathplanner-module"></span><h2>Planner.StraightLinePathPlanner module<a class="headerlink" href="#module-Planner.StraightLinePathPlanner" title="Permalink to this heading">¶</a></h2>
-<p>StraightLinePathPLanner plans one step ahead according to the desired angle.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="Planner.StraightLinePathPlanner.StraightLinePathPlanner">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Planner.StraightLinePathPlanner.</span></span><span class="sig-name descname"><span class="pre">StraightLinePathPlanner</span></span><a class="headerlink" href="#Planner.StraightLinePathPlanner.StraightLinePathPlanner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="Planner.StraightLinePathPlanner.StraightLinePathPlanner.get_waypoint_from_straight_line">
-<span class="sig-name descname"><span class="pre">get_waypoint_from_straight_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_now</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Planner.StraightLinePathPlanner.StraightLinePathPlanner.get_waypoint_from_straight_line" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="planner-straightlinepathplanner-module">
+<h2>Planner.StraightLinePathPlanner module<a class="headerlink" href="#planner-straightlinepathplanner-module" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-Planner">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Planner" title="Permalink to this heading">¶</a></h2>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 

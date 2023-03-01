@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   Planner.Myopic2D
    Planner.RRTSCV
 
 Submodules
