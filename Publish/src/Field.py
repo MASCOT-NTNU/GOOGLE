@@ -1,9 +1,80 @@
 """
-Field handles field discretization and validation.
-- generate grid discretization.
-- check legal conditions of given locations.
-- check collision with obstacles.
+Field module handles field discretization and validation.
+
+Author:
+    Yaolin Ge
+    yaolin.ge@ntnu.no
+
+Objective:
+    1. Generate grid discretization.
+    2. Check legal conditions of given locations.
+    3. Check collision with obstacles.
+
+Examples:
+    >>> from Field import Field
+    >>> f = Field()
+    >>> f.get_grid()
+    np.array([[ 0.  0.]
+        [ 0.  1.]
+        ...
+        [ 9.  8.]])
+    >>> f.get_neighbour_indices(0)
+    1 2 3 4
+
+    >>> f.border_contains(np.array([10, 10]))
+    True
+    >>> f.obstacle_contains(np.array([10, 10]))
+    False
+
+    >>> f.is_border_in_the_way(np.array([10, 10]), np.array([20, 20]))
+    False
+    >>> f.is_obstacle_in_the_way(np.array([10, 10]), np.array([20, 20]))
+    True
+
+    >>> f.set_neighbour_distance(100)
+    >>> f.get_neighbour_distance()
+    100.0
+
+    >>> f.get_border_limits()
+    (0.0, 0.0, 9.0, 8.0)
+
+    >>> f.get_border_polygon()
+    np.array([[ 0.,  0.],
+        [ 0.,  8.],
+        [ 9.,  8.],
+        [ 9.,  0.],
+        [ 0.,  0.]])
+
+    >>> f.get_obstacle_polygon()
+    np.array([[ 2.,  2.],
+        [ 2.,  6.],
+        [ 7.,  6.],
+        [ 7.,  2.],
+        [ 2.,  2.]])
+
+    >>> f.get_border_line()
+    LineString([(0.0, 0.0), (0.0, 8.0), (9.0, 8.0), (9.0, 0.0), (0.0, 0.0)])
+
+    >>> f.get_obstacle_line()
+    LineString([(2.0, 2.0), (2.0, 6.0), (7.0, 6.0), (7.0, 2.0), (2.0, 2.0)])
+
+    >>> f.get_ind_from_location(np.array([10, 10]))
+    0
+
+    >>> f.get_location_from_ind(10)
+    np.array([ 1.,  0.])
+
+Notes:
+    1. The coordinate system is x-y with x pointing up, y pointing to the right which cooresponds to NED system
+    (North-East-Down).
+    2. The origin is at the bottom left corner of the field, i.e. the bottom left corner has coordinates (0, 0).
+
+References:
+    TODO: Add references.
+    TODO: Add figures to demonstrate the capaibility.
+
 """
+
 from Config import Config
 import numpy as np
 from shapely.geometry import Point, LineString
@@ -36,20 +107,6 @@ class Field:
         __grid (np.ndarray): Array of field grid points.
         __neighbour_hash_table (dict): Hash table for containing neighboring indices around each waypoint.
 
-    Methods:
-        __init__(self, neighbour_distance: float = 120): Initializes the Field object.
-        set_neighbour_distance(self, value: float) -> None: Sets the neighbor distance.
-        border_contains(self, loc: np.ndarray) -> bool: Tests if a point is within the border polygon.
-        obstacle_contains(self, loc: np.ndarray) -> bool: Tests if an obstacle contains a point.
-        is_border_in_the_way(self, loc_start: np.ndarray, loc_end: np.ndarray) -> bool:
-           Tests if the border is in the way between two locations.
-        is_obstacle_in_the_way(self, loc_start: np.ndarray, loc_end: np.ndarray) -> bool:
-           Tests if an obstacle is in the way between two locations.
-        __construct_grid(self) -> None: Constructs the field grid.
-        __construct_hash_neighbours(self) -> None: Constructs the hash table for containing neighbor indices around
-           each waypoint.
-        get_neighbour_indices(self, ind_now: Union[int, np.ndarray]) -> np.ndarray: Returns neighboring indices
-           according to the given current index.
     """
     def __init__(self, neighbour_distance: float = 120) -> None:
         """
