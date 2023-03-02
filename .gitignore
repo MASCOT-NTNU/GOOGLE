@@ -9,3 +9,10 @@
 **Goal_indices.npy
 *RRT_Random_Locations.npy
 **RRT_Random_Locations.npy
+
+
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor
