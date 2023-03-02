@@ -33,6 +33,11 @@ plugins:
   - jekyll-feed
   - jekyll-sitemap
   - jekyll-seo-tag
+  - jekyll-relative-links
+
+relative_links:
+  enabled:     true
+  collections: false
 
 # Exclude from processing.
 # The following items will not be processed, by default.
