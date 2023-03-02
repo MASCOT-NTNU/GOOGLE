@@ -15,7 +15,7 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="WGS module" href="WGS.html" />
+    <link rel="next" title="GRF package" href="GRF.html" />
     <link rel="prev" title="Config module" href="Config.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -34,7 +34,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="WGS.html" title="WGS module"
+          <a href="GRF.html" title="GRF package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="Config.html" title="Config module"
@@ -52,10 +52,92 @@
             
   <section id="module-Field">
 <span id="field-module"></span><h1>Field module<a class="headerlink" href="#module-Field" title="Permalink to this headline">¶</a></h1>
-<p>Field handles field discretization and validation.
-- generate grid discretization.
-- check legal conditions of given locations.
-- check collision with obstacles.</p>
+<p>Field module handles field discretization and validation.</p>
+<dl class="simple">
+<dt>Author:</dt><dd><p>Yaolin Ge
+<a class="reference external" href="mailto:yaolin&#46;ge&#37;&#52;&#48;ntnu&#46;no">yaolin<span>&#46;</span>ge<span>&#64;</span>ntnu<span>&#46;</span>no</a></p>
+</dd>
+<dt>Objective:</dt><dd><ol class="arabic simple">
+<li><p>Generate grid discretization.</p></li>
+<li><p>Check legal conditions of given locations.</p></li>
+<li><p>Check collision with obstacles.</p></li>
+</ol>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Field</span> <span class="kn">import</span> <span class="n">Field</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Field</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_grid</span><span class="p">()</span>
+<span class="go">np.array([[ 0.  0.]</span>
+<span class="go">    [ 0.  1.]</span>
+<span class="go">    ...</span>
+<span class="go">    [ 9.  8.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_neighbour_indices</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">1 2 3 4</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">border_contains</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">obstacle_contains</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]))</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">is_border_in_the_way</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">]))</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">is_obstacle_in_the_way</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">]))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">set_neighbour_distance</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_neighbour_distance</span><span class="p">()</span>
+<span class="go">100.0</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_border_limits</span><span class="p">()</span>
+<span class="go">(0.0, 0.0, 9.0, 8.0)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_border_polygon</span><span class="p">()</span>
+<span class="go">np.array([[ 0.,  0.],</span>
+<span class="go">    [ 0.,  8.],</span>
+<span class="go">    [ 9.,  8.],</span>
+<span class="go">    [ 9.,  0.],</span>
+<span class="go">    [ 0.,  0.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_obstacle_polygon</span><span class="p">()</span>
+<span class="go">np.array([[ 2.,  2.],</span>
+<span class="go">    [ 2.,  6.],</span>
+<span class="go">    [ 7.,  6.],</span>
+<span class="go">    [ 7.,  2.],</span>
+<span class="go">    [ 2.,  2.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_border_line</span><span class="p">()</span>
+<span class="go">LineString([(0.0, 0.0), (0.0, 8.0), (9.0, 8.0), (9.0, 0.0), (0.0, 0.0)])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_obstacle_line</span><span class="p">()</span>
+<span class="go">LineString([(2.0, 2.0), (2.0, 6.0), (7.0, 6.0), (7.0, 2.0), (2.0, 2.0)])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_ind_from_location</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]))</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">get_location_from_ind</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">np.array([ 1.,  0.])</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>1. The coordinate system is x-y with x pointing up, y pointing to the right which cooresponds to NED system
+(North-East-Down).</p>
+<ol class="arabic simple" start="2">
+<li><p>The origin is at the bottom left corner of the field, i.e. the bottom left corner has coordinates (0, 0).</p></li>
+</ol>
+<p class="rubric">References</p>
+<p>TODO: Add references.
+TODO: Add figures to demonstrate the capaibility.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="Field.Field">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Field.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbour_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Field.Field" title="Permalink to this definition">¶</a></dt>
@@ -260,61 +342,41 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__(self,</span> <span class="pre">neighbour_distance</span></span></dt>
-<dd><p>float = 120): Initializes the Field object.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">set_neighbour_distance(self,</span> <span class="pre">value</span></span></dt>
-<dd><p>float) -&gt; None: Sets the neighbor distance.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">border_contains(self,</span> <span class="pre">loc</span></span></dt>
-<dd><p>np.ndarray) -&gt; bool: Tests if a point is within the border polygon.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">obstacle_contains(self,</span> <span class="pre">loc</span></span></dt>
-<dd><p>np.ndarray) -&gt; bool: Tests if an obstacle contains a point.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">is_border_in_the_way(self,</span> <span class="pre">loc_start</span></span></dt>
-<dd><p>np.ndarray, loc_end: np.ndarray) -&gt; bool:
-Tests if the border is in the way between two locations.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">is_obstacle_in_the_way(self,</span> <span class="pre">loc_start</span></span></dt>
-<dd><p>np.ndarray, loc_end: np.ndarray) -&gt; bool:
-Tests if an obstacle is in the way between two locations.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="Field.Field.__construct_grid">
-<span class="sig-name descname"><span class="pre">__construct_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs the field grid.</p>
+<span class="sig-name descname"><span class="pre">__construct_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the field grid using a regular meshgrid.</p>
+<dl class="simple">
+<dt>Steps:</dt><dd><ol class="arabic simple">
+<li><p>Create a meshgrid with x and y coordinates.</p></li>
+<li><p>Shift the y coordinates by half the y gap.</p></li>
+<li><p>Filter out the points that are not within the border polygon or within obstacle polygon.</p></li>
+<li><p>Append the points to the grid.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="Field.Field.__construct_hash_neighbours">
-<span class="sig-name descname"><span class="pre">__construct_hash_neighbours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_hash_neighbours" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs the hash table for containing neighbor indices around
-each waypoint.</p>
+<span class="sig-name descname"><span class="pre">__construct_hash_neighbours</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_hash_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the hash table for containing neighbour indices around each waypoint.</p>
+<p>Methods: Directly use the neighbouring radius to determine the neighbouring indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_neighbour_indices(self,</span> <span class="pre">ind_now</span></span></dt>
-<dd><p>Union[int, np.ndarray]) -&gt; np.ndarray: Returns neighboring indices
-according to the given current index.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">__line_obstacle_shapely</span></span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the xy limits and gaps for the bigger box</p>
 </dd></dl>
 
 <dl class="py method">
@@ -501,7 +563,7 @@ location = np.array([x1, y1])</p>
   <li><a href="index.html">Documentation index</a><ul>
   <li><a href="modules.html">src</a><ul>
       <li>Previous: <a href="Config.html" title="previous chapter">Config module</a></li>
-      <li>Next: <a href="WGS.html" title="next chapter">WGS module</a></li>
+      <li>Next: <a href="GRF.html" title="next chapter">GRF package</a></li>
   </ul></li>
   </ul></li>
 </ul>
