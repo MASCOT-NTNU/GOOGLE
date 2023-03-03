@@ -25,12 +25,19 @@ release = '0.1.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']
+
 # autodoc_mock_imports = ['numpy', 'scipy', 'pandas', 'shapely', 'matplotlib', 'joblib', 'tqdm', 'geopandas', 'sklearn']
 autodoc_mock_imports = ['numpy', 'shapely', 'pandas', 'matplotlib', 'scipy']
 
 templates_path = ['_templates']
 exclude_patterns = []
 
+# extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx_jekyll_builder']
+# exclude_patterns = [
+#     'build/*'
+# ]
+
+html_static_path = ['static']
 
 
 # -- Options for HTML output -------------------------------------------------
