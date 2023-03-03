@@ -7,6 +7,8 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../src'))
 
+# html_baseurl = '/GOOGLE/Publish/docs/build/html'
+
 import sphinx_readable_theme
 html_theme = 'readable'
 html_theme_path = [sphinx_readable_theme.get_html_theme_path()]

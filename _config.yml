@@ -27,6 +27,10 @@ baseurl: "/GOOGLE" # the subpath of your site, e.g. /blog
 url: "https://mascot-ntnu.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  yaolinge
 
+
+exclude: [Nidelva2D, Nidelva3D, Publication, Spatio_temporal, Square2D, Cube3D, SystemDesign, docs]
+
+
 # Build settings
 theme: minima
 plugins:
