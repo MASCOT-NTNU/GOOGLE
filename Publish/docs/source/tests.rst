@@ -11,7 +11,6 @@ tests.test\_config module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 tests.test\_field module
 ------------------------
@@ -20,7 +19,6 @@ tests.test\_field module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 tests.test\_grf module
 ----------------------
@@ -29,7 +27,6 @@ tests.test\_grf module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 Module contents
 ---------------
@@ -38,4 +35,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
