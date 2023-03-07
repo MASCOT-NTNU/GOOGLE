@@ -11,6 +11,7 @@ usr\_func.EIBV module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.checkfolder module
 ----------------------------
@@ -19,6 +20,7 @@ usr\_func.checkfolder module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.get\_resume\_state module
 -----------------------------------
@@ -27,6 +29,7 @@ usr\_func.get\_resume\_state module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.interpolate\_2d module
 --------------------------------
@@ -35,6 +38,7 @@ usr\_func.interpolate\_2d module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.interpolate\_3d module
 --------------------------------
@@ -43,6 +47,7 @@ usr\_func.interpolate\_3d module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.is\_even module
 -------------------------
@@ -51,6 +56,7 @@ usr\_func.is\_even module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.is\_list\_empty module
 --------------------------------
@@ -59,6 +65,7 @@ usr\_func.is\_list\_empty module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.normalize module
 --------------------------
@@ -67,6 +74,7 @@ usr\_func.normalize module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.refill\_nan\_values module
 ------------------------------------
@@ -75,6 +83,7 @@ usr\_func.refill\_nan\_values module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.set\_resume\_state module
 -----------------------------------
@@ -83,6 +92,7 @@ usr\_func.set\_resume\_state module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.sort\_polygon\_vertices module
 ----------------------------------------
@@ -91,6 +101,7 @@ usr\_func.sort\_polygon\_vertices module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 usr\_func.vectorize module
 --------------------------
@@ -99,6 +110,7 @@ usr\_func.vectorize module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 Module contents
 ---------------
@@ -107,3 +119,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

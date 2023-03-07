@@ -50,6 +50,19 @@ class TestGRF(TestCase):
         self.polygon_border = self.c.get_polygon_border()
         self.auv = AUV()
 
+    def test_ei_field_using_different_methods(self) -> None:
+        # g = GRF(sigma=1.5, nugget=.4, approximate_eibv=True)
+        # eibv, ivr = g.get_ei_field()
+
+        # g2 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False)
+        # eibv2, ivr2 = g2.get_ei_field()
+
+        g3 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False, parallel_eibv=True)
+        eibv3, ivr3 = g3.get_ei_field()
+
+        eibv3
+        pass
+
     # def test_auv_data_temporal_analysis(self) -> None:
     #     df = self.auv.get_dataset()
     #
@@ -88,13 +101,13 @@ class TestGRF(TestCase):
     #           stepsize2=.1, threshold1=27, traj=data[:, 1:-1])
     #
     #     print("h")
-
+    #
     # def test_prior_matern_covariance(self):
     #     print("S1")
     #     plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_covariance_matrix())),
     #           vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
     #     print("END S1")
-
+    #
     # def test_assimilate(self):
     #     # c2: one
     #     print("S2")

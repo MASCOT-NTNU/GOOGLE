@@ -340,6 +340,44 @@ TODO: Add figures to demonstrate the capaibility.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.__construct_grid">
+<span class="sig-name descname"><span class="pre">__construct_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the field grid using a regular meshgrid.</p>
+<dl class="simple">
+<dt>Steps:</dt><dd><ol class="arabic simple">
+<li><p>Create a meshgrid with x and y coordinates.</p></li>
+<li><p>Shift the y coordinates by half the y gap.</p></li>
+<li><p>Filter out the points that are not within the border polygon or within obstacle polygon.</p></li>
+<li><p>Append the points to the grid.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Field.Field.__construct_hash_neighbours">
+<span class="sig-name descname"><span class="pre">__construct_hash_neighbours</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Field.Field.__construct_hash_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the hash table for containing neighbour indices around each waypoint.</p>
+<p>Methods: Directly use the neighbouring radius to determine the neighbouring indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">__line_obstacle_shapely</span></span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the xy limits and gaps for the bigger box</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="Field.Field.border_contains">
 <span class="sig-name descname"><span class="pre">border_contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Field.Field.border_contains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test if point is within the border polygon.</p>

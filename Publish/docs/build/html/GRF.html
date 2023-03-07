@@ -100,6 +100,223 @@
 <dt class="sig sig-object py" id="GRF.GRF.GRF">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">GRF.GRF.</span></span><span class="sig-name descname"><span class="pre">GRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nugget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approximate_eibv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GRF.GRF.GRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__Sigma">
+<span class="sig-name descname"><span class="pre">__Sigma</span></span><a class="headerlink" href="#GRF.GRF.GRF.__Sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cost valley</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__ar1_corr">
+<span class="sig-name descname"><span class="pre">__ar1_corr</span></span><a class="headerlink" href="#GRF.GRF.GRF.__ar1_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empirical parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__construct_grf_field">
+<span class="sig-name descname"><span class="pre">__construct_grf_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.__construct_grf_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct distance matrix and thus Covariance matrix for the kernel.</p>
+<dl>
+<dt>Methodology:</dt><dd><ol class="arabic">
+<li><dl>
+<dt>Construct the distance matrix using</dt><dd><div class="math notranslate nohighlight">
+\[d_{ij} = \sqrt{(x_i - x_j)^2 + (y_i - y_j)^2}\]</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Construct the covariance matrix.</dt><dd><div class="math notranslate nohighlight">
+\[\Sigma_{ij} = \sigma^2 (1 + \eta d_{ij}) \exp(-\eta d_{ij})\]</div>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__construct_prior_mean">
+<span class="sig-name descname"><span class="pre">__construct_prior_mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.__construct_prior_mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct prior mean for the kernel.</p>
+<dl class="simple">
+<dt>Methodology:</dt><dd><ol class="arabic simple">
+<li><p>Construct the prior mean using the SINMOD dataset.</p></li>
+<li><p>Interpolate the prior mean onto the grid.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__get_eibv">
+<span class="sig-name descname"><span class="pre">__get_eibv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_diag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vr_diag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.__get_eibv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> – n x 1 dimension</p></li>
+<li><p><strong>sigma_diag</strong> – n x 1 dimension</p></li>
+<li><p><strong>vr_diag</strong> – n x 1 dimension</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Methodology:</dt><dd><ol class="arabic">
+<li><dl>
+<dt>Calculate the probability of exceedance of the threshold using a bivariate cumulative dentisty function.</dt><dd><div class="math notranslate nohighlight">
+\[p = \Phi(\frac{\theta - \mu}{\sigma}) - \Phi(\frac{\theta - \mu}{\sigma}) \Phi(\frac{\theta - \mu}{\sigma})\]</div>
+</dd>
+</dl>
+</li>
+<li><p>Calculate eibv by summing up the product of p*(1-p).</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>information based on variance reduction, dimension: n x 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>eibv</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eibv</span> <span class="o">=</span> <span class="n">grf</span><span class="o">.</span><span class="n">__get_eibv</span><span class="p">(</span><span class="n">grf</span><span class="o">.</span><span class="n">__mu</span><span class="p">,</span> <span class="n">grf</span><span class="o">.</span><span class="n">__sigma_diag</span><span class="p">,</span> <span class="n">grf</span><span class="o">.</span><span class="n">__vr_diag</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__get_ibv">
+<span class="sig-name descname"><span class="pre">__get_ibv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_diag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.__get_ibv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the ibv using the approximate formula with a univariate cumulative dentisty function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> – n x 1 dimension</p></li>
+<li><p><strong>sigma_diag</strong> – n x 1 dimension</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Methodology:</dt><dd><ol class="arabic simple">
+<li><p>Calculate the probability of exceedance of the threshold.</p></li>
+<li><p>Calculate ibv by summing up the product of probability of exceedance and (1 - probability of exceedance).</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>information based on variance reduction, dimension: n x 1</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ibv</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ibv</span> <span class="o">=</span> <span class="n">grf</span><span class="o">.</span><span class="n">__get_ibv</span><span class="p">(</span><span class="n">grf</span><span class="o">.</span><span class="n">__mu</span><span class="p">,</span> <span class="n">grf</span><span class="o">.</span><span class="n">__sigma_diag</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__tau">
+<span class="sig-name descname"><span class="pre">__tau</span></span><a class="headerlink" href="#GRF.GRF.GRF.__tau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conditional field</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__update">
+<span class="sig-name descname"><span class="pre">__update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind_measured</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salinity_measured</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.__update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update GRF kernel based on sampled data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind_measured</strong> – indices where the data is assimilated.</p></li>
+<li><p><strong>salinity_measured</strong> – measurements at sampeld locations, dimension: m x 1</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Methodology:</dt><dd><ol class="arabic">
+<li><p>Loop through each measurement and construct the measurement matrix F.</p></li>
+<li><p>Construct the measurement noise matrix R.</p></li>
+<li><dl>
+<dt>Update the kernel mean and covariance matrix using</dt><dd><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mu = \mu + \Sigma F^T (F \Sigma F^T + R)^{-1} (y - F \mu)\\\Sigma = \Sigma - \Sigma F^T (F \Sigma F^T + R)^{-1} F \Sigma\end{aligned}\end{align} \]</div>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ind_measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">salinity_measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">__update</span><span class="p">(</span><span class="n">ind_measured</span><span class="p">,</span> <span class="n">salinity_measured</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_mu</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="GRF.GRF.GRF.__update_temporal">
+<span class="sig-name descname"><span class="pre">__update_temporal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind_measured</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salinity_measured</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.__update_temporal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update GRF kernel based on sampled data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind_measured</strong> – indices where the data is assimilated.</p></li>
+<li><p><strong>salinity_measured</strong> – measurements at sampeld locations, dimension: m x 1</p></li>
+<li><p><strong>timestep</strong> – timestep of the data assimilation, default is 0, which means that the data assimilation is
+performed at the same time step as the model.</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Methodology:</dt><dd><ol class="arabic">
+<li><p>Loop through each measurement and construct the measurement matrix F.</p></li>
+<li><p>Construct the measurement noise matrix R.</p></li>
+<li><dl>
+<dt>Update the kernel mean and covariance matrix using</dt><dd><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mu_{t|t-1} = \mu + \rho * (\mu_{t-1|t-1} - \mu)\\\Sigma_{t|t-1} = \rho^2 * \Sigma_{t-1|t-1} + (1 - \rho^2) * \Sigma\\G_t = \Sigma_{t|t-1} F^T (F \Sigma_{t|t-1} F^T + R)^{-1}\\\mu_{t|t} = \mu_{t|t-1} + G_t (y - F \mu_{t|t-1})\\\Sigma_{t|t} = \Sigma_{t|t-1} - G_t F \Sigma_{t|t-1}\end{aligned}\end{align} \]</div>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] <a class="reference external" href="https://www.cs.ubc.ca/~murphyk/Papers/bayesGauss.pdf">https://www.cs.ubc.ca/~murphyk/Papers/bayesGauss.pdf</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ind_measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">salinity_measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span> <span class="o">=</span> <span class="n">GRF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">__update_temporal</span><span class="p">(</span><span class="n">ind_measured</span><span class="p">,</span> <span class="n">salinity_measured</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grf</span><span class="o">.</span><span class="n">get_mu</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="GRF.GRF.GRF.assimilate_data">
 <span class="sig-name descname"><span class="pre">assimilate_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#GRF.GRF.GRF.assimilate_data" title="Permalink to this definition">¶</a></dt>

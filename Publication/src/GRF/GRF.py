@@ -11,6 +11,7 @@ from scipy.spatial.distance import cdist
 import numpy as np
 from scipy.stats import norm, multivariate_normal
 from usr_func.normalize import normalize
+from usr_func.calculate_analytical_ebv import calculate_analytical_ebv
 from joblib import Parallel, delayed
 import time
 import pandas as pd
@@ -20,9 +21,10 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True) -> None:
+    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True, parallel_eibv: bool = False) -> None:
         """ Initializes the parameters in GRF kernel. """
         self.__approximate_eibv = approximate_eibv
+        self.__parallel_eibv = parallel_eibv
 
         self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
         self.__ar1_corr = 600   # [sec], AR1 correlation time range.
@@ -200,15 +202,18 @@ class GRF:
             SP = self.__Sigma - VR
             sigma_diag = np.diag(SP).reshape(-1, 1)
             if self.__approximate_eibv:
-                eibv_field[i] = self.__get_ibv(self.__mu, sigma_diag)
+                eibv_field[i] = self.__get_eibv_approximate(self.__mu, sigma_diag)
             else:
                 vr_diag = np.diag(VR).reshape(-1, 1)
-                eibv_field[i] = self.__get_eibv(self.__mu, sigma_diag, vr_diag)
+                if self.__parallel_eibv:
+                    eibv_field[i] = self.__get_eibv_analytical_para(self.__mu, sigma_diag, vr_diag)
+                else:
+                    eibv_field[i] = self.__get_eibv_analytical(self.__mu, sigma_diag, vr_diag)
             ivr_field[i] = np.sum(np.diag(VR))
         self.__eibv_field = normalize(eibv_field)
         self.__ivr_field = 1 - normalize(ivr_field)
         t2 = time.time()
-        # print("Total EI field takes: ", t2 - t1, " seconds.")
+        print("Approximate: ", self.__approximate_eibv, "; Total EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
 
     # def get_ei_at_locations(self, locs: np.ndarray) -> tuple:
@@ -233,7 +238,7 @@ class GRF:
     #     print("Calcuating EI at given locations takes: ", t2 - t1, " seconds.")
     #     return self.__eibv_field, self.__ivr_field
 
-    def __get_ibv(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:
+    def __get_eibv_approximate(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.
         !!! Be careful with standard deviation is not variance, so it does not cause significant issues tho.
         :param mu: n x 1 dimension
@@ -245,7 +250,7 @@ class GRF:
         ibv = np.sum(bv)
         return ibv
 
-    def __get_eibv(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
+    def __get_eibv_analytical(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
         """
         Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
 
@@ -266,6 +271,45 @@ class GRF:
             eibv += multivariate_normal.cdf(np.array([0, 0]), np.array([-mur, mur]).squeeze(),
                                             np.array([[sig2r_1, -sig2r],
                                                       [-sig2r, sig2r_1]]).squeeze())
+        return eibv
+
+    def __get_eibv_analytical_para(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
+        """
+        Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
+
+        """
+        eibv = .0
+
+        threshold = self.__threshold * np.ones_like(mu.flatten())
+        sn2 = sigma_diag.flatten()
+        sn = np.sqrt(sn2)
+        vn2 = vr_diag.flatten()
+
+        mur = (threshold - mu.flatten()) / sn
+
+        sig2r_1 = sn2 + vn2
+        sig2r = vn2
+
+        # for i in range(len(mu)):
+        #     sn2 = sigma_diag[i]
+        #     vn2 = vr_diag[i]
+        #
+        #     sn = np.sqrt(sn2)
+        #     m = mu[i]
+        #
+        #     mur = (self.__threshold - m) / sn
+        #
+        #     sig2r_1 = sn2 + vn2
+        #     sig2r = vn2
+        parameter_sets = np.stack((mur, sig2r_1, sig2r), axis=1)
+
+        # for ps in parameter_sets:
+        #     print(ps)
+
+        # Parallel(n_jobs=6)(delayed(makeGraph)(graph_type=graph, nodes=vertex, edge_probability=prob, power_exponent=exponent) for vertex in vertices for prob in edge_probabilities for exponent in power_exponents for graph in graph_types)
+        res = Parallel(n_jobs=5)(delayed(calculate_analytical_ebv)(ps) for ps in parameter_sets)
+
+        eibv = sum(res)
         return eibv
 
     def set_sigma(self, value: float) -> None:
