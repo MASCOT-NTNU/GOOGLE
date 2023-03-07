@@ -307,7 +307,7 @@ class GRF:
         #     print(ps)
 
         # Parallel(n_jobs=6)(delayed(makeGraph)(graph_type=graph, nodes=vertex, edge_probability=prob, power_exponent=exponent) for vertex in vertices for prob in edge_probabilities for exponent in power_exponents for graph in graph_types)
-        res = Parallel(n_jobs=5)(delayed(calculate_analytical_ebv)(ps) for ps in parameter_sets)
+        res = Parallel(n_jobs=30)(delayed(calculate_analytical_ebv)(ps) for ps in parameter_sets)
 
         eibv = sum(res)
         return eibv
