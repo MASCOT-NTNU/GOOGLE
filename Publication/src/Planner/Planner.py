@@ -22,7 +22,7 @@ import numpy as np
 class Planner:
 
     def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.,
-                 sigma: float = .1, nugget: float = .01, budget_mode: bool = False) -> None:
+                 sigma: float = .1, nugget: float = .01, budget_mode: bool = False, approximate_eibv: bool = False) -> None:
         """ Initial phase
         - Update the starting location to be loc.
         - Update current waypoint to be starting location.
@@ -35,7 +35,7 @@ class Planner:
 
         # s1: set up path planning strategies
         self.__rrtstarcv = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                     budget_mode=budget_mode)
+                                     budget_mode=budget_mode, approximate_eibv=approximate_eibv)
         self.__stepsize = self.__rrtstarcv.get_stepsize()
         self.__slpp = StraightLinePathPlanner()
 

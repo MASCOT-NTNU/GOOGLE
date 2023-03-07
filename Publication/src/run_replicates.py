@@ -30,10 +30,13 @@ Return values are tuple and hereby need careful check with smaller steps
 of replicates to extract the result correctly. 
 """
 Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
-sigmas = [1.5, 1., .5, .1]
-nuggets = [.4, .25, .1, .01]
-datapath = "npy/"
+# sigmas = [1.5, 1., .5, .1]
+# nuggets = [.4, .25, .1, .01]
+# datapath = "npy/"
 
+sigmas = [1.]
+nuggets = [.4]
+datapath = "npy/analytical/"
 
 def run_replicates(i: int = 0):
     print("seed: ", seeds[i])
@@ -52,7 +55,7 @@ def run_replicates(i: int = 0):
                 simpath = nuggetpath + Simulator.__name__ + "/"
                 checkfolder(simpath)
 
-                s = Simulator(sigma=sigma, nugget=nugget, seed=seeds[i], debug=False)
+                s = Simulator(sigma=sigma, nugget=nugget, seed=seeds[i], debug=False, approximate_eibv=False)
                 """ Save simulation figures. """
                 # if "Myopic" in Simulator.__name__:
                 #     ap = AgentPlotMyopic

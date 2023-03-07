@@ -17,7 +17,7 @@ class Agent:
     Agent
     """
     def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
-                 random_seed: int = 1, approximate_eibv: bool = True, debug=False, name: str = "Equal") -> None:
+                 random_seed: int = 1, approximate_eibv: bool = False, debug=False, name: str = "Equal") -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """

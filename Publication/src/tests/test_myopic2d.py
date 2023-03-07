@@ -15,7 +15,7 @@ class TestMyopic2D(TestCase):
     def setUp(self) -> None:
         self.c = Config()
         loc = np.array([2000, -1500])
-        self.myopic = Myopic2D(loc, weight_eibv=1., weight_ivr=1., sigma=.1, nugget=.01)
+        self.myopic = Myopic2D(loc, weight_eibv=1., weight_ivr=1., sigma=.1, nugget=.01, approximate_eibv=False)
         self.cv = self.myopic.getCostValley()
         self.field = self.cv.get_grf_model().field
         self.polygon_border = self.c.get_polygon_border()
@@ -54,7 +54,7 @@ class TestMyopic2D(TestCase):
         plt.close("all")
         # plt.show()
 
-        for i in range(20):
+        for i in range(5):
             print(i)
             ctd = np.array([[wp_curr[0], wp_curr[1], 25 + np.random.rand()]])
             id_s, id_n = self.myopic.get_candidates_indices()

@@ -17,7 +17,7 @@ class RRTStarCV:
     """ RRT* CV planning strategy """
 
     def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = .1, nugget: float = .01,
-                 budget_mode: bool = False) -> None:
+                 budget_mode: bool = False, approximate_eibv: bool = False) -> None:
         """
         Initialize the planner.
         """
@@ -33,7 +33,7 @@ class RRTStarCV:
 
         """ Cost valley """
         self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                        budget_mode=budget_mode)
+                                        budget_mode=budget_mode, approximate_eibv=approximate_eibv)
 
         # loc
         self.__loc_start = np.array([1000, 1000])
@@ -277,8 +277,12 @@ class RRTStarCV:
         x, y = loc
         point = Point(x, y)
         islegal = True
-        if self.__polygon_obstacle_shapely.contains(point) or not self.__polygon_ellipse_shapely.contains(point):
-            islegal = False
+        if self.__budget_mode:
+            if self.__polygon_obstacle_shapely.contains(point) or not self.__polygon_ellipse_shapely.contains(point):
+                islegal = False
+        else:
+            if self.__polygon_obstacle_shapely.contains(point):
+                islegal = False
         return islegal
 
     def is_path_legal(self, loc1: np.ndarray, loc2: np.ndarray) -> bool:
@@ -288,9 +292,13 @@ class RRTStarCV:
         islegal = True
         c1 = self.__line_border_shapely.intersects(line)  # TODO: tricky to detect, since cannot have points on border.
         c2 = self.__line_obstacle_shapely.intersects(line)
-        c3 = self.__line_ellipse_shapely.intersects(line)
-        if c1 or c2 or c3:
-            islegal = False
+        if self.__budget_mode:
+            c3 = self.__line_ellipse_shapely.intersects(line)
+            if c1 or c2 or c3:
+                islegal = False
+        else:
+            if c1 or c2:
+                islegal = False
         return islegal
 
     def get_CostValley(self) -> 'CostValley':

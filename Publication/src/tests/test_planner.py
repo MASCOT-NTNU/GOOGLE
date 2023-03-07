@@ -19,10 +19,11 @@ class TestPlanner(TestCase):
 
     def setUp(self) -> None:
         loc_start = np.array([1000, -1000])
-        sigma = .1
-        nugget = .01
+        sigma = 1.5
+        nugget = .4
         # self.planner = Planner(loc_start, sigma=sigma, nugget=nugget)
-        self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0, sigma=sigma, nugget=nugget, budget_mode=True)
+        self.planner = Planner(loc_start, weight_eibv=1., weight_ivr=1., sigma=sigma, nugget=nugget, budget_mode=True,
+                               approximate_eibv=False)
         # self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()

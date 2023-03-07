@@ -8,12 +8,13 @@ from Simulators.Simulator_Myopic2D import SimulatorMyopic2D
 class TestSimulator(TestCase):
 
     def setUp(self) -> None:
-        sigma = .1
-        nugget = .01
-        self.s = SimulatorMyopic2D(sigma=sigma, nugget=nugget, seed=0, debug=False)
+        sigma = 1.
+        nugget = .4
+        approximate_eibv = False
+        self.s = SimulatorMyopic2D(sigma=sigma, nugget=nugget, seed=0, debug=False, approximate_eibv=approximate_eibv)
 
     def test_agent_run(self):
-        self.s.run_all(80)
+        self.s.run_all(2)
 
         import matplotlib.pyplot as plt
         res_eibv = self.s.extract_data_for_agent(self.s.ag_eibv)

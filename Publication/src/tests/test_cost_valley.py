@@ -17,7 +17,7 @@ class TestCostValley(TestCase):
 
     def setUp(self) -> None:
         self.c = Config()
-        self.cv = CostValley(weight_eibv=1., weight_ivr=1., sigma=1., nugget=.4, budget_mode=True)
+        self.cv = CostValley(weight_eibv=1., weight_ivr=1., sigma=1., nugget=.4, budget_mode=True, approximate_eibv=False)
         self.grf = self.cv.get_grf_model()
         self.field = self.grf.field
         self.grid = self.field.get_grid()
