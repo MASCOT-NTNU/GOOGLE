@@ -213,7 +213,9 @@ class GRF:
             2. Construct the measurement noise matrix R.
             3. Update the kernel mean and covariance matrix using
                 .. math::
+
                     \mu = \mu + \Sigma F^T (F \Sigma F^T + R)^{-1} (y - F \mu)
+
                     \Sigma = \Sigma - \Sigma F^T (F \Sigma F^T + R)^{-1} F \Sigma
 
         Returns:
@@ -296,10 +298,14 @@ class GRF:
             2. Construct the measurement noise matrix R.
             3. Update the kernel mean and covariance matrix using
                 .. math::
-                    \mu_{t|t-1} = \mu + \rho * (\mu_{t-1|t-1} - \mu)
-                    \Sigma_{t|t-1} = \rho^2 * \Sigma_{t-1|t-1} + (1 - \rho^2) * \Sigma
+                    \mu_{t|t-1} = \mu + \\rho * (\mu_{t-1|t-1} - \mu)
+
+                    \Sigma_{t|t-1} = \\rho^2 * \Sigma_{t-1|t-1} + (1 - \\rho^2) * \Sigma
+
                     G_t = \Sigma_{t|t-1} F^T (F \Sigma_{t|t-1} F^T + R)^{-1}
+
                     \mu_{t|t} = \mu_{t|t-1} + G_t (y - F \mu_{t|t-1})
+
                     \Sigma_{t|t} = \Sigma_{t|t-1} - G_t F \Sigma_{t|t-1}
 
         Returns:
@@ -436,7 +442,9 @@ class GRF:
         Methodology:
             1. Calculate the probability of exceedance of the threshold using a bivariate cumulative dentisty function.
                 .. math::
-                    p = \Phi\left(\frac{\theta - \mu}{\sigma}\right) - \Phi\left(\frac{\theta - \mu}{\sigma}\right) \Phi\left(\frac{\theta - \mu}{\sigma}\right)
+                    p = \\Phi(\\frac{\\theta - \mu}{\sigma}) - \\Phi(\\frac{\\theta - \mu}{\sigma}) \\Phi(\\frac{\\theta - \mu}{\sigma})
+
+            2. Calculate eibv by summing up the product of p*(1-p).
 
         Returns:
             eibv: information based on variance reduction, dimension: n x 1
