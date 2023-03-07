@@ -54,8 +54,8 @@ class TestGRF(TestCase):
         # g = GRF(sigma=1.5, nugget=.4, approximate_eibv=True)
         # eibv, ivr = g.get_ei_field()
 
-        # g2 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False)
-        # eibv2, ivr2 = g2.get_ei_field()
+        g2 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False)
+        eibv2, ivr2 = g2.get_ei_field()
 
         g3 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False, parallel_eibv=True)
         eibv3, ivr3 = g3.get_ei_field()
