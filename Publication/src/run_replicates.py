@@ -22,8 +22,8 @@ num_replicates = config.get_num_replicates()
 num_cores = config.get_num_cores()
 num_steps = config.get_num_steps()
 # reps = 1 * np.ones(num_replicates).astype(int)
-# seeds = np.random.randint(0, 10000, num_replicates)
-seeds = np.random.choice(10000, num_replicates, replace=False)  # to generate non-repetitive seeds.
+seeds = np.random.randint(0, 5000, num_replicates)
+# seeds = np.random.choice(10000, num_replicates, replace=False)  # to generate non-repetitive seeds.
 
 """
 Return values are tuple and hereby need careful check with smaller steps 
@@ -36,7 +36,7 @@ Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
 
 sigmas = [1.]
 nuggets = [.4]
-datapath = "npy/analytical/"
+datapath = "npy/analytical/h1/"
 
 def run_replicates(i: int = 0):
     print("seed: ", seeds[i])

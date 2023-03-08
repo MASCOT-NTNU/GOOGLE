@@ -16,7 +16,9 @@ from matplotlib.pyplot import get_cmap
 class TestCTDSimulator(TestCase):
 
     def setUp(self) -> None:
-        self.grf = GRF()
+        sigma = 1.
+        nugget = .4
+        self.grf = GRF(sigma=sigma, nugget=nugget, approximate_eibv=False)
         self.f = Field()
         self.c = Config()
         self.ctd = CTD()
@@ -41,7 +43,7 @@ class TestCTDSimulator(TestCase):
         """
         Test get salinity from location
         """
-        np.random.seed(0)
+
         grid = self.grf.grid
         # c1: value at the corners
         loc = np.array([7000, 8000])
