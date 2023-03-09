@@ -49,7 +49,7 @@ class Config:
 
         """ Default simulation parameter seteup. """
         self.__num_steps = 100  # number of steps.
-        self.__num_replicates = 40  # number of replicates
+        self.__num_replicates = 80  # number of replicates
         self.__num_cores = 40  # number of cores to use
 
     @staticmethod
