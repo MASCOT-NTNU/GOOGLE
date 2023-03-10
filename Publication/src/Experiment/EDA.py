@@ -36,7 +36,7 @@ class EDA:
         """
         self.config = Config()
         self.auv = AUV()
-        self.grf = GRF(sigma=1.5, nugget=.4)
+        self.grf = GRF(sigma=1.5, nugget=.4, approximate_eibv=False)
 
         # s0, get grid
         self.grid = self.grf.grid
@@ -49,7 +49,7 @@ class EDA:
         self.polygon_obstacle = self.config.get_polygon_obstacle()
 
         # s3, set up figpath
-        self.figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Paper/EDA/"
+        self.figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Paper/EDA/analytical/"
         checkfolder(self.figpath)
         # print(os.listdir(self.figpath))
 
@@ -91,9 +91,24 @@ class EDA:
         """
         Plot rrt* trees on the 3D cost valley with different weights.
         """
-        sigma = .3
-        nugget = .01
-        self.rrtstar = RRTStarCV(weight_eibv=.5, weight_ivr=.5, sigma=sigma, nugget=nugget, budget_mode=True)
+        sigma = 1.
+        nugget = .4
+        # sigma = .3
+        # nugget = .01
+        # c1: eibv dominant
+        weight_eibv = 1.
+        weight_ivr = 0.
+
+        # # c2, ivr dominant
+        # weight_eibv = 0.
+        # weight_ivr = 1.
+        #
+        # # c3, equal weight
+        # weight_eibv = .5
+        # weight_ivr = .5
+
+        self.rrtstar = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
+                                 budget_mode=True, approximate_eibv=True)
         self.tp = TreePlotter()
         self.cv = self.rrtstar.get_CostValley()
         costvalley = self.cv.get_cost_field()
@@ -106,7 +121,7 @@ class EDA:
         nodes = self.rrtstar.get_tree_nodes()
         traj = self.rrtstar.get_trajectory()
         vp.plot_trees_on_3d_valley(costvalley, nodes=nodes, cv=self.cv, traj=traj, wp_now=loc_now, wp_next=loc_end,
-                                   filename=self.figpath + "rrt_cv.html", title="RRTStar and Cost valley illustration")
+                                   foldername=self.figpath + "RRTCV/", title="RRTStar and Cost valley illustration")
 
     def get_3d_cost_valley(self) -> None:
         """
@@ -114,14 +129,15 @@ class EDA:
         to be used.
         """
         # s0, create a small demonstration GRF field.
-        grf = GRF(sigma=.3, nugget=.1)
+        # grf = GRF(sigma=.3, nugget=.1)
+        grf = GRF(sigma=1., nugget=.4, approximate_eibv=False)
         vp = ValleyPlotter(self.grid)
 
         # s1, get the ei field (eibv, ivr)
         eibv, ivr = grf.get_ei_field()
         vp.plot_3d_valley(eibv, filename=self.figpath + "eibv.html", title="Cost valley illustration, EIBV component",
                           vmin=.0)
-        vp.plot_3d_valley(ivr, filename=self.figpath + "eibv.html", title="Cost valley illustration, IVR component")
+        vp.plot_3d_valley(ivr, filename=self.figpath + "ivr.html", title="Cost valley illustration, IVR component")
 
         # s2, check budget
 
@@ -426,4 +442,5 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-
+    # e.get_3d_cost_valley()
+    e.get_trees_on_cost_valley()

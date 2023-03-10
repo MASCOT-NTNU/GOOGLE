@@ -35,8 +35,11 @@ srrt = "SimulatorRRTStar"
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
 
-sigmas = [1.]
-nuggets = [.4]
+# sigmas = [1.]
+# nuggets = [.4]
+
+sigmas = [0.1]
+nuggets = [.01]
 
 
 replicates = os.listdir(filepath)
@@ -199,5 +202,5 @@ def make_plots_total(sigma, nugget):
 
 # make_plots_total(sigma=.1, nugget=.4)
 
-Parallel(n_jobs=10)(
+Parallel(n_jobs=4)(
     delayed(make_plots_total)(sigma=sigma, nugget=nugget) for sigma in sigmas for nugget in nuggets)

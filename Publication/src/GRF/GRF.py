@@ -273,6 +273,13 @@ class GRF:
                                                       [-sig2r, sig2r_1]]).squeeze())
         return eibv
 
+    def get_eibv_analytical_fast(self) -> None:
+        """
+        Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
+        """
+
+        pass
+
     def __get_eibv_analytical_para(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
         """
         Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
