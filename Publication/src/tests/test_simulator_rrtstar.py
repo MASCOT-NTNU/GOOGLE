@@ -13,10 +13,13 @@ class TestSimulator(TestCase):
         appxoimate_eibv = False
         sigma = 1.
         nugget = .4
-        self.s = SimulatorRRTStar(sigma=sigma, nugget=nugget, seed=seed, debug=debug, approximate_eibv=appxoimate_eibv)
+        neighbour_distance = 240
+        fast_eibv = True
+        self.s = SimulatorRRTStar(neighbour_distance=neighbour_distance, sigma=sigma, nugget=nugget, seed=seed,
+                                  debug=debug, approximate_eibv=appxoimate_eibv, fast_eibv=fast_eibv)
 
     def test_agent_run(self):
-        self.s.run_all(2)
+        self.s.run_all(10)
 
         import matplotlib.pyplot as plt
         res_eibv = self.s.extract_data_for_agent(self.s.ag_eibv)

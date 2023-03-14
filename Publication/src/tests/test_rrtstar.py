@@ -18,7 +18,8 @@ class TestRRTStar(TestCase):
         sigma = .1
         nugget = .01
         # self.rrtstar = RRTStarCV(sigma=sigma, nugget=nugget)
-        self.rrtstar = RRTStarCV(weight_eibv=1., weight_ivr=1., sigma=sigma, nugget=nugget, budget_mode=True)
+        self.rrtstar = RRTStarCV(neighbour_distance=120, weight_eibv=1., weight_ivr=1., sigma=sigma,
+                                 nugget=nugget, budget_mode=False, approximate_eibv=False, fast_eibv=True)
         # self.rrtstar = RRTStarCV(weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.tp = TreePlotter()
         self.cv = self.rrtstar.get_CostValley()

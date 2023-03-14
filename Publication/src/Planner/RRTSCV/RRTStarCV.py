@@ -16,14 +16,15 @@ from shapely.geometry import Polygon, Point, LineString
 class RRTStarCV:
     """ RRT* CV planning strategy """
 
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = .1, nugget: float = .01,
-                 budget_mode: bool = False, approximate_eibv: bool = False) -> None:
+    def __init__(self, neighbour_distance: float = 120, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 sigma: float = .1, nugget: float = .01, budget_mode: bool = False,
+                 approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """
         Initialize the planner.
         """
         self.__budget_mode = budget_mode
         self.__config = Config()
-        self.__field = Field()
+        self.__field = Field(neighbour_distance=neighbour_distance)
 
         """ Load pre-generated random indices and locations to speed up the computation. """
         self.__filepath = os.getcwd() + "/Planner/RRTSCV/"
@@ -33,7 +34,7 @@ class RRTStarCV:
 
         """ Cost valley """
         self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                        budget_mode=budget_mode, approximate_eibv=approximate_eibv)
+                                        budget_mode=budget_mode, approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
 
         # loc
         self.__loc_start = np.array([1000, 1000])
@@ -126,6 +127,7 @@ class RRTStarCV:
                     wp_next = ln
                     break
         t_end = time()
+        print("RRT* time: ", t_end - t_start, "s")
         return wp_next
 
     def __expand_trees(self):

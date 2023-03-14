@@ -22,8 +22,9 @@ class TestPlanner(TestCase):
         sigma = 1.5
         nugget = .4
         # self.planner = Planner(loc_start, sigma=sigma, nugget=nugget)
-        self.planner = Planner(loc_start, weight_eibv=1., weight_ivr=1., sigma=sigma, nugget=nugget, budget_mode=True,
-                               approximate_eibv=False)
+        self.planner = Planner(loc_start, neighhour_distance=120, weight_eibv=1., weight_ivr=1.,
+                               sigma=sigma, nugget=nugget, budget_mode=False,
+                               approximate_eibv=False, fast_eibv=True)
         # self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()

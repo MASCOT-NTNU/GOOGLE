@@ -11,17 +11,22 @@ class TestAgent(TestCase):
         seed = 0
         debug = True
         approximate_eibv = False
-        sigma = .1
-        nugget = .01
-        self.agent1 = Agent(weight_eibv=1.99, weight_ivr=.01, sigma=sigma, nugget=nugget,
-                            random_seed=seed, debug=debug, name="EIBV", approximate_eibv=approximate_eibv)
-        self.agent2 = Agent(weight_eibv=.01, weight_ivr=1.99, sigma=sigma, nugget=nugget,
-                            random_seed=seed, debug=debug, name="IVR", approximate_eibv=approximate_eibv)
-        self.agent3 = Agent(weight_eibv=1., weight_ivr=1., sigma=sigma, nugget=nugget,
-                            random_seed=seed, debug=debug, name="Equal", approximate_eibv=approximate_eibv)
+        fast_eibv = True
+        sigma = 1.5
+        nugget = .4
+        neighbour_distance = 240
+        self.agent1 = Agent(neighbour_distance=neighbour_distance, weight_eibv=1.99, weight_ivr=.01, sigma=sigma,
+                            nugget=nugget, random_seed=seed, debug=debug, name="EIBV",
+                            approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
+        self.agent2 = Agent(neighbour_distance=neighbour_distance, weight_eibv=.01, weight_ivr=1.99, sigma=sigma,
+                            nugget=nugget, random_seed=seed, debug=debug, name="IVR",
+                            approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
+        self.agent3 = Agent(neighbour_distance=neighbour_distance, weight_eibv=1., weight_ivr=1., sigma=sigma,
+                            nugget=nugget, random_seed=seed, debug=debug, name="Equal",
+                            approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
 
     def test_run(self) -> None:
-        num_steps = 2
+        num_steps = 60
         self.agent1.run(num_steps)
         self.agent2.run(num_steps)
         self.agent3.run(num_steps)

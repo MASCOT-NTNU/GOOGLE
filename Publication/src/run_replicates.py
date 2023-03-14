@@ -25,6 +25,8 @@ num_steps = config.get_num_steps()
 # seeds = np.random.randint(0, 10000, num_replicates)
 seeds = np.random.choice(10000, num_replicates, replace=False)  # to generate non-repetitive seeds.
 
+neighbour_distance = 240
+
 """
 Return values are tuple and hereby need careful check with smaller steps 
 of replicates to extract the result correctly. 
@@ -32,13 +34,14 @@ of replicates to extract the result correctly.
 Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
+
 # datapath = "npy/"
 
-# sigmas = [1.]
-# nuggets = [.4]
+sigmas = [1.]
+nuggets = [.4]
 
-sigmas = [.5]
-nuggets = [.25]
+# sigmas = [.5]
+# nuggets = [.25]
 
 
 datapath = "npy/analytical/"
@@ -60,7 +63,8 @@ def run_replicates(i: int = 0):
                 simpath = nuggetpath + Simulator.__name__ + "/"
                 checkfolder(simpath)
 
-                s = Simulator(sigma=sigma, nugget=nugget, seed=seeds[i], debug=False, approximate_eibv=False)
+                s = Simulator(neighbour_distance=neighbour_distance, sigma=sigma, nugget=nugget,
+                              seed=seeds[i], debug=False, approximate_eibv=False, fast_eibv=True)
                 """ Save simulation figures. """
                 # if "Myopic" in Simulator.__name__:
                 #     ap = AgentPlotMyopic

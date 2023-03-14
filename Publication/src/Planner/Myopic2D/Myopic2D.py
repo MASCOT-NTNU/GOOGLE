@@ -8,6 +8,7 @@ It utilizes the three-waypoint system to smooth out the planned trajectory.
 - Next waypoint: contains the next waypoint, and the AUV should go to next waypoint once it arrives at the current one.
 """
 from CostValley.CostValley import CostValley
+from Field import Field
 from usr_func.is_list_empty import is_list_empty
 import numpy as np
 import os
@@ -17,13 +18,19 @@ class Myopic2D:
     """
     Myopic2D planner determines the next waypoint according to minimum EIBV criterion.
     """
-    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.,
-                 sigma: float = .1, nugget: float = .01, approximate_eibv: bool = True) -> None:
+    def __init__(self, loc_start: np.ndarray, neighbour_distance: float = 120,
+                 weight_eibv: float = 1., weight_ivr: float = 1.,
+                 sigma: float = .1, nugget: float = .01, approximate_eibv: bool = True, fast_eibv: bool = True,
+                 directional_penalty: bool = False) -> None:
+        # set the directional penalty
+        self.__neighhbours_distance = neighbour_distance
+        self.__directional_penalty = directional_penalty
+
         # s0: set up default environment
         self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                        approximate_eibv=approximate_eibv)
+                                        approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
         self.__grf = self.__cost_valley.get_grf_model()
-        self.__field = self.__grf.field
+        self.__field = Field(neighbour_distance=neighbour_distance)
 
         # s1: set up trackers
         self.__wp_curr = loc_start
@@ -97,12 +104,28 @@ class Myopic2D:
 
         # s3: smooth neighbour locations.
         id_smooth = []
-        for iid in id_neighbours:
-            wp_n = self.__field.get_location_from_ind(iid)
-            vec2 = self.get_vector_between_two_waypoints(self.__wp_curr, wp_n)
-            if vec1.T @ vec2 >= 0:
-                id_smooth.append(iid)
+        if self.__directional_penalty:
+            for iid in id_neighbours:
+                wp_n = self.__field.get_location_from_ind(iid)
+                vec2 = self.get_vector_between_two_waypoints(self.__wp_curr, wp_n)
+                if vec1.T @ vec2 >= 0:
+                    id_smooth.append(iid)
+        else:
+            [id_smooth.append(iid) for iid in id_neighbours]
         return id_smooth, id_neighbours
+
+    def get_field(self) -> 'Field':
+        """
+        Return the field supporting the myopic2d path planner.
+
+        Example:
+            >>> field = myopic2d.get_field()
+            >>> field.get_neighbour_indices(0)
+
+        Returns:
+            Field: field object supporting the myopic2d path planner.
+        """
+        return self.__field
 
     def get_previous_waypoint(self) -> np.ndarray:
         """ Previous waypoint. """

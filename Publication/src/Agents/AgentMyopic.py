@@ -16,8 +16,9 @@ class Agent:
     """
     Agent
     """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
-                 random_seed: int = 1, approximate_eibv: bool = False, debug=False, name: str = "Equal") -> None:
+    def __init__(self, neighbour_distance: float = 120, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 sigma: float = 1., nugget: float = .4, random_seed: int = 1, approximate_eibv: bool = False,
+                 fast_eibv: bool = True, directional_penalty: bool = False, debug=False, name: str = "Equal") -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
         """
@@ -31,14 +32,16 @@ class Agent:
         self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
 
         # s3: set up planning strategies
-        self.myopic = Myopic2D(self.loc_start, weight_eibv=weight_eibv, weight_ivr=weight_ivr,
-                               sigma=sigma, nugget=nugget, approximate_eibv=approximate_eibv)
+        self.myopic = Myopic2D(self.loc_start, neighbour_distance=neighbour_distance,
+                               weight_eibv=weight_eibv, weight_ivr=weight_ivr,
+                               sigma=sigma, nugget=nugget, approximate_eibv=approximate_eibv,
+                               fast_eibv=fast_eibv, directional_penalty=directional_penalty)
         self.cv = self.myopic.getCostValley()
         self.grf = self.cv.get_grf_model()
 
         # s4: set up visualiser
         figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects" \
-                                "/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/EIBV/" + name + "/"
+                                "/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/Myopic/" + name + "/"
         checkfolder(figpath)
         self.ap = AgentPlotMyopic(self, figpath)
         self.debug = debug

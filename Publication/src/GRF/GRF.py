@@ -7,11 +7,12 @@ GRF builds the kernel for simulation study.
 from Field import Field
 from usr_func.vectorize import vectorize
 from usr_func.checkfolder import checkfolder
+from usr_func.normalize import normalize
+from usr_func.calculate_analytical_ebv import calculate_analytical_ebv
 from scipy.spatial.distance import cdist
 import numpy as np
 from scipy.stats import norm, multivariate_normal
-from usr_func.normalize import normalize
-from usr_func.calculate_analytical_ebv import calculate_analytical_ebv
+from numba import jit
 from joblib import Parallel, delayed
 import time
 import pandas as pd
@@ -21,10 +22,10 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True, parallel_eibv: bool = False) -> None:
+    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True, fast_eibv: bool = False) -> None:
         """ Initializes the parameters in GRF kernel. """
         self.__approximate_eibv = approximate_eibv
-        self.__parallel_eibv = parallel_eibv
+        self.__fast_eibv = fast_eibv
 
         self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
         self.__ar1_corr = 600   # [sec], AR1 correlation time range.
@@ -34,7 +35,8 @@ class GRF:
         self.__sigma = sigma
 
         # spatial correlation
-        self.__lateral_range = 700  # 680 in the experiment
+        self.__lateral_range = 200  # 680 in the experiment
+        # self.__lateral_range = 700  # 680 in the experiment
 
         # measurement noise
         self.__nugget = nugget
@@ -73,6 +75,9 @@ class GRF:
         self.__mu_prior = self.__mu
         self.__Sigma_prior = self.__Sigma
 
+        # s2: load cdf table
+        self.__load_cdf_table()
+
     def __construct_grf_field(self) -> None:
         """ Construct distance matrix and thus Covariance matrix for the kernel. """
         self.__distance_matrix = cdist(self.grid, self.grid)
@@ -89,6 +94,16 @@ class GRF:
         dm_grid_sinmod = cdist(self.grid, grid_sinmod)
         ind_close = np.argmin(dm_grid_sinmod, axis=1)
         self.__mu = vectorize(sal_sinmod[ind_close])
+
+    def __load_cdf_table(self) -> None:
+        """
+        Load cdf table for the analytical solution.
+        """
+        table = np.load("./../prior/cdf.npz")
+        self.__cdf_z1 = table["z1"]
+        self.__cdf_z2 = table["z2"]
+        self.__cdf_rho = table["rho"]
+        self.__cdf_table = table["cdf"]
 
     def assimilate_data(self, dataset: np.ndarray) -> None:
         """
@@ -205,8 +220,11 @@ class GRF:
                 eibv_field[i] = self.__get_eibv_approximate(self.__mu, sigma_diag)
             else:
                 vr_diag = np.diag(VR).reshape(-1, 1)
-                if self.__parallel_eibv:
-                    eibv_field[i] = self.__get_eibv_analytical_para(self.__mu, sigma_diag, vr_diag)
+                if self.__fast_eibv:
+                    eibv_field[i] = self.__get_eibv_analytical_fast(mu=self.__mu, sigma_diag=sigma_diag, vr_diag=vr_diag,
+                                                                    threshold=self.__threshold, cdf_z1=self.__cdf_z1,
+                                                                    cdf_z2=self.__cdf_z2, cdf_rho=self.__cdf_rho,
+                                                                    cdf_table=self.__cdf_table)
                 else:
                     eibv_field[i] = self.__get_eibv_analytical(self.__mu, sigma_diag, vr_diag)
             ivr_field[i] = np.sum(np.diag(VR))
@@ -253,7 +271,6 @@ class GRF:
     def __get_eibv_analytical(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
         """
         Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
-
         """
         eibv = .0
         for i in range(len(mu)):
@@ -273,12 +290,36 @@ class GRF:
                                                       [-sig2r, sig2r_1]]).squeeze())
         return eibv
 
-    def get_eibv_analytical_fast(self) -> None:
+    @staticmethod
+    @jit
+    def __get_eibv_analytical_fast(mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray,
+                                   threshold: float, cdf_z1: np.ndarray, cdf_z2: np.ndarray,
+                                   cdf_rho: np.ndarray, cdf_table: np.ndarray) -> float:
         """
-        Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
+        Calculate the eibv using the analytical formula but using a loaded cdf dataset.
         """
+        eibv = .0
+        for i in range(len(mu)):
+            sn2 = sigma_diag[i]
+            vn2 = vr_diag[i]
 
-        pass
+            sn = np.sqrt(sn2)
+            m = mu[i]
+
+            mur = (threshold - m) / sn
+
+            sig2r_1 = sn2 + vn2
+            sig2r = vn2
+
+            z1 = mur
+            z2 = -mur
+            rho = -sig2r / sig2r_1
+
+            ind1 = np.argmin(np.abs(z1 - cdf_z1))
+            ind2 = np.argmin(np.abs(z2 - cdf_z2))
+            ind3 = np.argmin(np.abs(rho - cdf_rho))
+            eibv += cdf_table[ind1][ind2][ind3]
+        return eibv
 
     def __get_eibv_analytical_para(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
         """
