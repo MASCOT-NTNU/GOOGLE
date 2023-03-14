@@ -20,11 +20,11 @@ figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE
 c = Config()
 plg_b = c.get_polygon_border()
 plg_o = c.get_polygon_obstacle()
-# num_steps = c.get_num_steps()
-# num_replicates = c.get_num_replicates()
+num_steps = c.get_num_steps()
+num_replicates = c.get_num_replicates()
 
-num_steps = 100
-num_replicates = 80
+# num_steps = 100
+# num_replicates = 80
 
 # os.system("ls -lh " + filepath)
 
@@ -35,11 +35,8 @@ srrt = "SimulatorRRTStar"
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
 
-# sigmas = [1.]
-# nuggets = [.4]
-
-sigmas = [0.1]
-nuggets = [.01]
+sigmas = [1.]
+nuggets = [.4]
 
 
 replicates = os.listdir(filepath)
@@ -89,8 +86,8 @@ def make_plots_total(sigma, nugget):
                                                lim_ibv=None, lim_vr=None, lim_rmse=None,
                                                i=0, title="None", filename=None):
 
-        fig = plt.figure(figsize=(50, 36))
-        gs = GridSpec(nrows=3, ncols=4)
+        fig = plt.figure(figsize=(60, 36))
+        gs = GridSpec(nrows=3, ncols=5)
 
         def plot_trajectory_subplot(data, title):
             """ Plot each tracjectory component. """
@@ -133,6 +130,47 @@ def make_plots_total(sigma, nugget):
             plt.grid()
             plt.xlabel('Time steps')
             plt.ylabel(ylabel)
+        
+        def plot_best_myopic_rrt(data_rrt, data_myopic, steps, ylabel="IBV", lim=None, std_err: bool=False) -> None: 
+            """
+            data: contains result for each case, should be N_replicates x 3 x N_steps.
+            0: refers to EIBV dominant case
+            1: refers to IVR dominant case
+            2: refers to Equal weight case
+
+            Format of data_rrt: N_replicates x 3 x N_steps
+                Example: data_rrt[0, 0, 0] refers to the first replicate, EIBV dominant, first step
+
+            Format of data_myopic: N_replicates x 3 x N_steps
+                Example: data_myopic[0, 0, 0] refers to the first replicate, EIBV dominant, first step
+
+            """
+            N = data_rrt.shape[0]  # number of replicates
+            if std_err:
+                divider = 1.645 / np.sqrt(N)
+            else:
+                divider = 1
+            ax = plt.gca()
+            hx = np.arange(steps)
+            
+            ind_rrt_best = np.argmin(np.mean(data_rrt[:, :, steps], axis=0))
+            ind_myopic_best = np.argmin(np.mean(data_myopic[:, :, steps], axis=0))
+
+            ax.errorbar(hx, y=np.mean(data_rrt[:, ind_rrt_best, :steps], axis=0),
+                        yerr=np.std(data_rrt[:, ind_rrt_best, :steps], axis=0) * divider, fmt="-o", capsize=5,
+                        label="RRT " + ["EIBV dominant" if ind_rrt_best == 0 else "IVR dominant" if ind_rrt_best == 1 else "Equal weights"][0])
+
+            ax.errorbar(hx, y=np.mean(data_myopic[:, ind_myopic_best, :steps], axis=0),
+                        yerr=np.std(data_myopic[:, ind_myopic_best, :steps], axis=0) * divider, fmt="-o", capsize=5,
+                        label="Myopic " + ["EIBV dominant" if ind_myopic_best == 0 else "IVR dominant" if ind_myopic_best == 1 else "Equal weights"][0])
+            
+            plt.legend(loc="lower left")
+            plt.ylim(lim)
+            plt.xlim([-.5, num_steps+.5])
+            plt.grid()
+            plt.xlabel('Time steps')
+            plt.ylabel(ylabel)
+            pass
 
         def plot_simulator(traj, ibv, vr, rmse, col: int = 0, name: str = "Myopic2D"):
             ax = fig.add_subplot(gs[0, col])
@@ -158,6 +196,15 @@ def make_plots_total(sigma, nugget):
 
         plot_simulator(traj=traj_myopic, ibv=ibv_myopic, vr=vr_myopic, rmse=rmse_myopic, col=0, name="Myopic2D")
         plot_simulator(traj=traj_rrt, ibv=ibv_rrt, vr=vr_rrt, rmse=rmse_rrt, col=1, name="RRTStar")
+
+        ax = fig.add_subplot(gs[0, 4])
+        plot_best_myopic_rrt(data_rrt=ibv_rrt, data_myopic=ibv_myopic, steps=i, ylabel="IBV", lim=lim_ibv)
+
+        ax = fig.add_subplot(gs[1, 4])
+        plot_best_myopic_rrt(data_rrt=vr_rrt, data_myopic=vr_myopic, steps=i, ylabel="VR", lim=lim_vr)
+
+        ax = fig.add_subplot(gs[2, 4])
+        plot_best_myopic_rrt(data_rrt=rmse_rrt, data_myopic=rmse_myopic, steps=i, ylabel="RMSE", lim=lim_rmse, std_err=True)
 
         plt.suptitle(title)
         plt.savefig(filename)
