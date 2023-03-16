@@ -35,8 +35,8 @@ class GRF:
         self.__sigma = sigma
 
         # spatial correlation
-        self.__lateral_range = 200  # 680 in the experiment
-        # self.__lateral_range = 700  # 680 in the experiment
+        # self.__lateral_range = 200  # 680 in the experiment
+        self.__lateral_range = 700  # 680 in the experiment
 
         # measurement noise
         self.__nugget = nugget
@@ -61,7 +61,7 @@ class GRF:
         self.__ivr_field = None
 
         # s0: construct grf covariance matrix.
-        self.field = Field()
+        self.field = Field(neighbour_distance=100)
         self.grid = self.field.get_grid()
         self.Ngrid = len(self.grid)
         self.__Fgrf = np.ones([1, self.Ngrid])

@@ -29,7 +29,8 @@ class Config:
         # self.__wgs_loc_start = np.array([63.44912, 10.35067])  # upper west.
         # self.__wgs_loc_start = np.array([63.46236, 10.41938])  # middle east.
         # self.__wgs_loc_start = np.array([63.46674, 10.39385])  # upper middle above munkholm.
-        self.__wgs_loc_start = np.array([63.439385, 10.356280])  # far west close to margin of boundary.
+        # self.__wgs_loc_start = np.array([63.439385, 10.356280])  # far west close to margin of boundary.
+        self.__wgs_loc_start = np.array([63.45713, 10.37847])  # close to the middle and up in the corner.
 
         self.__wgs_loc_end = np.array([63.4425493, 10.3572617])
 
@@ -49,8 +50,8 @@ class Config:
 
         """ Default simulation parameter seteup. """
         self.__num_steps = 100  # number of steps.
-        self.__num_replicates = 30  # number of replicates
-        self.__num_cores = 30  # number of cores to use
+        self.__num_replicates = 90  # number of replicates
+        self.__num_cores = 45  # number of cores to use
 
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:
