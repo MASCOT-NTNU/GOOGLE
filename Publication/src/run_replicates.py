@@ -35,8 +35,8 @@ Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
 
-sigmas_nuggets = np.array([[1., .25],
-                           [1., .1]])
+sigmas_nuggets = np.array([[1., .25]])
+                           # [1., .1]])
                            # [1.5, .25],
                            # [1.5, .1],
                            # [.5, .25],
@@ -55,17 +55,16 @@ datapath = "npy/analytical/"
 
 def run_replicates(i: int = 0):
     print("seed: ", seeds[i])
+    print("replicate: ", i)
     folderpath = datapath + "R_{:03d}/".format(i)
     checkfolder(folderpath)
-    for i in range(sigmas_nuggets.shape[0]):
-        sigma = sigmas_nuggets[i, 0]
-        nugget = sigmas_nuggets[i, 1]
+    for k in range(sigmas_nuggets.shape[0]):
+        sigma = sigmas_nuggets[k, 0]
+        nugget = sigmas_nuggets[k, 1]
 
-        print("sigma: ", sigma)
+        print("sigma: ", sigma, " nugget: ", nugget)
         sigpath = folderpath + "sigma_{:02d}/".format(int(10 * sigma))
         checkfolder(sigpath)
-
-        print("nugget: ", nugget)
         nuggetpath = sigpath + "nugget_{:03d}/".format(int(100 * nugget))
         checkfolder(nuggetpath)
 

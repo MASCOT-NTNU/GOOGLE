@@ -5,14 +5,23 @@ EDA in Simulators mainly handles the visualisation for
 from Config import Config
 from usr_func.checkfolder import checkfolder
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import os
 from tqdm import tqdm
 from matplotlib.gridspec import GridSpec
 from joblib import Parallel, delayed
 
-plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams["font.size"] = 80
+# plt.rcParams["font.family"] = "Times New Roman"
+# plt.rcParams["font.size"] = 80
+
+import matplotlib
+font = {'family' : 'Times New Roman',
+        # 'weight' : 'b',
+        'size'   : 22}
+
+matplotlib.rc('font', **font)
+import matplotlib.pyplot as plt
+
 
 filepath = "./npy/analytical/"
 figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/"
@@ -35,8 +44,8 @@ srrt = "SimulatorRRTStar"
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
 
-sigmas_nuggets = np.array([[1., .25],
-                           [1., .1]])
+sigmas_nuggets = np.array([[1., .25]])
+                           # [1., .1]])
 
 # sigmas = [1.]
 # nuggets = [.4]
