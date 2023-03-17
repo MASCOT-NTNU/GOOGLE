@@ -35,12 +35,14 @@ Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
 
-sigmas_nuggets = np.array([[1., .25]])
-                           # [1., .1]])
-                           # [1.5, .25],
-                           # [1.5, .1],
-                           # [.5, .25],
-                           # [.5, .1]])
+sigmas_nuggets = np.array([[1., .25],
+                           [1., .1],
+                           [1.5, .25],
+                           [1.5, .1],
+                           [.5, .25],
+                           [.5, .1],
+                           [.1, .1],
+                           [.1, .01]])
 
 # datapath = "npy/"
 
