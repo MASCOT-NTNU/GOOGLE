@@ -17,7 +17,8 @@ from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import get_cmap
 from matplotlib.gridspec import GridSpec
-from matplotlib import tri
+from matplotlib import tri, patches
+from shapely.geometry import Polygon, LineString, Point
 import plotly
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
@@ -36,7 +37,7 @@ class EDA:
         """
         self.config = Config()
         self.auv = AUV()
-        self.grf = GRF(sigma=1.5, nugget=.4, approximate_eibv=False)
+        self.grf = GRF(sigma=1.5, nugget=.4, approximate_eibv=False, fast_eibv=True)
 
         # s0, get grid
         self.grid = self.grf.grid
@@ -261,7 +262,8 @@ class EDA:
         """
         sigma = 1.5
         nugget = .4
-        rrtstar = RRTStarCV(weight_eibv=.5, weight_ivr=.5, sigma=sigma, nugget=nugget, budget_mode=True)
+        rrtstar = RRTStarCV(weight_eibv=.5, weight_ivr=.5, sigma=sigma, nugget=nugget, budget_mode=False,
+                            approximate_eibv=True)
         cv = rrtstar.get_CostValley()
         grf = cv.get_grf_model()
 
@@ -270,26 +272,78 @@ class EDA:
         n_samples = len(df)
         threshold = grf.get_threshold()
 
-        # lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
-        # grid_wgs = np.stack((lat, lon), axis=1)
+        pb_lat, pb_lon = WGS.xy2latlon(self.polygon_border[:, 0], self.polygon_border[:, 1])
+        po_lat, po_lon = WGS.xy2latlon(self.polygon_obstacle[:, 0], self.polygon_obstacle[:, 1])
+        pb = np.stack((pb_lat, pb_lon), axis=1)
+        po = np.stack((po_lat, po_lon), axis=1)
+        pbs = Polygon(pb)
+        pos = Polygon(po)
+
+        def is_masked(lat, lon):
+            p = Point(lat, lon)
+            masked = False
+            if pos.contains(p) or not pbs.contains(p):
+                masked = True
+            return masked
+
+        lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
+        triang = tri.Triangulation(lon, lat)
+        lon_triangulated = lon[triang.triangles].mean(axis=1)
+        lat_triangulated = lat[triang.triangles].mean(axis=1)
+
+        ind_mask = []
+        for i in range(len(lon_triangulated)):
+            ind_mask.append(is_masked(lat_triangulated[i], lon_triangulated[i]))
+        triang.set_mask(ind_mask)
 
         def plot_each_component(value, traj: np.ndarray, ind_assimilated: np.ndarray, ind_gathered: np.ndarray,
                                 title: str = "Salinity", cmap=get_cmap("BrBG", 10), cbar_title="Salinity",
-                                vmin=10, vmax=33., stepsize=1.5, threshold=None) -> tuple:
-            ax, xre_plot, yre_plot, value_refined = self.plotf_vector(self.grid[:, 1], self.grid[:, 0],
-                                                                      value, title=title, cmap=cmap,
-                                                                      cbar_title=cbar_title,
-                              vmin=vmin, vmax=vmax, stepsize=stepsize, threshold=threshold,
-                              polygon_border=self.polygon_border, polygon_obstacle=self.polygon_obstacle,
-                              xlabel="East", ylabel="North")
+                                vmin=10, vmax=33., stepsize=1.5, threshold=None, alpha=1) -> tuple:
+            """
+            Plot each component of the posterior field.
+            """
+            ax = plt.gca()
+
+            value = value.flatten()
+            refiner = tri.UniformTriRefiner(triang)
+            tri_refi, value_refined = refiner.refine_field(value, subdiv=3)
+
+            if np.any([vmin, vmax]):
+                levels = np.arange(vmin, vmax, stepsize)
+            else:
+                levels = None
+
+            if np.any(levels):
+                linewidths = np.ones_like(levels) * .3
+                colors = len(levels) * ['black']
+                if threshold:
+                    dist = np.abs(threshold - levels)
+                    ind = np.where(dist == np.amin(dist))[0]
+                    linewidths[ind] = 2
+                    colors[ind[0]] = 'red'
+                ax.tricontourf(tri_refi, value_refined, levels=levels, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax)
+                ax.tricontour(tri_refi, value_refined, levels=levels, colors=colors, linewidths=linewidths, alpha=alpha)
+
             if len(ind_gathered) > 1:
-                plt.plot(traj[:, 1], traj[:, 0], 'y.-')
-                plt.plot(self.grid[ind_gathered, 1], self.grid[ind_gathered, 0], 'k.')
-                plt.plot(self.grid[ind_assimilated, 1], self.grid[ind_assimilated, 0], 'b^')
-                # plt.plot(lon[ind_gathered], lat[ind_gathered], 'k.')
-                # plt.plot(lon[ind_assimilated], lat[ind_assimilated], 'b^')
-            plt.gca().set_aspect("equal")
-            return xre_plot, yre_plot, value_refined
+                plt.plot(traj[:, 1], traj[:, 0], 'k.-')
+                # plt.plot(self.grid[ind_gathered, 1], self.grid[ind_gathered, 0], 'k.')
+                # plt.plot(self.grid[ind_assimilated, 1], self.grid[ind_assimilated, 0], 'b^')
+                plt.plot(lon[ind_gathered], lat[ind_gathered], 'b.')
+                plt.plot(lon[ind_assimilated], lat[ind_assimilated], 'g^')
+
+            plt.colorbar(label=cbar_title)
+
+            plt.plot(po[:, 1], po[:, 0], 'r-.')
+            plt.plot(pb[:, 1], pb[:, 0], 'r-.')
+
+            ax.set_xlabel("Longitude")
+            ax.set_ylabel("Latitude")
+            ax.set_xlim([np.min(pb[:, 1]), np.max(pb[:, 1])])
+            ax.set_ylim([np.min(pb[:, 0]), np.max(pb[:, 0])])
+            ax.set_title(title)
+            ax.set_aspect('equal')
+
+            return ax
 
         counter = 0
         traj = None
@@ -302,29 +356,19 @@ class EDA:
             """
             mu = grf.get_mu()
             # std = np.sqrt(np.diag(grf.get_covariance_matrix()))
-            fig = plt.figure(figsize=(30, 15))
+            fig = plt.figure(figsize=(20, 15))
             gs = GridSpec(nrows=1, ncols=2)
             ax = fig.add_subplot(gs[0])
-            xp, yp, v_mu = plot_each_component(mu, traj=traj, ind_assimilated=ind_assimilated,
+            plot_each_component(mu, traj=traj, ind_assimilated=ind_assimilated,
                                                ind_gathered=ind_gathered, title="Updated salinity field",
                                                threshold=threshold)
 
             ax = fig.add_subplot(gs[1])
             cost_field = cv.get_cost_field()
-            xp, yp, v_cv = plot_each_component(cost_field, traj=traj, ind_assimilated=ind_assimilated,
+            plot_each_component(cost_field, traj=traj, ind_assimilated=ind_assimilated,
                                                ind_gathered=ind_gathered, title="Updated cost valley",
                                                cbar_title="Cost", cmap=get_cmap("RdBu", 10), vmin=0, vmax=2.,
                                                stepsize=.1)
-            # xp, yp, v_std = plot_each_component(std, traj=traj, ind_assimilated=ind_assimilated,
-            #                                     ind_gathered=ind_gathered,
-            #                     title="Conditional std", cbar_title="STD", cmap=get_cmap("RdBu", 10),
-            #                     vmin=0, vmax=sigma + .1, stepsize=.1)
-            # ax = fig.add_subplot(gs[2])
-            # ep = norm.cdf(threshold, mu.flatten(), std)
-            # xp, yp, v_ep = plot_each_component(ep, traj=traj, ind_assimilated=ind_assimilated,
-            #                                    ind_gathered=ind_gathered,
-            #                     title="Conditional EP", cbar_title="Probability", cmap=get_cmap("YlGnBu", 10),
-            #                     vmin=0, vmax=1.01, stepsize=.1, threshold=.5)
 
             figpath = self.figpath + "ReCapCV/"
             checkfolder(figpath)
@@ -344,9 +388,9 @@ class EDA:
                 ind_end = -1
 
             ind_assimilated, val_assimilated = grf.assimilate_temporal_data(df[ind_start:ind_end])
-            # lat_t, lon_t = WGS.xy2latlon(df[:ind_end, 1], df[:ind_end, 2])
-            # traj = np.stack((lat_t, lon_t), axis=1)
-            traj = df[:ind_end, 1:-1]
+            lat_t, lon_t = WGS.xy2latlon(df[:ind_end, 1], df[:ind_end, 2])
+            traj = np.stack((lat_t, lon_t), axis=1)
+            # traj = df[:ind_end, 1:-1]
             ind_gathered = np.append(ind_gathered, ind_assimilated.reshape(-1, 1), axis=0)
 
             loc_now = df[ind_end, 1:-1]
@@ -354,93 +398,9 @@ class EDA:
 
             counter += 1
 
-    def is_masked(self, loc: np.ndarray) -> bool:
-        """ loc: np.array([x, y])"""
-        masked = False
-        if self.field.obstacle_contains(loc) or not self.field.border_contains(loc):
-            masked = True
-        return masked
-
-    def is_masked_wgs(self, loc: np.ndarray) -> bool:
-        # TODO: add lat, lon converting thing only for plotting.
-        """ loc: np.array([x, y])"""
-        masked = False
-        if self.field.obstacle_contains(loc) or not self.field.border_contains(loc):
-            masked = True
-        return masked
-
-    def plotf_vector(self, xplot, yplot, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
-                     cbar_title='test', colorbar=True, vmin=None, vmax=None, ticks=None,
-                     stepsize=None, threshold=None, polygon_border=None,
-                     polygon_obstacle=None, xlabel=None, ylabel=None):
-        """ Note for triangulation:
-        - Maybe sometimes it cannot triangulate based on one axis, but changing to another axis might work.
-        - So then the final output needs to be carefully treated so that it has the correct visualisation.
-        - Also note, the floating point number can cause issues as well.
-        """
-        """ To show threshold as a red line, then vmin, vmax, stepsize, threshold needs to have values. """
-        triangulated = tri.Triangulation(xplot, yplot)
-        x_triangulated = xplot[triangulated.triangles].mean(axis=1)
-        y_triangulated = yplot[triangulated.triangles].mean(axis=1)
-
-        ind_mask = []
-        for i in range(len(x_triangulated)):
-            ind_mask.append(self.is_masked(np.array([y_triangulated[i], x_triangulated[i]])))
-
-        triangulated.set_mask(ind_mask)
-        refiner = tri.UniformTriRefiner(triangulated)
-        triangulated_refined, value_refined = refiner.refine_field(values.flatten(), subdiv=3)
-
-        """ extract new x and y, refined ones. """
-        xre_plot = triangulated_refined.x
-        yre_plot = triangulated_refined.y
-        ax = plt.gca()
-        # ax.triplot(triangulated, lw=0.5, color='white')
-        if np.any([vmin, vmax]):
-            levels = np.arange(vmin, vmax, stepsize)
-        else:
-            levels = None
-        if np.any(levels):
-            linewidths = np.ones_like(levels) * .3
-            colors = len(levels) * ['black']
-            if threshold:
-                dist = np.abs(threshold - levels)
-                ind = np.where(dist == np.amin(dist))[0]
-                linewidths[ind] = 10
-                colors[ind[0]] = 'red'
-            contourplot = ax.tricontourf(triangulated_refined, value_refined, levels=levels, cmap=cmap, alpha=alpha)
-            ax.tricontour(triangulated_refined, value_refined, levels=levels, linewidths=linewidths, colors=colors,
-                          alpha=alpha)
-            # contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, levels=levels, cmap=cmap, alpha=alpha,
-            #                              mask=ind_filtered)
-            # ax.tricontour(yre_plot, xre_plot, value_refined, levels=levels, linewidths=linewidths, colors=colors,
-            #               alpha=alpha)
-        else:
-            contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap, alpha=alpha)
-            ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax, alpha=alpha, mask=ind_mask)
-            # contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, cmap=cmap, alpha=alpha, mask=ind_filtered)
-            # ax.tricontour(yre_plot, xre_plot, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
-
-        """ How to get countour line vertices """
-        # x = contourplot.collections[ind].get_paths()[0].vertices[:, 0]
-        # y = contourplot.collections[ind].get_paths()[0].vertices[:, 1]
-
-        if colorbar:
-            cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
-            cbar.ax.set_title(cbar_title)
-
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if np.any(polygon_border):
-            plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'k-.', lw=2)
-
-        if np.any(polygon_obstacle):
-            plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'k-.', lw=2)
-        return ax, xre_plot, yre_plot, value_refined
-
 
 if __name__ == "__main__":
     e = EDA()
     # e.get_3d_cost_valley()
-    e.get_trees_on_cost_valley()
+    # e.get_trees_on_cost_valley()
+    e.run_mission_recap()

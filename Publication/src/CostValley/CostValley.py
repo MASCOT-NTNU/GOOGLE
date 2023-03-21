@@ -43,8 +43,9 @@ class CostValley:
         if self.__budget_mode:
             xnow, ynow = self.__Budget.get_loc_now()
             self.__budget_field = self.__Budget.get_budget_field(xnow, ynow)
-            self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr +
-                                 self.__budget_field)
+            self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
+            # self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr +
+            #                      self.__budget_field)
         else:
             self.__cost_field = (self.__eibv_field * self.__weight_eibv + self.__ivr_field * self.__weight_ivr)
 

@@ -104,8 +104,10 @@ def run_replicates(i: int = 0):
 
 
 if __name__ == "__main__":
+    import sys
     t1 = time()
-    res = Parallel(n_jobs=num_cores)(delayed(run_replicates)(i=rep) for rep in range(num_replicates))
+    run_replicates(i=int(sys.argv[1]))
+    # res = Parallel(n_jobs=num_cores)(delayed(run_replicates)(i=rep) for rep in range(num_replicates))
     t2 = time()
     print("Replicate study takes ", t2 - t1)
 
