@@ -22,7 +22,7 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True, fast_eibv: bool = False) -> None:
+    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """ Initializes the parameters in GRF kernel. """
         self.__approximate_eibv = approximate_eibv
         self.__fast_eibv = fast_eibv

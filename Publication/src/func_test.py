@@ -1,54 +1,113 @@
-from matplotlib import tri
-# from matplotlib.cm import get_cmap
-from matplotlib.pyplot import get_cmap
+# Author: Jake Vanderplas <jakevdp@cs.washington.edu>
+#
+# License: BSD 3 clause
 
-# def is_masked(value) -> bool:
-#     """
-#     :param xgrid:
-#     :param ygrid:
-#     :return:
-#     """
-#     masked = False
-#     if value == np.inf
-#         masked = True
-#     return masked
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_species_distributions
+from sklearn.neighbors import KernelDensity
 
-def plotf_vector(xplot, yplot, values, title=None, alpha=None, cmap=get_cmap("BrBG", 10),
-                 cbar_title='test', colorbar=True, vmin=None, vmax=None, ticks=None,
-                 xlabel=None, ylabel=None):
-    """ Note for triangulation:
-    - Maybe sometimes it cannot triangulate based on one axis, but changing to another axis might work.
-    - So then the final output needs to be carefully treated so that it has the correct visualisation.
-    - Also note, the floating point number can cause issues as well.
+# if basemap is available, we'll use it.
+# otherwise, we'll improvise later...
+try:
+    from mpl_toolkits.basemap import Basemap
+
+    basemap = True
+except ImportError:
+    basemap = False
+
+
+def construct_grids(batch):
+    """Construct the map grid from the batch object
+
+    Parameters
+    ----------
+    batch : Batch object
+        The object returned by :func:`fetch_species_distributions`
+
+    Returns
+    -------
+    (xgrid, ygrid) : 1-D arrays
+        The grid corresponding to the values in batch.coverages
     """
-    """ To show threshold as a red line, then vmin, vmax, stepsize, threshold needs to have values. """
-    triangulated = tri.Triangulation(xplot, yplot)
-    x_triangulated = xplot[triangulated.triangles].mean(axis=1)
-    y_triangulated = yplot[triangulated.triangles].mean(axis=1)
+    # x,y coordinates for corner cells
+    xmin = batch.x_left_lower_corner + batch.grid_size
+    xmax = xmin + (batch.Nx * batch.grid_size)
+    ymin = batch.y_left_lower_corner + batch.grid_size
+    ymax = ymin + (batch.Ny * batch.grid_size)
 
-#     ind_mask = []
-#     for i in range(len(x_triangulated)):
-#         ind_mask.append(is_masked(values[i]))
+    # x coordinates of the grid cells
+    xgrid = np.arange(xmin, xmax, batch.grid_size)
+    # y coordinates of the grid cells
+    ygrid = np.arange(ymin, ymax, batch.grid_size)
 
-    # triangulated.set_mask(ind_mask)
-    refiner = tri.UniformTriRefiner(triangulated)
-    triangulated_refined, value_refined = refiner.refine_field(values.flatten(), subdiv=3)
+    return (xgrid, ygrid)
 
-    """ extract new x and y, refined ones. """
-    # xre_plot = triangulated_refined.x
-    # yre_plot = triangulated_refined.y
-    ax = plt.gca()
-    # ax.triplot(triangulated, lw=0.5, color='white')
-    contourplot = ax.tricontourf(triangulated_refined, value_refined, cmap=cmap, alpha=alpha)
-    ax.tricontour(triangulated_refined, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
-    # contourplot = ax.tricontourf(yre_plot, xre_plot, value_refined, cmap=cmap, alpha=alpha)
-    # ax.tricontour(yre_plot, xre_plot, value_refined, vmin=vmin, vmax=vmax, alpha=alpha)
 
-    if colorbar:
-        cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
-        cbar.ax.set_title(cbar_title)
+# Get matrices/arrays of species IDs and locations
+data = fetch_species_distributions()
+species_names = ["Bradypus Variegatus", "Microryzomys Minutus"]
 
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    return ax, value_refined
+Xtrain = np.vstack([data["train"]["dd lat"], data["train"]["dd long"]]).T
+ytrain = np.array(
+    [d.decode("ascii").startswith("micro") for d in data["train"]["species"]],
+    dtype="int",
+)
+Xtrain *= np.pi / 180.0  # Convert lat/long to radians
+
+# Set up the data grid for the contour plot
+xgrid, ygrid = construct_grids(data)
+X, Y = np.meshgrid(xgrid[::5], ygrid[::5][::-1])
+land_reference = data.coverages[6][::5, ::5]
+land_mask = (land_reference > -9999).ravel()
+
+xy = np.vstack([Y.ravel(), X.ravel()]).T
+xy = xy[land_mask]
+xy *= np.pi / 180.0
+
+# Plot map of South America with distributions of each species
+fig = plt.figure()
+fig.subplots_adjust(left=0.05, right=0.95, wspace=0.05)
+
+for i in range(2):
+    plt.subplot(1, 2, i + 1)
+
+    # construct a kernel density estimate of the distribution
+    print(" - computing KDE in spherical coordinates")
+    kde = KernelDensity(
+        bandwidth=0.04, metric="haversine", kernel="gaussian", algorithm="ball_tree"
+    )
+    kde.fit(Xtrain[ytrain == i])
+
+    # evaluate only on the land: -9999 indicates ocean
+    Z = np.full(land_mask.shape[0], -9999, dtype="int")
+    Z[land_mask] = np.exp(kde.score_samples(xy))
+    Z = Z.reshape(X.shape)
+
+    # plot contours of the density
+    levels = np.linspace(0, Z.max(), 25)
+    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Reds)
+
+    if basemap:
+        print(" - plot coastlines using basemap")
+        m = Basemap(
+            projection="cyl",
+            llcrnrlat=Y.min(),
+            urcrnrlat=Y.max(),
+            llcrnrlon=X.min(),
+            urcrnrlon=X.max(),
+            resolution="c",
+        )
+        m.drawcoastlines()
+        m.drawcountries()
+    else:
+        print(" - plot coastlines from coverage")
+        plt.contour(
+            X, Y, land_reference, levels=[-9998], colors="k", linestyles="solid"
+        )
+        plt.xticks([])
+        plt.yticks([])
+
+    plt.title(species_names[i])
+
+plt.show()

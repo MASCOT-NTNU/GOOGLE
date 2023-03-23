@@ -20,15 +20,9 @@ plg_o = c.get_polygon_obstacle()
 num_steps = c.get_num_steps()
 num_replicates = c.get_num_replicates()
 
-# Simulators = ["SimulatorRRTStar", "SimulatorMyopic2D"]
 smyopic = "SimulatorMyopic2D"
 srrt = "SimulatorRRTStar"
 
-# sigmas = [1.5, 1., .5, .1]
-# nuggets = [.4, .25, .1, .01]
-
-# sigmas_nuggets = np.array([[1., .25]])
-                           # [1., .1]])
 sigmas_nuggets = np.array([[1., .25],
                            [1., .1],
                            [1.5, .25],
