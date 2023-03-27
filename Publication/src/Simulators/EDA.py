@@ -140,6 +140,58 @@ class EDA:
         plt.savefig(figpath + "/Simulation/P_{:03d}.png".format(num_step))
         # plt.show()
         plt.close("all")
+    def plot_metric_analysis(self) -> None:
+        def organize_dataset(data_myopic, data_rrt, num_steps, metric) -> 'pd.DataFrame':
+            dataset = []
+            for i in range(len(num_steps)):
+                for j in range(data_myopic.shape[0]):
+                    for k in range(data_myopic.shape[1]):
+                        if k == 0:
+                            cv = "EIBV dominant"
+                        elif k == 1:
+                            cv = "IVR dominant"
+                        else:
+                            cv = "Equal weighted"
+                        dataset.append([data_myopic[j, k, num_steps[i]-1], 'Myopic', '{:2d}'.format(num_steps[i]), cv])
+                        dataset.append([data_rrt[j, k, num_steps[i]-1], 'RRT*', '{:2d}'.format(num_steps[i]), cv])
+            df = pd.DataFrame(dataset, columns=[metric, 'Path planner', 'Step', 'cost valley'])
+            return df
+
+        num_steps = [20, 45, 70, 100]
+        # sns.set_palette(["#EED2EE", "#ADD8E6", "#BFEFFF", "#FFDAB9"])
+        # sns.set_palette(["#FFB347", "#FF6961", "#FDB813"])
+        # sns.set_palette(["#98FB98", "#EE82EE", "#F08080"])
+        sns.set_palette(["#ADD8E6", "#FFC0CB", "#9370DB"])
+        # sns.set_palette(["#FFFF00", "#FFA07A", "#FF4500"])
+
+        df = organize_dataset(self.ibv_myopic, self.ibv_rrt, num_steps, "IBV")
+        plt.figure(figsize=(15, 7))
+        g = sns.catplot(x="Step", y="IBV", hue="Path planner", col="cost valley", data=df, kind="box")
+        g.set_titles("{col_name} {col_var}")
+        fig = plt.gcf()
+        fig.savefig(figpath + "Simulation/IBV.png")
+        fig.show()
+
+        df = organize_dataset(self.vr_myopic, self.vr_rrt, num_steps, "VR")
+        plt.figure(figsize=(15, 7))
+        g = sns.catplot(x="Step", y="VR", hue="Path planner", col="cost valley", data=df, kind="box")
+        g.set_titles("{col_name} {col_var}")
+        fig = plt.gcf()
+        fig.savefig(figpath + "Simulation/VR.png")
+        fig.show(fig)
+
+        df = organize_dataset(self.rmse_myopic, self.rmse_rrt, num_steps, "RMSE")
+        plt.figure(figsize=(15, 7))
+        g = sns.catplot(x="Step", y="RMSE", hue="Path planner", col="cost valley", data=df, kind="box")
+        g.set_titles("{col_name} {col_var}")
+        fig = plt.gcf()
+        fig.savefig(figpath + "Simulation/RMSE.png")
+        fig.show()
+        # plt.close("all")
+        plt.show()
+
+        plt.show()
+        pass
 
     def plot_density_map_for_cost_valley(self, traj: np.ndarray, num_step: list, title: str, ind_cv: int=0) -> None:
 
@@ -261,7 +313,6 @@ class EDA:
         mu_truth
         pass
 
-
     def is_masked(self, lat, lon) -> bool:
         p = Point(lat, lon)
         masked = False
@@ -335,7 +386,8 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-    e.plot_cost_components()
+    e.plot_metric_analysis()
+    # e.plot_cost_components()
     # e.plot_traffic_density_map()
 
 
