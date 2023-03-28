@@ -50,7 +50,7 @@ class EDA:
         self.polygon_obstacle = self.config.get_polygon_obstacle()
 
         # s3, set up figpath
-        self.figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Paper/EDA/analytical/"
+        self.figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Paper/EDA/"
         checkfolder(self.figpath)
         # print(os.listdir(self.figpath))
 
@@ -260,6 +260,23 @@ class EDA:
         - It saves data to csv files later can be used for GIS visualisation.
         - It updates the cost valley based on the posterior field.
         """
+
+        figpath = self.figpath + "GIS/csv/"
+        checkfolder(figpath)
+
+        def xy2wgs(polygon) -> np.ndarray:
+            return np.stack((WGS.xy2latlon(polygon[:, 0], polygon[:, 1])), axis=1)
+
+        def get_budget_polygon(polygon: 'Polygon') -> np.ndarray:
+            """ Get the budget polygon from the obstacle polygon. """
+            x = polygon.exterior.xy[0]
+            y = polygon.exterior.xy[1]
+            budget_polygon = np.stack((x, y), axis=1)
+            return xy2wgs(budget_polygon)
+
+        budget = Budget(self.grid)
+
+
         sigma = 1.5
         nugget = .4
         rrtstar = RRTStarCV(weight_eibv=.5, weight_ivr=.5, sigma=sigma, nugget=nugget, budget_mode=False,
@@ -272,17 +289,106 @@ class EDA:
         n_samples = len(df)
         threshold = grf.get_threshold()
 
-        pb_lat, pb_lon = WGS.xy2latlon(self.polygon_border[:, 0], self.polygon_border[:, 1])
-        po_lat, po_lon = WGS.xy2latlon(self.polygon_obstacle[:, 0], self.polygon_obstacle[:, 1])
-        pb = np.stack((pb_lat, pb_lon), axis=1)
-        po = np.stack((po_lat, po_lon), axis=1)
-        pbs = Polygon(pb)
-        pos = Polygon(po)
+        self.polygon_border_wgs = xy2wgs(self.polygon_border)
+        self.polygon_obstacle_wgs = xy2wgs(self.polygon_obstacle)
+        self.polygon_border_wgs_shapely = Polygon(self.polygon_border_wgs)
+        self.polygon_obstacle_wgs_shapely = Polygon(self.polygon_obstacle_wgs)
+
+        counter = 0
+        traj = None
+        ind_assimilated = None
+        ind_gathered = np.empty([0, 1], dtype=int)
+
+        loc_prev = df[0, 1:-1]
+        loc_now = df[0, 1:-1]
+        budget.set_loc_prev(loc_prev)
+
+        lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
+
+        for i in range(0, n_samples, step_auv):
+            """
+            start plotting section
+            """
+            print("i: ", i)
+
+            budget.get_budget_field(loc_now[0], loc_now[1])
+            polygon_budget = get_budget_polygon(budget.get_polygon_ellipse())
+
+            mu = grf.get_mu()
+            std = np.sqrt(np.diag(grf.get_covariance_matrix()))
+            ep = norm.cdf(threshold, mu.flatten(), std)
+
+            polygons_boundary = self.plotf_vector(mu, traj=traj, ind_assimilated=ind_assimilated,
+                                                  ind_gathered=ind_gathered, cmap=get_cmap("BrBG", 10),
+                                                  title="Salinity", cbar_title="Salinity", vmin=2, vmax=32,
+                                                  threshold=self.grf.get_threshold(), stepsize=1.)
+            plt.close("all")
+
+            # save all the data to be imported to QGIS
+            eibv, ivr = grf.get_ei_field()
+            ei = .5 * eibv + .5 * ivr
+
+            dataset = np.stack((lat, lon, mu.flatten()), axis=1)
+            df = pd.DataFrame(dataset, columns=['lat', 'lon', 'mu'])
+            df.to_csv(figpath + "mu/P_{:03d}.csv".format(counter), index=False)
+
+            # dataset = np.stack((lat, lon, std.flatten()), axis=1)
+            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'std'])
+            # df.to_csv(figpath + "std/P_{:03d}.csv".format(counter), index=False)
+            #
+            # dataset = np.stack((lat, lon, ep.flatten()), axis=1)
+            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'ep'])
+            # df.to_csv(figpath + "ep/P_{:03d}.csv".format(counter), index=False)
+            #
+            # dataset = np.stack((lat, lon, ei.flatten()), axis=1)
+            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'ei'])
+            # df.to_csv(figpath + "ei/P_{:03d}.csv".format(counter), index=False)
+
+            # df = pd.DataFrame(polygon_budget, columns=['lat', 'lon'])
+            # df.to_csv(figpath + "plg_budget/P_{:03d}.csv".format(counter), index=False)
+
+            # fpath = figpath + "plg_boundary/I_{:03d}/".format(counter)
+            # checkfolder(fpath)
+            # for kp in range(len(polygons_boundary)):
+            #     plg = polygons_boundary[kp][0]
+            #     df = pd.DataFrame(plg, columns=['lat', 'lon'])
+            #     df.to_csv(fpath + "P_{:03d}.csv".format(kp), index=False)
+
+            # plt.figure()
+            # for plg in polygons_boundary:
+            #     plt.plot(plg[0][:, 1], plg[0][:, 0], 'b-')
+            # plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'k-')
+            # plt.plot(self.polygon_obstacle_wgs[:, 1], self.polygon_obstacle_wgs[:, 0], 'k-')
+            # plt.plot(polygon_budget[:, 1], polygon_budget[:, 0], 'r-')
+            # plt.savefig(figpath + "P_{:03d}.png".format(counter), dpi=300)
+            # plt.close("all")
+
+            print("Counter: ", counter)
+            if i + step_auv <= n_samples:
+                ind_start = i
+                ind_end = i + step_auv
+            else:
+                ind_start = i
+                ind_end = -1
+
+            ind_assimilated, val_assimilated = grf.assimilate_temporal_data(df[ind_start:ind_end])
+            lat_t, lon_t = WGS.xy2latlon(df[:ind_end, 1], df[:ind_end, 2])
+            traj = np.stack((lat_t, lon_t), axis=1)
+            ind_gathered = np.append(ind_gathered, ind_assimilated.reshape(-1, 1), axis=0)
+
+            loc_now = df[ind_end, 1:-1]
+            cv.update_cost_valley(loc_now=loc_now)
+
+            counter += 1
+
+    def plotf_vector(self, value, traj: np.ndarray, ind_assimilated: np.ndarray, ind_gathered: np.ndarray,
+                     title: str = "Salinity", cmap=get_cmap("BrBG", 10), cbar_title="Salinity",
+                     vmin=10, vmax=33., stepsize=1.5, threshold=None, alpha=1) -> np.ndarray:
 
         def is_masked(lat, lon):
             p = Point(lat, lon)
             masked = False
-            if pos.contains(p) or not pbs.contains(p):
+            if self.polygon_obstacle_wgs_shapely.contains(p) or not self.polygon_border_wgs_shapely.contains(p):
                 masked = True
             return masked
 
@@ -296,107 +402,53 @@ class EDA:
             ind_mask.append(is_masked(lat_triangulated[i], lon_triangulated[i]))
         triang.set_mask(ind_mask)
 
-        def plot_each_component(value, traj: np.ndarray, ind_assimilated: np.ndarray, ind_gathered: np.ndarray,
-                                title: str = "Salinity", cmap=get_cmap("BrBG", 10), cbar_title="Salinity",
-                                vmin=10, vmax=33., stepsize=1.5, threshold=None, alpha=1) -> tuple:
-            """
-            Plot each component of the posterior field.
-            """
-            ax = plt.gca()
+        # start the plotting section.
+        ax = plt.gca()
 
-            value = value.flatten()
-            refiner = tri.UniformTriRefiner(triang)
-            tri_refi, value_refined = refiner.refine_field(value, subdiv=3)
+        value = value.flatten()
+        refiner = tri.UniformTriRefiner(triang)
+        tri_refi, value_refined = refiner.refine_field(value, subdiv=3)
 
-            if np.any([vmin, vmax]):
-                levels = np.arange(vmin, vmax, stepsize)
-            else:
-                levels = None
+        if np.any([vmin, vmax]):
+            levels = np.arange(vmin, vmax, stepsize)
+        else:
+            levels = None
 
-            if np.any(levels):
-                linewidths = np.ones_like(levels) * .3
-                colors = len(levels) * ['black']
-                if threshold:
-                    dist = np.abs(threshold - levels)
-                    ind = np.where(dist == np.amin(dist))[0]
-                    linewidths[ind] = 2
-                    colors[ind[0]] = 'red'
-                ax.tricontourf(tri_refi, value_refined, levels=levels, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax)
-                ax.tricontour(tri_refi, value_refined, levels=levels, colors=colors, linewidths=linewidths, alpha=alpha)
+        if np.any(levels):
+            linewidths = np.ones_like(levels) * .3
+            colors = len(levels) * ['black']
+            if threshold:
+                dist = np.abs(threshold - levels)
+                ind = np.where(dist == np.amin(dist))[0]
+                linewidths[ind] = 2
+                colors[ind[0]] = 'red'
+            im = ax.tricontourf(tri_refi, value_refined, levels=levels, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax)
+            cs = ax.tricontour(tri_refi, value_refined, levels=levels, colors=colors, linewidths=linewidths, alpha=alpha)
 
-            if len(ind_gathered) > 1:
-                plt.plot(traj[:, 1], traj[:, 0], 'k.-')
-                # plt.plot(self.grid[ind_gathered, 1], self.grid[ind_gathered, 0], 'k.')
-                # plt.plot(self.grid[ind_assimilated, 1], self.grid[ind_assimilated, 0], 'b^')
-                plt.plot(lon[ind_gathered], lat[ind_gathered], 'b.')
-                plt.plot(lon[ind_assimilated], lat[ind_assimilated], 'g^')
+            paths = cs.collections[25].get_paths()
+            polygons = []
+            for path in paths:
+                v = path.vertices
+                lat = v[:, 1]
+                lon = v[:, 0]
+                polygons.append([np.stack((lat, lon), axis=1)])
 
-            plt.colorbar(label=cbar_title)
+        # if len(ind_gathered) > 1:
+        #     plt.plot(traj[:, 1], traj[:, 0], 'k.-')
+        #     plt.plot(lon[ind_gathered], lat[ind_gathered], 'b.')
+        #     plt.plot(lon[ind_assimilated], lat[ind_assimilated], 'g^')
 
-            plt.plot(po[:, 1], po[:, 0], 'r-.')
-            plt.plot(pb[:, 1], pb[:, 0], 'r-.')
+        # plt.colorbar(im, label=cbar_title)
 
-            ax.set_xlabel("Longitude")
-            ax.set_ylabel("Latitude")
-            ax.set_xlim([np.min(pb[:, 1]), np.max(pb[:, 1])])
-            ax.set_ylim([np.min(pb[:, 0]), np.max(pb[:, 0])])
-            ax.set_title(title)
-            ax.set_aspect('equal')
+        # plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'k-.')
+        # plt.plot(self.polygon_obstacle_wgs[:, 1], self.polygon_obstacle_wgs[:, 0], 'k-.')
+        # ax.set_xlabel("Longitude")
+        # ax.set_ylabel("Latitude")
+        # ax.set_xlim([np.min(self.polygon_border_wgs[:, 1]), np.max(self.polygon_border_wgs[:, 1])])
+        # ax.set_ylim([np.min(self.polygon_border_wgs[:, 0]), np.max(self.polygon_border_wgs[:, 0])])
+        # ax.set_title(title)
 
-            return ax
-
-        counter = 0
-        traj = None
-        ind_assimilated = None
-        ind_gathered = np.empty([0, 1], dtype=int)
-
-        for i in range(0, n_samples, step_auv):
-            """
-            start plotting section
-            """
-            mu = grf.get_mu()
-            # std = np.sqrt(np.diag(grf.get_covariance_matrix()))
-            fig = plt.figure(figsize=(20, 15))
-            gs = GridSpec(nrows=1, ncols=2)
-            ax = fig.add_subplot(gs[0])
-            plot_each_component(mu, traj=traj, ind_assimilated=ind_assimilated,
-                                               ind_gathered=ind_gathered, title="Updated salinity field",
-                                               threshold=threshold)
-
-            ax = fig.add_subplot(gs[1])
-            cost_field = cv.get_cost_field()
-            plot_each_component(cost_field, traj=traj, ind_assimilated=ind_assimilated,
-                                               ind_gathered=ind_gathered, title="Updated cost valley",
-                                               cbar_title="Cost", cmap=get_cmap("RdBu", 10), vmin=0, vmax=2.,
-                                               stepsize=.1)
-
-            figpath = self.figpath + "ReCapCV/"
-            checkfolder(figpath)
-            plt.savefig(figpath + "/P_{:03d}.png".format(counter))
-            plt.close("all")
-
-            """
-            end of plotting section. 
-            """
-
-            print("Counter: ", counter)
-            if i + step_auv <= n_samples:
-                ind_start = i
-                ind_end = i + step_auv
-            else:
-                ind_start = i
-                ind_end = -1
-
-            ind_assimilated, val_assimilated = grf.assimilate_temporal_data(df[ind_start:ind_end])
-            lat_t, lon_t = WGS.xy2latlon(df[:ind_end, 1], df[:ind_end, 2])
-            traj = np.stack((lat_t, lon_t), axis=1)
-            # traj = df[:ind_end, 1:-1]
-            ind_gathered = np.append(ind_gathered, ind_assimilated.reshape(-1, 1), axis=0)
-
-            loc_now = df[ind_end, 1:-1]
-            cv.update_cost_valley(loc_now=loc_now)
-
-            counter += 1
+        return polygons
 
 
 if __name__ == "__main__":
