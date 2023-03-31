@@ -13,8 +13,10 @@ from CostValley.Budget import Budget
 from usr_func.checkfolder import checkfolder
 from usr_func.interpolate_2d import interpolate_2d
 from scipy.stats import norm
+from scipy.spatial.distance import cdist
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
+import seaborn as sns
 from matplotlib.pyplot import get_cmap
 from matplotlib.gridspec import GridSpec
 from matplotlib import tri, patches
@@ -97,8 +99,8 @@ class EDA:
         # sigma = .3
         # nugget = .01
         # c1: eibv dominant
-        weight_eibv = 1.
-        weight_ivr = 0.
+        weight_eibv = .5
+        weight_ivr = .5
 
         # # c2, ivr dominant
         # weight_eibv = 0.
@@ -109,7 +111,7 @@ class EDA:
         # weight_ivr = .5
 
         self.rrtstar = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                 budget_mode=True, approximate_eibv=True)
+                                 budget_mode=True, approximate_eibv=False, fast_eibv=True)
         self.tp = TreePlotter()
         self.cv = self.rrtstar.get_CostValley()
         costvalley = self.cv.get_cost_field()
@@ -328,29 +330,20 @@ class EDA:
             eibv, ivr = grf.get_ei_field()
             ei = .5 * eibv + .5 * ivr
 
-            dataset = np.stack((lat, lon, mu.flatten()), axis=1)
-            df = pd.DataFrame(dataset, columns=['lat', 'lon', 'mu'])
-            df.to_csv(figpath + "mu/P_{:03d}.csv".format(counter), index=False)
+            dataset = np.stack((lat, lon, mu.flatten(), std.flatten(), ep.flatten(), ei.flatten()), axis=1)
+            np.savez(figpath + "field/I_{:03d}.npz".format(counter), dataset=dataset)
+            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'mu', 'std', 'ep', 'ei'])
+            # df.to_csv(figpath + "field/I_{:03d}.csv".format(counter))
 
-            # dataset = np.stack((lat, lon, std.flatten()), axis=1)
-            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'std'])
-            # df.to_csv(figpath + "std/P_{:03d}.csv".format(counter), index=False)
-            #
-            # dataset = np.stack((lat, lon, ep.flatten()), axis=1)
-            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'ep'])
-            # df.to_csv(figpath + "ep/P_{:03d}.csv".format(counter), index=False)
-            #
-            # dataset = np.stack((lat, lon, ei.flatten()), axis=1)
-            # df = pd.DataFrame(dataset, columns=['lat', 'lon', 'ei'])
-            # df.to_csv(figpath + "ei/P_{:03d}.csv".format(counter), index=False)
-
+            np.savez(figpath + "plg_budget/I_{:03d}.npz".format(counter), polygon_budget=polygon_budget)
             # df = pd.DataFrame(polygon_budget, columns=['lat', 'lon'])
             # df.to_csv(figpath + "plg_budget/P_{:03d}.csv".format(counter), index=False)
 
-            # fpath = figpath + "plg_boundary/I_{:03d}/".format(counter)
-            # checkfolder(fpath)
-            # for kp in range(len(polygons_boundary)):
-            #     plg = polygons_boundary[kp][0]
+            fpath = figpath + "plg_boundary/I_{:03d}/".format(counter)
+            checkfolder(fpath)
+            for kp in range(len(polygons_boundary)):
+                plg = polygons_boundary[kp][0]
+                np.savez(fpath + "P_{:03d}.npz".format(kp), polygon=plg)
             #     df = pd.DataFrame(plg, columns=['lat', 'lon'])
             #     df.to_csv(fpath + "P_{:03d}.csv".format(kp), index=False)
 
@@ -380,6 +373,143 @@ class EDA:
             cv.update_cost_valley(loc_now=loc_now)
 
             counter += 1
+
+    def convert_npz_to_csv(self) -> None:
+        filepath = self.figpath + "GIS/csv/field/"
+        files = os.listdir(filepath)
+        for file in files:
+            if file.endswith(".npz"):
+                print(file)
+                data = np.load(filepath + file)
+                dataset = data["dataset"]
+                df = pd.DataFrame(dataset, columns=['lat', 'lon', 'mu', 'std', 'ep', 'ei'])
+                df.to_csv(filepath + file[:-4] + ".csv", index=False)
+
+        filepath = self.figpath + "GIS/csv/plg_budget/"
+        files = os.listdir(filepath)
+        for file in files:
+            if file.endswith(".npz"):
+                print(file)
+                data = np.load(filepath + file)
+                dataset = data["polygon_budget"]
+                df = pd.DataFrame(dataset, columns=['lat', 'lon'])
+                df.to_csv(filepath + file[:-4] + ".csv", index=False)
+
+        filepath = self.figpath + "GIS/csv/plg_boundary/"
+        files = os.listdir(filepath)
+        for file in files:
+            print(file)
+            if file.startswith("I"):
+                files2 = os.listdir(filepath + file + "/")
+                for file2 in files2:
+                    print(file2)
+                    if file2.endswith(".npz"):
+                        data = np.load(filepath + file + "/" + file2)
+                        dataset = data["polygon"]
+                        df = pd.DataFrame(dataset, columns=['lat', 'lon'])
+                        df.to_csv(filepath + file + "/" + file2[:-4] + ".csv", index=False)
+
+    def refine_values4gis(self) -> None:
+        filepath = self.figpath + "GIS/csv/field/"
+        files = os.listdir(filepath)
+        files.sort()
+        file0 = "I_000.csv"
+        df = pd.read_csv(filepath + file0).to_numpy()
+        lat = df[:, 0]
+        lon = df[:, 1]
+        grid = np.stack((lat, lon), axis=1)
+
+        field = Field(neighbour_distance=16)
+        grid_new = field.get_grid()
+        la, lo = WGS.xy2latlon(grid_new[:, 0], grid_new[:, 1])
+        grid_new = np.stack((la, lo), axis=1)
+
+        for file in files:
+            if file.endswith(".csv"):
+                print(file)
+                df = pd.read_csv(filepath + file)
+
+                mu = griddata(grid, df['mu'].to_numpy(), (grid_new[:, 0], grid_new[:, 1]), method="cubic")
+                std = griddata(grid, df['std'].to_numpy(), (grid_new[:, 0], grid_new[:, 1]), method="cubic")
+                ep = griddata(grid, df['ep'].to_numpy(), (grid_new[:, 0], grid_new[:, 1]), method="cubic")
+                ei = griddata(grid, df['ei'].to_numpy(), (grid_new[:, 0], grid_new[:, 1]), method="cubic")
+
+                df = pd.DataFrame(np.stack((la, lo, mu, std, ep, ei), axis=1), columns=['lat', 'lon', 'mu', 'std', 'ep', 'ei'])
+                df.to_csv(self.figpath + "GIS/csv/fine_grid/" + file, index=False)
+
+    def get_current_location(self) -> None:
+        """ This function tries to get the current location of the AUV throughout the whole process of sampling. """
+        filepath = os.getcwd() + "/csv/EDA/traj/"
+        files = os.listdir(filepath)
+        files.sort()
+        for file in files:
+            if file.endswith(".csv"):
+                print(file)
+                df = pd.read_csv(filepath + file).to_numpy()
+                loc = df[-1, :].reshape(1, -1)
+                ddf = pd.DataFrame(loc, columns=['lat', 'lon'])
+                ddf.to_csv(filepath + "../loc/" + file[:-4] + ".csv", index=False)
+
+    def get_crossplot_between_auv_and_sinmod(self) -> None:
+        """ This function creates a crossplot between the AUV and the SinMod data. """
+
+        # s1, get sinmod data
+        dataset_sinmod = pd.read_csv("./../prior/sinmod.csv").to_numpy()
+        grid_sinmod = dataset_sinmod[:, :2]
+        sal_sinmod = dataset_sinmod[:, -1]
+
+        # s2, get auv data
+        dataset_auv = self.auv.get_dataset()
+        loc_auv = dataset_auv[:, 1:-1]
+        sal_auv = dataset_auv[:, -1]
+
+        # s3, get indices of auv data that are in sinmod data
+        dm = cdist(loc_auv, grid_sinmod, metric="euclidean")
+        ind = np.argmin(dm, axis=1)
+        sal_loc_auv_from_sinmod = sal_sinmod[ind]
+
+        # plt.scatter(loc_auv[:, 1], loc_auv[:, 0], c=sal_loc_auv_from_sinmod, cmap=get_cmap("BrBG", 10), vmin=10, vmax=33)
+        # plt.colorbar()
+        # plt.show()
+        #
+        # plt.scatter(loc_auv[:, 1], loc_auv[:, 0], c=sal_auv - sal_loc_auv_from_sinmod, cmap=get_cmap("BrBG", 10), vmin=-4, vmax=4)
+        # plt.colorbar()
+        # plt.show()
+
+        residual = sal_auv - sal_loc_auv_from_sinmod
+        lat, lon = WGS.xy2latlon(loc_auv[:, 0], loc_auv[:, 1])
+        df = pd.DataFrame(np.stack((lat, lon, sal_auv, sal_loc_auv_from_sinmod, residual), axis=1), columns=['lat', 'lon', 'AUV', 'SINMOD', 'residual'])
+        df.to_csv(self.figpath + "GIS/csv/residual.csv", index=False)
+
+        df = pd.DataFrame(np.stack((sal_auv, sal_loc_auv_from_sinmod), axis=1), columns=['AUV', 'SINMOD'])
+        plt.figure(figsize=(30, 30))
+        # g = sns.JointGrid(df, x="auv", y="sinmod", space=0, ratio=50, xlim=(15, 30), ylim=(15, 30))
+        # g.plot_joint(sns.kdeplot,
+        #              fill=True, clip=((15, 30), (10, 30)),
+        #              thresh=0, levels=100, cmap="rocket")
+        # g.plot_marginals(sns.histplot, color="#03051A", alpha=1, bins=25)
+
+        # sns.set(rc={"figure.figsize": (15, 15)})
+        g = sns.pairplot(df, kind="scatter", corner=True, diag_kind="hist", markers="+", height=5,
+                         plot_kws=dict(s=50, facecolor='k', edgecolor="k", linewidth=.1))
+        g.map_lower(sns.kdeplot, levels=4, color="red")
+        g.axes[1][0].axline(xy1=(15, 15), slope=1, color="k", dashes=(5, 2))
+        g.set(ylim=(15, 30), yticks=[15, 20, 25, 30], xlim=(15, 30), xticks=[15, 20, 25, 30])
+        g.tight_layout(pad=.5)
+        plt.savefig(self.figpath + "crossplot.png", dpi=300)
+        plt.close("all")
+        plt.show()
+        # plt.scatter(sal_auv, sal_loc_auv_from_sinmod, c=sal_auv - sal_loc_auv_from_sinmod, cmap=get_cmap("BrBG", 10), vmin=-4, vmax=4)
+        # plt.colorbar()
+        # # plt.plot(sal_auv, sal_loc_auv_from_sinmod, 'k.')
+        # plt.plot([15, 33], [15, 33], 'r-')
+        # plt.axis([15, 33, 15, 33])
+        # plt.show()
+
+        ind
+
+
+        pass
 
     def plotf_vector(self, value, traj: np.ndarray, ind_assimilated: np.ndarray, ind_gathered: np.ndarray,
                      title: str = "Salinity", cmap=get_cmap("BrBG", 10), cbar_title="Salinity",
@@ -455,4 +585,5 @@ if __name__ == "__main__":
     e = EDA()
     # e.get_3d_cost_valley()
     # e.get_trees_on_cost_valley()
-    e.run_mission_recap()
+    # e.run_mission_recap()
+    e.convert_npz_to_csv()

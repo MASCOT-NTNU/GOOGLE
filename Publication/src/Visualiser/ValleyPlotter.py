@@ -131,7 +131,7 @@ class ValleyPlotter:
             mode="markers",
             marker=dict(
                 size=20,
-                color="yellow",
+                color="cyan",
             ),
             showlegend=False,
         ),
@@ -156,7 +156,6 @@ class ValleyPlotter:
 
         counter = 0
         for node in nodes:
-            print("counter: ", counter)
             # print(node)
             p_node = node.get_parent()
             l_node = node.get_location()
@@ -188,8 +187,8 @@ class ValleyPlotter:
                     row=1, col=1
                 )
                 # plotly.offline.plot(fig, filename=filename, auto_open=True)
-                fig.write_image(foldername + "P_{:03d}.png".format(counter), width=1980, height=1080)
-                counter += 1
+                # fig.write_image(foldername + "P_{:03d}.png".format(counter), width=1980, height=1080)
+                # counter += 1
 
         lat, lon = WGS.xy2latlon(traj[:, 0], traj[:, 1])
         c_traj = []
@@ -210,7 +209,7 @@ class ValleyPlotter:
             row=1, col=1
         )
 
-        plotly.offline.plot(fig, filename=foldername + "P_{:03d}.html".format(counter), auto_open=True)
+        plotly.offline.plot(fig, filename=foldername + "rrt_cv.html", auto_open=True)
         # fig.write_image(filename, width=1980, height=1080)
         pass
 

@@ -141,54 +141,92 @@ class EDA:
         # plt.show()
         plt.close("all")
     def plot_metric_analysis(self) -> None:
-        def organize_dataset(data_myopic, data_rrt, num_steps, metric) -> 'pd.DataFrame':
+        # def organize_dataset(data_myopic, data_rrt, num_steps, metric) -> 'pd.DataFrame':
+        #     dataset = []
+        #     for i in range(len(num_steps)):
+        #         for j in range(data_myopic.shape[0]):
+        #             for k in range(data_myopic.shape[1]):
+        #                 if k == 0:
+        #                     cv = "EIBV dominant"
+        #                 elif k == 1:
+        #                     cv = "IVR dominant"
+        #                 else:
+        #                     cv = "Equal weighted"
+        #                 dataset.append([data_myopic[j, k, num_steps[i]-1], 'Myopic', '{:2d}'.format(num_steps[i]), cv])
+        #                 dataset.append([data_rrt[j, k, num_steps[i]-1], 'RRT*', '{:2d}'.format(num_steps[i]), cv])
+        #     df = pd.DataFrame(dataset, columns=[metric, 'Path planner', 'Step', 'cost valley'])
+        #     return df
+
+        def organize_dataset(data, max_num: int, metric) -> 'pd.DataFrame':
             dataset = []
-            for i in range(len(num_steps)):
-                for j in range(data_myopic.shape[0]):
-                    for k in range(data_myopic.shape[1]):
+            for i in range(0, max_num):
+                for j in range(data.shape[0]):
+                    for k in range(data.shape[1]):
                         if k == 0:
                             cv = "EIBV dominant"
                         elif k == 1:
                             cv = "IVR dominant"
                         else:
                             cv = "Equal weighted"
-                        dataset.append([data_myopic[j, k, num_steps[i]-1], 'Myopic', '{:2d}'.format(num_steps[i]), cv])
-                        dataset.append([data_rrt[j, k, num_steps[i]-1], 'RRT*', '{:2d}'.format(num_steps[i]), cv])
-            df = pd.DataFrame(dataset, columns=[metric, 'Path planner', 'Step', 'cost valley'])
+                        dataset.append([data[j, k, i], "{:03d}".format(i), cv])
+            df = pd.DataFrame(dataset, columns=[metric, 'Step', 'Cost valley'])
             return df
 
-        num_steps = [20, 45, 70, 100]
+        # num_steps = [20, 45, 70, 100]
         # sns.set_palette(["#EED2EE", "#ADD8E6", "#BFEFFF", "#FFDAB9"])
         # sns.set_palette(["#FFB347", "#FF6961", "#FDB813"])
         # sns.set_palette(["#98FB98", "#EE82EE", "#F08080"])
-        sns.set_palette(["#ADD8E6", "#FFC0CB", "#9370DB"])
+        # sns.set_palette(["#ADD8E6", "#FFC0CB", "#9370DB"])
         # sns.set_palette(["#FFFF00", "#FFA07A", "#FF4500"])
 
-        df = organize_dataset(self.ibv_myopic, self.ibv_rrt, num_steps, "IBV")
-        plt.figure(figsize=(15, 7))
-        g = sns.catplot(x="Step", y="IBV", hue="Path planner", col="cost valley", data=df, kind="box")
-        g.set_titles("{col_name} {col_var}")
-        fig = plt.gcf()
-        fig.savefig(figpath + "Simulation/IBV.png")
-        fig.show()
+        max_num = 44
+        ticks = np.arange(0, max_num, 5)
+        ticklabels = ['{:d}'.format(i) for i in ticks]
+        df = organize_dataset(self.ibv_rrt, max_num, "IBV")
+        fig = plt.figure(figsize=(30, 8))
+        gs = GridSpec(nrows=1, ncols=3)
+        ax = fig.add_subplot(gs[0])
+        g = sns.lineplot(x="Step", y="IBV", hue="Cost valley", data=df)
+        g.set_xticks(ticks)  # <--- set the ticks first
+        g.set_xticklabels(ticklabels)  # <--- set the labels second
 
-        df = organize_dataset(self.vr_myopic, self.vr_rrt, num_steps, "VR")
-        plt.figure(figsize=(15, 7))
-        g = sns.catplot(x="Step", y="VR", hue="Path planner", col="cost valley", data=df, kind="box")
-        g.set_titles("{col_name} {col_var}")
-        fig = plt.gcf()
-        fig.savefig(figpath + "Simulation/VR.png")
-        fig.show(fig)
+        ax = fig.add_subplot(gs[1])
+        df = organize_dataset(self.vr_rrt, max_num, "VR")
+        g = sns.lineplot(x="Step", y="VR", hue="Cost valley", data=df)
+        g.set_xticks(ticks)  # <--- set the ticks first
+        g.set_xticklabels(ticklabels)  # <--- set the labels second
 
-        df = organize_dataset(self.rmse_myopic, self.rmse_rrt, num_steps, "RMSE")
-        plt.figure(figsize=(15, 7))
-        g = sns.catplot(x="Step", y="RMSE", hue="Path planner", col="cost valley", data=df, kind="box")
-        g.set_titles("{col_name} {col_var}")
-        fig = plt.gcf()
-        fig.savefig(figpath + "Simulation/RMSE.png")
-        fig.show()
-        # plt.close("all")
+        ax = fig.add_subplot(gs[2])
+        df = organize_dataset(self.rmse_rrt, max_num, "RMSE")
+        g = sns.lineplot(x="Step", y="RMSE", hue="Cost valley", data=df)
+        g.set_xticks(ticks)  # <--- set the ticks first
+        g.set_xticklabels(ticklabels)  # <--- set the labels second
+
+        plt.savefig(figpath + "Simulation/result_rrt.png")
+        # g = sns.catplot(x="Step", y="IBV", hue="cost valley", data=df, kind="box")
+        # g.set_titles("{col_name} {col_var}")
+        # fig = plt.gcf()
         plt.show()
+        # fig.savefig(figpath + "Simulation/IBV.png")
+        # fig.show()
+
+        # df = organize_dataset(self.vr_myopic, self.vr_rrt, num_steps, "VR")
+        # plt.figure(figsize=(15, 7))
+        # g = sns.catplot(x="Step", y="VR", hue="Path planner", col="cost valley", data=df, kind="box")
+        # g.set_titles("{col_name} {col_var}")
+        # fig = plt.gcf()
+        # fig.savefig(figpath + "Simulation/VR.png")
+        # fig.show(fig)
+        #
+        # df = organize_dataset(self.rmse_myopic, self.rmse_rrt, num_steps, "RMSE")
+        # plt.figure(figsize=(15, 7))
+        # g = sns.catplot(x="Step", y="RMSE", hue="Path planner", col="cost valley", data=df, kind="box")
+        # g.set_titles("{col_name} {col_var}")
+        # fig = plt.gcf()
+        # fig.savefig(figpath + "Simulation/RMSE.png")
+        # fig.show()
+        # # plt.close("all")
+        # plt.show()
 
         plt.show()
         pass
