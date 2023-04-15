@@ -289,8 +289,8 @@ class EDA:
         #                   polygon_border=self.polygon_border_wgs, polygon_obstacle=self.polygon_obstacle_wgs)
         #
 
-        fig = plt.figure(figsize=(35, 7))
-        gs = GridSpec(nrows=1, ncols=4)
+        fig = plt.figure(figsize=(20, 8))
+        gs = GridSpec(nrows=1, ncols=2)
         ax = fig.add_subplot(gs[0])
         self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], eibv, alpha=1., cmap=get_cmap("RdBu", 25),
                           title="EIBV", vmin=0, vmax=1.1, stepsize=.1, colorbar=True, cbar_title="Cost",
@@ -319,9 +319,16 @@ class EDA:
         plt.xticks(self.lon_ticks)
         plt.xlim([self.lon_min, self.lon_max])
         plt.ylim([self.lat_min, self.lat_max])
+        plt.savefig(figpath + "Simulation/info_fields.png")
+        plt.close("all")
 
-        ax = fig.add_subplot(gs[2])
-        plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+        fig = plt.figure(figsize=(20, 8))
+        gs = GridSpec(nrows=1, ncols=2)
+        ax = fig.add_subplot(gs[0])
+        self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], np.zeros_like(ivr), alpha=1.,
+                          cmap=get_cmap("RdBu", 25), title="Obstacle", vmin=0, vmax=1.1, stepsize=.5, colorbar=True,
+                          cbar_title="Cost", polygon_border=self.polygon_border_wgs,
+                          polygon_obstacle=self.polygon_obstacle_wgs)
         plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
                           linestyle='-.')
         plt.gca().add_patch(plg)
@@ -332,8 +339,11 @@ class EDA:
         plt.xlim([self.lon_min, self.lon_max])
         plt.ylim([self.lat_min, self.lat_max])
 
-        ax = fig.add_subplot(gs[3])
-        plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+        ax = fig.add_subplot(gs[1])
+        self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], np.zeros_like(ivr), alpha=1.,
+                          cmap=get_cmap("RdBu", 25),
+                          title="Budget", vmin=0, vmax=1.1, stepsize=.5, colorbar=True, cbar_title="Cost",
+                          polygon_border=self.polygon_border_wgs, polygon_obstacle=self.polygon_obstacle_wgs)
         plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
                           linestyle='-.')
         plt.gca().add_patch(plg)
@@ -346,7 +356,9 @@ class EDA:
         # plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=eibv, cmap=get_cmap("BrBG", 10), vmin=0, vmax=1)
         # plt.colorbar()
         # plt.show()
-        plt.show()
+        plt.savefig(figpath + "Simulation/op_fields.png")
+        plt.close("all")
+        # plt.show()
 
         mu_truth
         pass
@@ -424,7 +436,7 @@ class EDA:
 
 if __name__ == "__main__":
     e = EDA()
-    e.plot_metric_analysis()
+    # e.plot_metric_analysis()
     # e.plot_cost_components()
     # e.plot_traffic_density_map()
 
