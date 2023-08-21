@@ -11,6 +11,7 @@ class Log:
         pass
 
     def append_log(self, grf) -> None:
+        pass
 
 
 

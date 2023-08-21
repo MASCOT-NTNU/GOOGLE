@@ -490,13 +490,25 @@ class EDA:
         # g.plot_marginals(sns.histplot, color="#03051A", alpha=1, bins=25)
 
         # sns.set(rc={"figure.figsize": (15, 15)})
-        g = sns.pairplot(df, kind="scatter", corner=True, diag_kind="hist", markers="+", height=5,
-                         plot_kws=dict(s=50, facecolor='k', edgecolor="k", linewidth=.1))
-        g.map_lower(sns.kdeplot, levels=4, color="red")
-        g.axes[1][0].axline(xy1=(15, 15), slope=1, color="k", dashes=(5, 2))
-        g.set(ylim=(15, 30), yticks=[15, 20, 25, 30], xlim=(15, 30), xticks=[15, 20, 25, 30])
-        g.tight_layout(pad=.5)
-        plt.savefig(self.figpath + "crossplot.png", dpi=300)
+
+        g = sns.jointplot(df, x="AUV", y="SINMOD", xlim=(15, 30), ylim=(15, 30), marker="+", color='k', alpha=.1,
+                          s=50, marginal_kws=dict(bins=50),)
+        g.plot_joint(sns.kdeplot, color="r", zorder=0, levels=4)
+        # g.plot_marginals(sns.rugplot, color="r", height=-.15, clip_on=False)
+        plt.axline(xy1=(15, 15), slope=1, color="k", dashes=(5, 2))
+        # g = sns.pairplot(df, kind="scatter", corner=True, diag_kind="hist", markers="+", height=5,
+        #                  plot_kws=dict(s=50, facecolor='k', edgecolor="k", linewidth=.1))
+        # g.map_lower(sns.kdeplot, levels=4, color="red")
+        # g.axes[1][0].axline(xy1=(15, 15), slope=1, color="k", dashes=(5, 2))
+        plt.gca().set(ylim=(15, 30), yticks=[15, 20, 25, 30], xlim=(15, 30), xticks=[15, 20, 25, 30])
+        # g.tight_layout(pad=.5)
+        # g.axes[1][1].clf()
+        # g.axes[1][1].hist(g.data['SINMOD'], bins=20, color="k", alpha=0.5, orientation="horizontal")
+        # g.axes[1][1].axline(xy1=(15, 15), slope=1, color="k", dashes=(5, 2))
+
+
+
+        plt.savefig(self.figpath + "crossplot_new.png", dpi=300)
         plt.close("all")
         plt.show()
         # plt.scatter(sal_auv, sal_loc_auv_from_sinmod, c=sal_auv - sal_loc_auv_from_sinmod, cmap=get_cmap("BrBG", 10), vmin=-4, vmax=4)

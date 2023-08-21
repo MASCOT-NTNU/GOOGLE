@@ -8,5 +8,5 @@ class TestEDA(TestCase):
         self.e = EDA()
 
     def test_all(self) -> None:
-        # self.e.plot_metric_analysis()
-        self.e.plot_cost_components()
+        self.e.plot_metric_analysis()
+        # self.e.plot_cost_components()

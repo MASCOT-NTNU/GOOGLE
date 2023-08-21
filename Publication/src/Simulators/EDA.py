@@ -179,7 +179,8 @@ class EDA:
         # sns.set_palette(["#ADD8E6", "#FFC0CB", "#9370DB"])
         # sns.set_palette(["#FFFF00", "#FFA07A", "#FF4500"])
 
-        max_num = 44
+        # max_num = 100
+        max_num = 45
         ticks = np.arange(0, max_num, 5)
         ticklabels = ['{:d}'.format(i) for i in ticks]
         df = organize_dataset(self.ibv_rrt, max_num, "IBV")
@@ -202,7 +203,8 @@ class EDA:
         g.set_xticks(ticks)  # <--- set the ticks first
         g.set_xticklabels(ticklabels)  # <--- set the labels second
 
-        plt.savefig(figpath + "Simulation/result_rrt.png")
+        # plt.savefig(figpath + "Simulation/result_rrt.png")
+
         # g = sns.catplot(x="Step", y="IBV", hue="cost valley", data=df, kind="box")
         # g.set_titles("{col_name} {col_var}")
         # fig = plt.gcf()
