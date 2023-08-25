@@ -25,10 +25,13 @@ class AUVSimulator:
     __arrival = False
     __popup = False
 
-    def __init__(self, random_seed: int = 0, sigma: float = 1.,  temporal_truth: bool = True) -> None:
+    def __init__(self, random_seed: int = 0, sigma: float = 1.,
+                 loc_start: np.ndarray = np.array([0, 0]), temporal_truth: bool = True) -> None:
         self.temporal_truth = temporal_truth
         self.ctd = CTDSimulator(random_seed=random_seed, sigma=sigma)
         self.messenger = Messenger()
+        self.__loc = loc_start
+        self.__loc_prev = loc_start
 
     def move_to_location(self, loc: np.ndarray):
         """
@@ -101,6 +104,7 @@ class AUVSimulator:
         dt = dist / self.__speed
         # N = int(np.ceil(dist / self.__speed) * 2)
         N = 20  # default number of data points
+        timestamp = np.linspace(self.ctd.timestamp, self.ctd.timestamp + dt, N)
         if N != 0:
             x_path = np.linspace(x_start, x_end, N)
             y_path = np.linspace(y_start, y_end, N)
@@ -110,7 +114,7 @@ class AUVSimulator:
                 sal = self.ctd.get_salinity_at_dt_loc(dt, loc)
             else:
                 raise NotImplementedError
-            self.__ctd_data = np.stack((x_path, y_path, sal), axis=1)
+            self.__ctd_data = np.stack((timestamp, x_path, y_path, sal), axis=1)
 
     def arrive(self):
         self.__arrival = True

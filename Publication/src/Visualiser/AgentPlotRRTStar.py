@@ -48,7 +48,6 @@ class AgentPlotRRTStar:
     def plot_agent(self):
         # s0: get updated field
         mu = self.grf.get_mu()
-
         Sigma = self.grf.get_covariance_matrix()
         threshold = self.grf.get_threshold()
         self.cnt = self.agent.counter

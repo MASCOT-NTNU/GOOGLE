@@ -24,7 +24,8 @@ import numpy as np
 
 class Planner:
 
-    def __init__(self, loc_start: np.ndarray, neighhour_distance: float = 120, weight_eibv: float = 1., weight_ivr: float = 1.,
+    def __init__(self, loc_start: np.ndarray, neighhour_distance: float = 120,
+                 weight_eibv: float = 1., weight_ivr: float = 1.,
                  sigma: float = .1, nugget: float = .01, budget_mode: bool = False,
                  approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """ Initial phase
@@ -86,9 +87,12 @@ class Planner:
         - Step II: update the cost valley.
         - Step III: get the minimum cost location in the cost field.
         - Step IV: plan one step ahead.
+
+        Args:
+            ctd_data: (t, x, y, sal)
         """
         # s1: assimilate data to the kernel.
-        self.__grf.assimilate_data(ctd_data)
+        self.__grf.assimilate_temporal_data(ctd_data)
 
         # s2: update cost valley
         self.__cv.update_cost_valley(self.__wp_next)

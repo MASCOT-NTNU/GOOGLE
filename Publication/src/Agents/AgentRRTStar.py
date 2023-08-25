@@ -34,7 +34,8 @@ class Agent:
         self.loc_start = self.config.get_loc_start()
 
         # s2: load AUVSimulator
-        self.auv = AUVSimulator(random_seed=random_seed, sigma=sigma, temporal_truth=True)
+        self.auv = AUVSimulator(random_seed=random_seed, sigma=sigma,
+                                loc_start=self.loc_start, temporal_truth=True)
         # self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
 
         # s3: set up planning strategies
@@ -88,6 +89,7 @@ class Agent:
             self.trajectory = np.append(self.trajectory, wp_now.reshape(1, -1), axis=0)
 
             # s2: obtain CTD data
+            self.auv.move_to_location(wp_now)
             ctd_data = self.auv.get_ctd_data()
 
             # s3: update pioneer waypoint
@@ -99,7 +101,7 @@ class Agent:
         mu = self.grf.get_mu()
         sigma_diag = np.diag(self.grf.get_covariance_matrix())
         ibv = self.get_ibv(self.threshold, mu, sigma_diag)
-        mu_truth = self.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grf.grid) # dt=0 is cuz it is updated before
+        mu_truth = self.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grf.grid)  # dt=0 is cuz it is updated before
         rmse = mean_squared_error(mu_truth, mu, squared=False)
         vr = np.sum(sigma_diag)
         return ibv, vr, rmse

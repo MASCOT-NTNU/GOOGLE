@@ -1,6 +1,6 @@
 """ Unit test for planner
 
-This module tests the planner object.
+This module tests the planner object with temporal focus
 
 Author: Yaolin Ge
 Email: geyaolin@gmail.com
@@ -83,9 +83,9 @@ class TestPlanner(TestCase):
         xnn, ynn = self.planner.get_next_waypoint()
 
         # s2: on the way to the current location, update field.
-        ctd_data = np.array([[1500, -1200, 0, 20],
-                             [1800, -1300, 0, 23],
-                             [2300, -1500, 0, 30]])
+        ctd_data = np.array([[0, 1500, -1200, 20],
+                             [1200, 1800, -1300, 23],
+                             [2400, 2300, -1500, 30]])
 
         self.planner.update_pioneer_waypoint(ctd_data)
         xp, yp = self.planner.get_pioneer_waypoint()
@@ -107,9 +107,9 @@ class TestPlanner(TestCase):
         xnn, ynn = self.planner.get_next_waypoint()
 
         # s2: on the way to the current location, update field.
-        ctd_data = np.array([[2500, -2000, 0, 25],
-                             [3000, -800, 0, 30],
-                             [3300, -900, 0, 28]])
+        ctd_data = np.array([[2400, 2500, -2000, 25],
+                             [3600, 3000, -800, 30],
+                             [4800, 3300, -900, 28]])
 
         self.planner.update_pioneer_waypoint(ctd_data)
         xp, yp = self.planner.get_pioneer_waypoint()
@@ -124,9 +124,9 @@ class TestPlanner(TestCase):
         plt.show()
 
         # c3, one more step
-        ctd_data = np.array([[2800, -2000, 0, 25],
-                             [3000, -800, 0, 30],
-                             [3300, -900, 0, 28]])
+        ctd_data = np.array([[4800, 2800, -2000, 25],
+                             [6000, 3000, -800, 30],
+                             [7200, 3300, -900, 28]])
 
         self.planner.update_pioneer_waypoint(ctd_data)
         xp, yp = self.planner.get_pioneer_waypoint()
