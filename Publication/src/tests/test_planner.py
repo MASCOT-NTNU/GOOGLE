@@ -2,6 +2,9 @@
 
 This module tests the planner object.
 
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from unittest import TestCase
 from Planner.Planner import Planner

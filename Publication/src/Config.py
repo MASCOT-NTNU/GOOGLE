@@ -6,6 +6,10 @@ Config has the most important parameter setting in the long horizon simulation s
 - polygon_obstalce_shapely: shapely object to detect collision with obstacles.
 
 - starting location: (lat, lon) used to define the starting location for the long horizon operation.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-22
 """
 from WGS import WGS
 import numpy as np
@@ -22,7 +26,7 @@ class Config:
         """ Set up WGS polygons and starting and end locations. """
         self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
-        self.__wgs_loc_start = np.array([63.456232, 10.435198])  # loc used in experiment.
+        # self.__wgs_loc_start = np.array([63.456232, 10.435198])  # loc used in experiment.
         # self.__wgs_loc_start = np.array([63.44038447, 10.35675578])  # close to TBS.
         # self.__wgs_loc_start = np.array([63.438611, 10.374487])  # lower west.
         # self.__wgs_loc_start = np.array([63.439921, 10.389458])  # lower middle.
@@ -30,7 +34,7 @@ class Config:
         # self.__wgs_loc_start = np.array([63.46236, 10.41938])  # middle east.
         # self.__wgs_loc_start = np.array([63.46674, 10.39385])  # upper middle above munkholm.
         # self.__wgs_loc_start = np.array([63.439385, 10.356280])  # far west close to margin of boundary.
-        # self.__wgs_loc_start = np.array([63.45713, 10.37847])  # close to the middle and up in the corner.
+        self.__wgs_loc_start = np.array([63.45713, 10.37847])  # close to the middle and up in the corner.
 
         self.__wgs_loc_end = np.array([63.440618, 10.355851])   # location used in the experiment as the home location.
 
@@ -49,9 +53,9 @@ class Config:
         self.__loc_end = np.array([x, y])
 
         """ Default simulation parameter seteup. """
-        self.__num_steps = 100  # number of steps.
-        self.__num_replicates = 90  # number of replicates
-        self.__num_cores = 45  # number of cores to use
+        self.__num_steps = 10  # number of steps.
+        self.__num_replicates = 3  # number of replicates
+        self.__num_cores = 3  # number of cores to use
 
     @staticmethod
     def wgs2xy(value: np.ndarray) -> np.ndarray:

@@ -1,11 +1,16 @@
 """
 AgentPlot visualises the agent during the adaptive sampling.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from Config import Config
 import os
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from matplotlib import tri
+from datetime import datetime
 from matplotlib.pyplot import get_cmap
 from shapely.geometry import Polygon, Point
 from matplotlib.gridspec import GridSpec
@@ -22,8 +27,7 @@ class AgentPlotRRTStar:
 
     def __init__(self, agent, figpath) -> None:
         self.agent = agent
-        self.ctd = self.agent.ctd
-        self.mu_truth = self.ctd.get_ground_truth()
+        self.ctd = self.agent.auv.ctd
         self.figpath = figpath
         self.planner = self.agent.planner
         self.rrtstarcv = self.planner.get_rrtstarcv()
@@ -40,14 +44,6 @@ class AgentPlotRRTStar:
 
         self.c = Config()
         self.loc_start = self.c.get_loc_start()
-
-    def plot_ground_truth(self, title: str = "Equal", seed: int = 0):
-        plt.figure(figsize=(10, 10))
-        self.plotf_vector(self.ygrid, self.xgrid, self.mu_truth, title="Ground truth field under seed {:d}".format(seed),
-                          cmap=get_cmap("BrBG", 10), vmin=15, vmax=36, cbar_title="Salinity", stepsize=1.5,
-                          threshold=self.grf.get_threshold())
-        plt.savefig(self.figpath + title + ".png")
-        plt.close("all")
 
     def plot_agent(self):
         # s0: get updated field
@@ -90,7 +86,9 @@ class AgentPlotRRTStar:
 
         """ plot truth"""
         ax = fig.add_subplot(gs[0])
-        self.plotf_vector(self.ygrid, self.xgrid, self.mu_truth, title="Ground truth field",
+        mu_truth = self.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grid)
+        str_timestamp = datetime.fromtimestamp(self.ctd.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        self.plotf_vector(self.ygrid, self.xgrid, mu_truth, title="Ground truth field at " + str_timestamp,
                           cmap=get_cmap("BrBG", 10), vmin=15, vmax=36, cbar_title="Salinity", stepsize=1.5,
                           threshold=threshold)
         plot_waypoints()
@@ -288,24 +286,3 @@ class AgentPlotRRTStar:
             masked = True
         return masked
 
-    # @staticmethod
-    # def is_masked(x, y) -> bool:
-    #     """
-    #     :param x:
-    #     :param y:
-    #     :return:
-    #     """
-    #     loc = np.array([x, y])
-    #     masked = False
-    #     if not field.border_contains(loc):
-    #         masked = True
-    #     return masked
-
-
-#%%
-# import matplotlib.pyplot as plt
-# plt.figure(figsize=(30, 10))
-# plt.plot([0, 0])
-#
-# plt.show()
-#

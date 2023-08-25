@@ -3,6 +3,10 @@ Field handles field discretization and validation.
 - generate grid discretization.
 - check legal conditions of given locations.
 - check collision with obstacles.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-22
 """
 from Config import Config
 import numpy as np

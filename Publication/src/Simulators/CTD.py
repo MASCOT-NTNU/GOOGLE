@@ -1,5 +1,9 @@
 """
-CTDSimulator module simulates the true field.
+CTD module simulates the true field.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from GRF.GRF import GRF
 import numpy as np

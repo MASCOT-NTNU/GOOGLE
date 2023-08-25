@@ -1,3 +1,10 @@
+"""
+Unittest for RRTStarCV.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
+"""
 from unittest import TestCase
 from Planner.RRTSCV.RRTStarCV import RRTStarCV
 from Config import Config
@@ -15,10 +22,10 @@ class TestRRTStar(TestCase):
 
     def setUp(self) -> None:
         self.config = Config()
-        sigma = .1
-        nugget = .01
+        sigma = 1.
+        nugget = .4
         # self.rrtstar = RRTStarCV(sigma=sigma, nugget=nugget)
-        self.rrtstar = RRTStarCV(neighbour_distance=120, weight_eibv=1., weight_ivr=1., sigma=sigma,
+        self.rrtstar = RRTStarCV(neighbour_distance=120, weight_eibv=2., weight_ivr=.0, sigma=sigma,
                                  nugget=nugget, budget_mode=False, approximate_eibv=False, fast_eibv=True)
         # self.rrtstar = RRTStarCV(weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.tp = TreePlotter()

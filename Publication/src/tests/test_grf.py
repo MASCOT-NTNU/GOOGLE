@@ -1,5 +1,9 @@
 """ Unit test for GRF
 This module tests the GRF object.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 
 from Config import Config
@@ -56,13 +60,11 @@ class TestGRF(TestCase):
 
         g2 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False, fast_eibv=True)
         eibv2, ivr2 = g2.get_ei_field()
-        eibv2, ivr2 = g2.get_ei_field()
 
         # g3 = GRF(sigma=1.5, nugget=.4, approximate_eibv=False, fast_eibv=False)
         # eibv3, ivr3 = g3.get_ei_field()
-        # # eibv2
+        # eibv2
         # print("stop")
-
 
     def test_auv_data_temporal_analysis(self) -> None:
         df = self.auv.get_dataset()
@@ -86,21 +88,23 @@ class TestGRF(TestCase):
         #     plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_covariance_matrix())),
         #           vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5,
         #           stepsize2=.1, threshold1=27, traj=data[:, 1:-1])
-
-        data = df[:, 1:]
         self.g2 = GRF(sigma=1.5, nugget=.4)
-        self.g2.assimilate_data(dataset=data)
-        plotf(self, v1=self.g2.get_mu(), v2=np.sqrt(np.diag(self.g2.get_covariance_matrix())),
-              vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5,
-              stepsize2=.1, threshold1=27, traj=data[:, :-1])
+        for i in range(0, df.shape[0], 500):
+            data = df[i:i+500, 1:]
+            self.g2.assimilate_data(dataset=data)
+            plotf(self, v1=self.g2.get_mu(), v2=np.sqrt(np.diag(self.g2.get_covariance_matrix())),
+                  vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5,
+                  stepsize2=.1, threshold1=27, traj=data[:, :-1])
 
-        data = df
         self.g3 = GRF(sigma=1.5, nugget=.4)
-        self.g3.assimilate_temporal_data(dataset=data)
-        plotf(self, v1=self.g3.get_mu(), v2=np.sqrt(np.diag(self.g3.get_covariance_matrix())),
-              vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5,
-              stepsize2=.1, threshold1=27, traj=data[:, 1:-1])
+        for i in range(0, df.shape[0], 500):
+            data = df[i:i+500, :]
+            self.g3.assimilate_temporal_data(dataset=data)
+            plotf(self, v1=self.g3.get_mu(), v2=np.sqrt(np.diag(self.g3.get_covariance_matrix())),
+                  vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5,
+                  stepsize2=.1, threshold1=27, traj=data[:, 1:-1])
 
+        # df
         print("h")
 
     def test_prior_matern_covariance(self):
@@ -149,58 +153,4 @@ class TestGRF(TestCase):
               cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
         print("End S3")
 
-    # def test_get_ei_at_locations(self):
-    #     # c1: no data assimilation
-    #     print("S4")
-    #     """ For now, it takes too much time to compute the entire EI field. """
-    #     xv = np.arange(1000, 2000, 120)
-    #     yv = np.arange(-2000, -1000, 120)
-    #     xx, yy = np.meshgrid(xv, yv)
-    #     x = xx.flatten()
-    #     y = yy.flatten()
-    #     locs = np.stack((x, y), axis=1)
-    #     eibv, ivr = self.g.get_ei_at_locations(locs)
-    #     eibv_full, ivr_full = self.g.get_ei_field()
-    #
-    #     plt.figure(figsize=(10, 5))
-    #     plt.subplot(121)
-    #     plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
-    #     plt.scatter(locs[:, 1], locs[:, 0], c=eibv, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
-    #     plt.scatter(self.grid[:, 1], self.grid[:, 0], c=eibv_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
-    #     plt.colorbar()
-    #     plt.title("EIBV")
-    #     plt.subplot(122)
-    #     plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
-    #     plt.scatter(locs[:, 1], locs[:, 0], c=ivr, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
-    #     plt.scatter(self.grid[:, 1], self.grid[:, 0], c=ivr_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0,
-    #                 vmax=2.)
-    #     plt.colorbar()
-    #     plt.title("IVR")
-    #     plt.show()
-    #
-    #     # c2: with data assimilation
-    #     dataset = np.array([[2000, -1000,  0, 15],
-    #                         [1500, -1500, 0, 10],
-    #                         [1400, -1800, 0, 25],
-    #                         [2500, -1400, 0, 20]])
-    #     self.g.assimilate_data(dataset)
-    #     eibv, ivr = self.g.get_ei_at_locations(locs)
-    #     eibv_full, ivr_full = self.g.get_ei_field()
-    #
-    #     plt.figure(figsize=(10, 5))
-    #     plt.subplot(121)
-    #     plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
-    #     plt.scatter(locs[:, 1], locs[:, 0], c=eibv, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
-    #     plt.scatter(self.grid[:, 1], self.grid[:, 0], c=eibv_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0,
-    #                 vmax=2.)
-    #     plt.colorbar()
-    #     plt.title("EIBV")
-    #     plt.subplot(122)
-    #     plt.plot(self.polygon_border[:, 1], self.polygon_border[:, 0], 'k-.')
-    #     plt.scatter(locs[:, 1], locs[:, 0], c=ivr, s=100, cmap=get_cmap("RdBu", 10), vmin=.0, vmax=2.)
-    #     plt.scatter(self.grid[:, 1], self.grid[:, 0], c=ivr_full, s=100, alpha=.4, cmap=get_cmap("RdBu", 10), vmin=.0,
-    #                 vmax=2.)
-    #     plt.colorbar()
-    #     plt.title("IVR")
-    #     plt.show()
 

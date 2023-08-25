@@ -12,6 +12,10 @@ component might lead to different patterns of the final behaviour.
 
 It is flexible to add or remove elements from its construction. One can add their own component
 to make the system adaptive to their specific need and application.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from CostValley.Budget import Budget
 from GRF.GRF import GRF
@@ -22,7 +26,7 @@ import time
 class CostValley:
     """ Cost fields construction. """
     def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
-                 budget_mode: bool = False, approximate_eibv: bool = True, fast_eibv: bool = True) -> None:
+                 budget_mode: bool = False, approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """ """
 
         """ GRF """

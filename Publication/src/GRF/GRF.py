@@ -3,6 +3,10 @@ GRF builds the kernel for simulation study.
 - udpate the field.
 - assimilate data.
 - get eibv for a specific location.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-22
 """
 from Field import Field
 from usr_func.vectorize import vectorize
@@ -14,6 +18,7 @@ import numpy as np
 from scipy.stats import norm, multivariate_normal
 from numba import jit
 from joblib import Parallel, delayed
+from pykdtree.kdtree import KDTree
 import time
 import pandas as pd
 
@@ -22,14 +27,14 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = False,
-                 fast_eibv: bool = True) -> None:
+    def __init__(self, sigma: float = 1., nugget: float = .4,
+                 approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """ Initializes the parameters in GRF kernel. """
         self.__approximate_eibv = approximate_eibv
         self.__fast_eibv = fast_eibv
 
         self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
-        self.__ar1_corr = 600   # [sec], AR1 correlation time range.
+        self.__ar1_corr_range = 600   # [sec], AR1 correlation time range.
 
         """ Empirical parameters """
         # spatial variability
@@ -64,6 +69,7 @@ class GRF:
         # s0: construct grf covariance matrix.
         self.field = Field(neighbour_distance=100)
         self.grid = self.field.get_grid()
+        self.grid_kdtree = KDTree(self.grid)
         self.Ngrid = len(self.grid)
         self.__Fgrf = np.ones([1, self.Ngrid])
         self.__xg = vectorize(self.grid[:, 0])
@@ -114,15 +120,7 @@ class GRF:
             dataset: np.array([x, y, sal])
             cnt_waypoint: int
         """
-        # t1 = time.time()
-        xd = dataset[:, 0].reshape(-1, 1)
-        yd = dataset[:, 1].reshape(-1, 1)
-        Fdata = np.ones([dataset.shape[0], 1])
-        # t1 = time.time()
-        dx = (xd @ self.__Fgrf - Fdata @ self.__xg.T) ** 2
-        dy = (yd @ self.__Fgrf - Fdata @ self.__yg.T) ** 2
-        dist = dx + dy
-        ind_min_distance = np.argmin(dist, axis=1)  # used only for unittest.
+        distance_min, ind_min_distance = self.grid_kdtree.query(dataset[:, :2])
         ind_assimilated = np.unique(ind_min_distance)
         salinity_assimilated = np.zeros([len(ind_assimilated), 1])
         for i in range(len(ind_assimilated)):
@@ -132,7 +130,7 @@ class GRF:
         # t2 = time.time()
         # print("Data assimilation takes: ", t2 - t1, " seconds")
 
-    def __update(self, ind_measured: np.ndarray, salinity_measured: np.ndarray):
+    def __update(self, ind_measured: np.ndarray, salinity_measured: np.ndarray) -> None:
         """
         Update GRF kernel based on sampled data.
         :param ind_measured: indices where the data is assimilated.
@@ -159,16 +157,9 @@ class GRF:
         """
         t_start = dataset[0, 0]
         t_end = dataset[-1, 0]
-        t_steps = int((t_end - t_start) // self.__ar1_corr)
-        # t1 = time.time()
-        xd = dataset[:, 1].reshape(-1, 1)
-        yd = dataset[:, 2].reshape(-1, 1)
-        Fdata = np.ones([dataset.shape[0], 1])
-        # t1 = time.time()
-        dx = (xd @ self.__Fgrf - Fdata @ self.__xg.T) ** 2
-        dy = (yd @ self.__Fgrf - Fdata @ self.__yg.T) ** 2
-        dist = dx + dy
-        ind_min_distance = np.argmin(dist, axis=1)  # used only for unittest.
+        t_steps = int((t_end - t_start) // self.__ar1_corr_range)
+
+        distance_min, ind_min_distance = self.grid_kdtree.query(dataset[:, 1:3])
         ind_assimilated = np.unique(ind_min_distance)
         salinity_assimilated = np.zeros([len(ind_assimilated), 1])
         for i in range(len(ind_assimilated)):
@@ -234,28 +225,6 @@ class GRF:
         t2 = time.time()
         print("Approximate: ", self.__approximate_eibv, "; Total EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
-
-    # def get_ei_at_locations(self, locs: np.ndarray) -> tuple:
-    #     """ Get EI values at given locations. """
-    #     ind = self.field.get_ind_from_location(locs)
-    #     N = len(ind)
-    #     t1 = time.time()
-    #     eibv = np.zeros(N)
-    #     ivr = np.zeros(N)
-    #     for i in range(N):
-    #         id = ind[i]
-    #         SF = self.__Sigma[:, id].reshape(-1, 1)
-    #         MD = 1 / (self.__Sigma[id, id] + self.__nugget)
-    #         VR = SF @ SF.T * MD
-    #         SP = self.__Sigma - VR
-    #         sigma_diag = np.diag(SP).reshape(-1, 1)
-    #         eibv[i] = self.__get_ibv(self.__mu, sigma_diag)
-    #         ivr[i] = np.sum(np.diag(VR))
-    #     self.__eibv_field = normalize(eibv)
-    #     self.__ivr_field = 1 - normalize(ivr)
-    #     t2 = time.time()
-    #     print("Calcuating EI at given locations takes: ", t2 - t1, " seconds.")
-    #     return self.__eibv_field, self.__ivr_field
 
     def __get_eibv_approximate(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.

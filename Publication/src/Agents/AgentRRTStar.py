@@ -1,9 +1,13 @@
 """
 Agent abstract the AUV to conduct the path planning with sense, plan, act philosophy.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from Planner.Planner import Planner
 from Config import Config
-from Simulators.CTD import CTD
+from AUVSimulator.AUVSimulator import AUVSimulator
 from Visualiser.AgentPlotRRTStar import AgentPlotRRTStar
 from usr_func.checkfolder import checkfolder
 from scipy.stats import norm
@@ -16,8 +20,8 @@ class Agent:
     """
     Agent
     """
-    def __init__(self, neighbour_distance: float = 120, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = .1,
-                 nugget: float = .01, random_seed: int = 1, debug=False, name: str = "Equal",
+    def __init__(self, neighbour_distance: float = 120, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 sigma: float = .1, nugget: float = .01, random_seed: int = 1, debug=False, name: str = "Equal",
                  budget_mode: bool = False, approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.
@@ -29,8 +33,9 @@ class Agent:
         # s1: set the starting location.
         self.loc_start = self.config.get_loc_start()
 
-        # s2: load CTD
-        self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
+        # s2: load AUVSimulator
+        self.auv = AUVSimulator(random_seed=random_seed, sigma=sigma, temporal_truth=True)
+        # self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
 
         # s3: set up planning strategies
         self.planner = Planner(self.loc_start, neighhour_distance=neighbour_distance,
@@ -55,7 +60,6 @@ class Agent:
         self.vr = []
         self.rmse = []
         self.threshold = self.grf.get_threshold()
-        self.mu_truth = self.ctd.get_ground_truth()
 
     def run(self, num_steps: int = 5) -> None:
         """
@@ -84,7 +88,7 @@ class Agent:
             self.trajectory = np.append(self.trajectory, wp_now.reshape(1, -1), axis=0)
 
             # s2: obtain CTD data
-            ctd_data = self.ctd.get_ctd_data(wp_now)
+            ctd_data = self.auv.get_ctd_data()
 
             # s3: update pioneer waypoint
             self.planner.update_pioneer_waypoint(ctd_data=ctd_data)
@@ -95,7 +99,8 @@ class Agent:
         mu = self.grf.get_mu()
         sigma_diag = np.diag(self.grf.get_covariance_matrix())
         ibv = self.get_ibv(self.threshold, mu, sigma_diag)
-        rmse = mean_squared_error(self.mu_truth, mu, squared=False)
+        mu_truth = self.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grf.grid) # dt=0 is cuz it is updated before
+        rmse = mean_squared_error(mu_truth, mu, squared=False)
         vr = np.sum(sigma_diag)
         return ibv, vr, rmse
 

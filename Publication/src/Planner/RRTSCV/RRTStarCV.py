@@ -2,6 +2,10 @@
 RRTStar object produces the possible tree generation in the constrained field.
 It employs RRT as the building block, and the cost associated with each tree branch is used to
 determine the final tree discretization.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from Planner.RRTSCV.TreeNode import TreeNode
 from Field import Field

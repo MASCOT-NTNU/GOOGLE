@@ -12,6 +12,9 @@ Args:
     _wp_next: next waypoint
     _wp_pion: pioneer waypoint
 
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from Config import Config
 from Planner.RRTSCV.RRTStarCV import RRTStarCV

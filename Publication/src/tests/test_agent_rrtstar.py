@@ -1,5 +1,9 @@
 """
-Unittest for the agent
+Unittest for the agent RRTStar
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 
 from unittest import TestCase
@@ -26,7 +30,7 @@ class TestAgent(TestCase):
                             approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
 
     def test_run(self) -> None:
-        num_steps = 50
+        num_steps = 10
         self.agent1.run(num_steps)
         self.agent2.run(num_steps)
         self.agent3.run(num_steps)
