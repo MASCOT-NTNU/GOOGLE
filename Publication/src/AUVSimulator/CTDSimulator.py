@@ -3,8 +3,7 @@ CTDSimulator simulates the CTD sensor sampling in the ground truth field.
 
 Author: Yaolin Ge
 Email: geyaolin@gmail.com
-Date: 2023-05-28
-
+Date: 2023-08-28
 """
 from SINMOD import SINMOD
 from GRF.GRF import GRF
@@ -43,10 +42,18 @@ class CTDSimulator:
         self.grid_sinmod = self.grid_sinmod[ind_surface, :2]
         self.grid_sinmod_tree = KDTree(self.grid_sinmod)
 
-        # Set up ground truth field
-        self.sigma = sigma
+        # Set up essential parameters
         l_range = 700
-        self.eta = 4.5 / l_range
+        eta = 4.5 / l_range
+        t0 = time()
+        dm = cdist(self.grid_sinmod, self.grid_sinmod)
+        cov = sigma ** 2 * ((1 + eta * dm) * np.exp(-eta * dm))
+        L = np.linalg.cholesky(cov)
+        print("Cholesky decomposition takes: ", time() - t0)
+
+    def construct_ground_truth_field(self) -> None:
+
+        pass
 
     def get_salinity_at_dt_loc(self, dt: float, loc: np.ndarray) -> Union[np.ndarray, None]:
         """
@@ -65,12 +72,6 @@ class CTDSimulator:
         dist, ind_loc = self.grid_sinmod_tree.query(loc)
         print("Query salinity at timestamp and location takes: ", time() - t1)
 
-        # Get covariance matrix
-        t0 = time()
-        dm = cdist(loc, loc)
-        cov = self.sigma ** 2 * ((1 + self.eta * dm) * np.exp(-self.eta * dm))
-        L = np.linalg.cholesky(cov)
-        print("Cholesky decomposition takes: ", time() - t0)
 
         return sorted_salinity[ind_loc] + (L @ np.random.randn(len(L)).reshape(-1, 1)).flatten()
 
