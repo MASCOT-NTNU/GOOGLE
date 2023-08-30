@@ -9,6 +9,7 @@ Email: geyaolin@gmail.com
 Date: 2023-08-22
 """
 from Field import Field
+from SINMOD import SINMOD
 from usr_func.vectorize import vectorize
 from usr_func.checkfolder import checkfolder
 from usr_func.normalize import normalize
@@ -21,6 +22,7 @@ from joblib import Parallel, delayed
 from pykdtree.kdtree import KDTree
 import time
 import pandas as pd
+import os
 
 
 class GRF:
@@ -28,7 +30,8 @@ class GRF:
     GRF kernel
     """
     def __init__(self, sigma: float = 1., nugget: float = .4,
-                 approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
+                 approximate_eibv: bool = False, fast_eibv: bool = True,
+                 filepath_prior: str = os.getcwd() + "/../sinmod/samples_2022.05.10.nc") -> None:
         """ Initializes the parameters in GRF kernel. """
         self.__approximate_eibv = approximate_eibv
         self.__fast_eibv = fast_eibv
@@ -78,6 +81,8 @@ class GRF:
         self.__construct_grf_field()
 
         # s1: update prior mean
+        self.__sinmod = SINMOD(filepath_prior)
+        self.__salinity_sinmod = self.__sinmod.get_salinity()[:, 0, :, :]
         self.__construct_prior_mean()
         self.__mu_prior = self.__mu
         self.__Sigma_prior = self.__Sigma
@@ -92,15 +97,14 @@ class GRF:
                                             np.exp(-self.__eta * self.__distance_matrix))
 
     def __construct_prior_mean(self) -> None:
-        # s0: get delft3d dataset
-        dataset_sinmod = pd.read_csv("./../prior/sinmod.csv").to_numpy()
-        grid_sinmod = dataset_sinmod[:, :2]
-        sal_sinmod = dataset_sinmod[:, -1]
+        # dataset_sinmod = pd.read_csv("./../prior/sinmod.csv").to_numpy()
+        # grid_sinmod = dataset_sinmod[:, :2]
+        # sal_sinmod = dataset_sinmod[:, -1]
 
         # s1: interpolate onto grid.
-        dm_grid_sinmod = cdist(self.grid, grid_sinmod)
-        ind_close = np.argmin(dm_grid_sinmod, axis=1)
-        self.__mu = vectorize(sal_sinmod[ind_close])
+        # dm_grid_sinmod = cdist(self.grid, grid_sinmod)
+        # ind_close = np.argmin(dm_grid_sinmod, axis=1)
+        # self.__mu = vectorize(sal_sinmod[ind_close])
 
     def __load_cdf_table(self) -> None:
         """

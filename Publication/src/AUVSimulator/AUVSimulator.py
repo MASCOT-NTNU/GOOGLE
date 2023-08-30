@@ -28,6 +28,7 @@ class AUVSimulator:
     def __init__(self, random_seed: int = 0, sigma: float = 1.,
                  loc_start: np.ndarray = np.array([0, 0]), temporal_truth: bool = True) -> None:
         self.temporal_truth = temporal_truth
+        print("Temporal truth is on.") if self.temporal_truth else print("Temporal truth is off.")
         self.ctd = CTDSimulator(random_seed=random_seed, sigma=sigma)
         self.messenger = Messenger()
         self.__loc = loc_start
@@ -110,7 +111,6 @@ class AUVSimulator:
             y_path = np.linspace(y_start, y_end, N)
             loc = np.stack((x_path, y_path), axis=1)
             if self.temporal_truth:
-                print("Temporal truth is on.")
                 sal = self.ctd.get_salinity_at_dt_loc(dt, loc)
             else:
                 raise NotImplementedError
