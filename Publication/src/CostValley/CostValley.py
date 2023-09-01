@@ -27,13 +27,14 @@ class CostValley:
     """ Cost fields construction. """
     def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
                  budget_mode: bool = False, approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
-        """ """
+
+        """ Budget mode """
+        self.__budget_mode = budget_mode
 
         """ GRF """
         self.__grf = GRF(sigma=sigma, nugget=nugget, approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
         self.__field = self.__grf.field
         self.__grid = self.__field.get_grid()
-        self.__budget_mode = budget_mode
 
         """ Weights """
         self.__weight_eibv = weight_eibv

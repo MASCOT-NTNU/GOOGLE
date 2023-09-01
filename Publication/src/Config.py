@@ -52,6 +52,9 @@ class Config:
         x, y = WGS.latlon2xy(self.__wgs_loc_end[0], self.__wgs_loc_end[1])
         self.__loc_end = np.array([x, y])
 
+        """ Budget mode """
+        self.__budget_mode = False
+
         """ Default simulation parameter seteup. """
         self.__num_steps = 10  # number of steps.
         self.__num_replicates = 3  # number of replicates
@@ -113,6 +116,10 @@ class Config:
         """ Set the number of cores to use in the simulation study. """
         self.__num_cores = value
 
+    def set_budget_mode(self, value: bool) -> None:
+        """ Set the budget mode to be True or False. """
+        self.__budget_mode = value
+
     def get_polygon_border(self) -> np.ndarray:
         """ Return polygon for opa in x y coordinates. """
         return self.__polygon_border
@@ -156,6 +163,10 @@ class Config:
     def get_num_cores(self) -> int:
         """ Return the number of cores in the simulation study. """
         return self.__num_cores
+
+    def get_budget_mode(self) -> bool:
+        """ Return the budget mode. """
+        return self.__budget_mode
 
     def get_wgs_polygon_border(self) -> np.ndarray:
         """ Return polygon for the oprational area in wgs coordinates. """

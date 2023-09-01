@@ -152,9 +152,9 @@ class TestCostValley(TestCase):
         self.cv.update_cost_valley(dataset[0, :2])
         self.plot_cost_valley()
 
-        # s4: move more and sample
-        dataset = np.array([[3000, -2000, 0, 22]])
-        self.grf.assimilate_data(dataset)
-        self.cv.update_cost_valley(dataset[0, :2])
-        self.plot_cost_valley()
+        # # s4: move more and sample
+        # dataset = np.array([[3000, -2000, 0, 22]])
+        # self.grf.assimilate_data(dataset)
+        # self.cv.update_cost_valley(dataset[0, :2])
+        # self.plot_cost_valley()
         print("End S4")

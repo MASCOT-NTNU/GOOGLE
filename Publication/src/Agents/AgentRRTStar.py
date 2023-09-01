@@ -21,7 +21,7 @@ class Agent:
     Agent
     """
     def __init__(self, neighbour_distance: float = 120, weight_eibv: float = 1., weight_ivr: float = 1.,
-                 sigma: float = .1, nugget: float = .01, random_seed: int = 1, debug=False, name: str = "Equal",
+                 sigma: float = .1, nugget: float = .01, random_seed: int = 1, debug: bool = False, name: str = "Equal",
                  budget_mode: bool = False, approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
         """
         Set up the planning strategies and the AUV simulator for the operation.

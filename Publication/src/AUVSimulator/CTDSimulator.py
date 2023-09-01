@@ -87,12 +87,29 @@ class CTDSimulator:
         self.timestamp += dt
         print("Current datetime: ", datetime.fromtimestamp(self.timestamp).strftime("%Y-%m-%d %H:%M:%S"))
         ts = np.array([self.timestamp])
-        dist, ind_time = self.timestamp_sinmod_tree.query(ts)
+        *_, ind_time = self.timestamp_sinmod_tree.query(ts)
         t1 = time()
         sorted_salinity = self.mu_truth[ind_time, :].flatten()
         # sorted_salinity = self.salinity_sinmod[ind_time, :, :].flatten()
         dist, ind_loc = self.grid_sinmod_tree.query(loc)
         print("Query salinity at timestamp and location takes: ", time() - t1)
+        return sorted_salinity[ind_loc]
+
+    def get_salinity_at_loc(self, loc: np.ndarray) -> Union[np.ndarray, None]:
+        """
+        Get CTD measurement at given locations.
+
+        Args:
+            loc: np.array([x, y])
+
+        Returns:
+            salinity: np.array([salinity])
+        """
+        t0 = time()
+        print("Current Date: ", datetime.fromtimestamp(self.timestamp).strftime("%Y-%m-%d"))
+        sorted_salinity = np.mean(self.mu_truth, axis=0)
+        *_, ind_loc = self.grid_sinmod_tree.query(loc)
+        print("Query salinity at location takes: ", time() - t0)
         return sorted_salinity[ind_loc]
 
 

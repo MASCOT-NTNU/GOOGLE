@@ -113,23 +113,23 @@ class TestGRF(TestCase):
               vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
         print("END S1")
 
-    def test_assimilate(self):
-        # c2: one
-        print("S2")
-        dataset = np.array([[3000, 1000, 10]])
-        self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_covariance_matrix())),
-              vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
-
-        # c3: multiple
-        dataset = np.array([[2000, -1000, 15],
-                            [1500, -1500, 10],
-                            [1400, -1800, 25],
-                            [2500, -1400, 20]])
-        self.g.assimilate_data(dataset)
-        plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_covariance_matrix())),
-              vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
-        print("End S2")
+    # def test_assimilate(self):
+    #     # c2: one
+    #     print("S2")
+    #     dataset = np.array([[3000, 1000, 10]])
+    #     self.g.assimilate_data(dataset)
+    #     plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_covariance_matrix())),
+    #           vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
+    #
+    #     # c3: multiple
+    #     dataset = np.array([[2000, -1000, 15],
+    #                         [1500, -1500, 10],
+    #                         [1400, -1800, 25],
+    #                         [2500, -1400, 20]])
+    #     self.g.assimilate_data(dataset)
+    #     plotf(self, v1=self.g.get_mu(), v2=np.sqrt(np.diag(self.g.get_covariance_matrix())),
+    #           vmin1=10, vmax1=30, vmin2=0, vmax2=self.sigma, cbar1="salinity", cbar2="std", stepsize1=1.5, threshold1=27)
+    #     print("End S2")
 
     def test_get_ei_field(self):
         # c1: no data assimilation

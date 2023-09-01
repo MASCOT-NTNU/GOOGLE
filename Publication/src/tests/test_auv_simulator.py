@@ -23,7 +23,7 @@ def value(x, y):
 class TestAUVSimulator(TestCase):
 
     def setUp(self) -> None:
-        self.auv = AUVSimulator(random_seed=0, sigma=1., loc_start=np.array([0, 0]), temporal_truth=True)
+        self.auv = AUVSimulator(random_seed=0, sigma=1., loc_start=np.array([0, 0]), temporal_truth=False)
         self.polygon_border_wgs = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         x, y = WGS.latlon2xy(self.polygon_border_wgs[:, 0], self.polygon_border_wgs[:, 1])
         self.polygon_border = np.stack((x, y), axis=1)

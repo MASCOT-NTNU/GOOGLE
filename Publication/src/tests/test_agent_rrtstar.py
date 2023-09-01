@@ -31,7 +31,7 @@ class TestAgent(TestCase):
                             debug=debug, name="Equal", approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
 
     def test_run(self) -> None:
-        num_steps = 50
+        num_steps = 240
         self.agent1.run(num_steps)
         self.agent2.run(num_steps)
         self.agent3.run(num_steps)
