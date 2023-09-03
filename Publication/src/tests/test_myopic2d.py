@@ -1,5 +1,9 @@
 """
 Unittest for Myopic2D path planner
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-02
 """
 from Config import Config
 from Field import Field
@@ -25,7 +29,7 @@ class TestMyopic2D(TestCase):
     def test_get_next_waypoint(self) -> None:
         figpath = "/Users/yaolin/Downloads/fig/"
 
-        ctd = np.array([[2000, -1500, 25]])
+        ctd = np.array([[1234, 2000, -1500, 25]])
         id_s, id_n = self.myopic.get_candidates_indices()
         wp_next = self.myopic.update_next_waypoint(ctd)
         wp_curr = self.myopic.get_current_waypoint()
@@ -58,7 +62,7 @@ class TestMyopic2D(TestCase):
 
         for i in range(30):
             print(i)
-            ctd = np.array([[wp_curr[0], wp_curr[1], 25 + np.random.rand()]])
+            ctd = np.array([[i * 600 + 1623450000, wp_curr[0], wp_curr[1], 25 + np.random.rand()]])
             id_s, id_n = self.myopic.get_candidates_indices()
             wp_next = self.myopic.update_next_waypoint(ctd)
             wp_curr = self.myopic.get_current_waypoint()

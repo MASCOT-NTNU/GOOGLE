@@ -12,9 +12,9 @@ class TestAgent(TestCase):
         debug = True
         approximate_eibv = False
         fast_eibv = True
-        sigma = 1.5
-        nugget = .4
-        neighbour_distance = 240
+        sigma = 0.5
+        nugget = .01
+        neighbour_distance = 120
         self.agent1 = Agent(neighbour_distance=neighbour_distance, weight_eibv=1.99, weight_ivr=.01, sigma=sigma,
                             nugget=nugget, random_seed=seed, debug=debug, name="EIBV",
                             approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
@@ -26,7 +26,7 @@ class TestAgent(TestCase):
                             approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
 
     def test_run(self) -> None:
-        num_steps = 60
+        num_steps = 240
         self.agent1.run(num_steps)
         self.agent2.run(num_steps)
         self.agent3.run(num_steps)
@@ -39,6 +39,24 @@ class TestAgent(TestCase):
         plt.legend()
         plt.xlabel("Steps")
         plt.ylabel("IBV")
+        plt.show()
+
+        plt.figure()
+        plt.plot(self.agent1.rmse, label="EIBV")
+        plt.plot(self.agent2.rmse, label="IVR")
+        plt.plot(self.agent3.rmse, label="EQUAL")
+        plt.legend()
+        plt.xlabel("Steps")
+        plt.ylabel("RMSE")
+        plt.show()
+
+        plt.figure()
+        plt.plot(self.agent1.vr, label="EIBV")
+        plt.plot(self.agent2.vr, label="IVR")
+        plt.plot(self.agent3.vr, label="EQUAL")
+        plt.legend()
+        plt.xlabel("Steps")
+        plt.ylabel("VR")
         plt.show()
 
         # self.agent3.run(num_steps)

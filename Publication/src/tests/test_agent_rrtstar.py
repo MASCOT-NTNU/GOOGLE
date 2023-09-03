@@ -13,7 +13,7 @@ from Agents.AgentRRTStar import Agent
 class TestAgent(TestCase):
     def setUp(self) -> None:
         seed = 0
-        debug = True
+        debug = False
         approximate_eibv = False
         budget_mode = False
         fast_eibv = True

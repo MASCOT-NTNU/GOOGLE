@@ -14,6 +14,7 @@ from scipy.stats import norm
 from sklearn.metrics import mean_squared_error
 import numpy as np
 import os
+from time import time
 
 
 class Agent:
@@ -69,8 +70,12 @@ class Agent:
         # start logging the data.
         self.trajectory = np.empty([0, 2])
 
+        t0 = time()
         for i in range(num_steps):
-            print("Step: ", i)
+            print(" STEP: {} / {}".format(i, num_steps),
+                  " Percentage: ", i / num_steps * 100, "%",
+                  " Time remaining: ", (time() - t0) * (num_steps - i) / 60, " min")
+            t0 = time()
             # s0: update simulation data
             ibv, vr, rmse = self.update_metrics()
             self.ibv.append(ibv)

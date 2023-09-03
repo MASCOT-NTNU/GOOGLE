@@ -1,15 +1,20 @@
 """
 Agent abstract the AUV to conduct the path planning with sense, plan, act philosophy.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-02
 """
 from Planner.Myopic2D.Myopic2D import Myopic2D
 from Config import Config
-from Simulators.CTD import CTD
+from AUVSimulator.AUVSimulator import AUVSimulator
 from Visualiser.AgentPlotMyopic import AgentPlotMyopic
 from usr_func.checkfolder import checkfolder
 from scipy.stats import norm
 from sklearn.metrics import mean_squared_error
 import numpy as np
 import os
+from time import time
 
 
 class Agent:
@@ -28,8 +33,9 @@ class Agent:
         # s1: set the starting location.
         self.loc_start = self.config.get_loc_start()
 
-        # s2: load CTD
-        self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
+        # s2: load AUVSimulator
+        self.auv = AUVSimulator(random_seed=random_seed, sigma=sigma, loc_start=self.loc_start, temporal_truth=True)
+        # self.ctd = CTD(loc_start=self.loc_start, random_seed=random_seed, sigma=sigma, nugget=nugget)
 
         # s3: set up planning strategies
         self.myopic = Myopic2D(self.loc_start, neighbour_distance=neighbour_distance,
@@ -52,7 +58,6 @@ class Agent:
         self.vr = []
         self.rmse = []
         self.threshold = self.grf.get_threshold()
-        self.mu_truth = self.ctd.get_ground_truth()
 
     def run(self, num_steps: int = 5) -> None:
         """
@@ -61,8 +66,12 @@ class Agent:
         # start logging the data.
         self.trajectory = np.empty([0, 2])
 
+        t0 = time()
         for i in range(num_steps):
-            print("Step: ", i)
+            print(" STEP: {} / {}".format(i, num_steps),
+                  " Percentage: ", i / num_steps * 100, "%",
+                  " Time remaining: ", (time() - t0) * (num_steps - i) / 60, " min")
+            t0 = time()
             # s0: update simulation data
             ibv, vr, rmse = self.update_metrics()
             self.ibv.append(ibv)
@@ -77,7 +86,8 @@ class Agent:
             self.trajectory = np.append(self.trajectory, wp_now.reshape(1, -1), axis=0)
 
             # s2: obtain CTD data
-            ctd_data = self.ctd.get_ctd_data(wp_now)
+            self.auv.move_to_location(wp_now)
+            ctd_data = self.auv.get_ctd_data()
 
             # s3: update pioneer waypoint
             self.myopic.update_next_waypoint(ctd_data)
@@ -88,7 +98,8 @@ class Agent:
         mu = self.grf.get_mu()
         sigma_diag = np.diag(self.grf.get_covariance_matrix())
         ibv = self.get_ibv(self.threshold, mu, sigma_diag)
-        rmse = mean_squared_error(self.mu_truth, mu, squared=False)
+        mu_truth = self.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grf.grid)
+        rmse = mean_squared_error(mu_truth, mu, squared=False)
         vr = np.sum(sigma_diag)
         return ibv, vr, rmse
 

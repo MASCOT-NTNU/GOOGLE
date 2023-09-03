@@ -48,13 +48,13 @@ class Myopic2D:
         Also the pioneer index can be modified here.
 
         Para:
-            ctd_data: np.array([[x, y, sal]])
+            ctd_data: np.array([[timestamp, x, y, sal]])
         Returns:
             id_pioneer: designed pioneer waypoint index.
         """
         # s0: update grf kernel
-        self.__grf.assimilate_data(ctd_data)
-        self.__cost_valley.update_cost_valley()
+        self.__grf.assimilate_temporal_data(ctd_data)
+        self.__cost_valley.update_cost_valley(self.__wp_curr)
 
         # s1: find candidate locations
         id_smooth, id_neighbours = self.get_candidates_indices()
@@ -171,4 +171,3 @@ class Myopic2D:
 
 if __name__ == "__main__":
     m = Myopic2D()
-

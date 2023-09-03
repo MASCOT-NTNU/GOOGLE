@@ -1,5 +1,9 @@
 """
 AgentPlot visualises the agent during the adaptive sampling for myopic 2d path planning.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-03
 """
 from Config import Config
 import os
@@ -10,6 +14,7 @@ from matplotlib.pyplot import get_cmap
 from shapely.geometry import Polygon, Point
 from matplotlib.gridspec import GridSpec
 import numpy as np
+from datetime import datetime
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 20
 from Field import Field
@@ -21,8 +26,6 @@ class AgentPlotMyopic:
     agent = None
     def __init__(self, agent, figpath) -> None:
         self.agent = agent
-        self.ctd = self.agent.ctd
-        self.mu_truth = self.ctd.get_ground_truth()
         self.figpath = figpath
         self.myopic = self.agent.myopic
         self.cv = self.myopic.getCostValley()
@@ -38,14 +41,6 @@ class AgentPlotMyopic:
 
         self.c = Config()
         self.loc_start = self.c.get_loc_start()
-
-    def plot_ground_truth(self, title: str = "Equal", seed: int = 0):
-        plt.figure(figsize=(10, 10))
-        self.plotf_vector(self.ygrid, self.xgrid, self.mu_truth, title="Ground truth field under seed {:d}".format(seed),
-                          cmap=get_cmap("BrBG", 10), vmin=15, vmax=36, cbar_title="Salinity", stepsize=1.5,
-                          threshold=self.grf.get_threshold())
-        plt.savefig(self.figpath + title + ".png")
-        plt.close("all")
 
     def plot_agent(self):
         # s0: get updated field
@@ -86,7 +81,9 @@ class AgentPlotMyopic:
 
         """ plot truth"""
         ax = fig.add_subplot(gs[0])
-        self.plotf_vector(self.ygrid, self.xgrid, self.mu_truth, title="Ground truth field",
+        mu_truth = self.agent.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grid)
+        str_timestamp = datetime.fromtimestamp(self.auv.ctd.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        self.plotf_vector(self.ygrid, self.xgrid, mu_truth, title="Ground truth field at " + str_timestamp,
                           cmap=get_cmap("BrBG", 10), vmin=15, vmax=36, cbar_title="Salinity", stepsize=1.5,
                           threshold=threshold)
         plot_waypoints()
