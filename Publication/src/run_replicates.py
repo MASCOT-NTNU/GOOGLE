@@ -35,15 +35,15 @@ Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
 # sigmas = [1.5, 1., .5, .1]
 # nuggets = [.4, .25, .1, .01]
 
-sigmas_nuggets = np.array([[1., .25],
-                           [1., .1],
-                           [1.5, .25],
-                           [1.5, .1],
-                           [.5, .25],
-                           [.5, .1],
-                           [.1, .1],
-                           [.1, .01]])
-
+# sigmas_nuggets = np.array([[1., .25],
+#                            [1., .1],
+#                            [1.5, .25],
+#                            [1.5, .1],
+#                            [.5, .25],
+#                            [.5, .1],
+#                            [.1, .1],
+#                            [.1, .01]])
+sigmas_nuggets = np.array([[1., .25]])
 # datapath = "npy/"
 
 # sigmas = [1.]
@@ -53,7 +53,7 @@ sigmas_nuggets = np.array([[1., .25],
 # nuggets = [.25]
 
 
-datapath = "npy/analytical/"
+datapath = "npy/temporal/"
 
 def run_replicates(i: int = 0):
     print("seed: ", seeds[i])
@@ -106,8 +106,8 @@ def run_replicates(i: int = 0):
 if __name__ == "__main__":
     import sys
     t1 = time()
-    run_replicates(i=int(sys.argv[1]))
-    # res = Parallel(n_jobs=num_cores)(delayed(run_replicates)(i=rep) for rep in range(num_replicates))
+    # run_replicates(i=int(sys.argv[1]))
+    res = Parallel(n_jobs=num_cores)(delayed(run_replicates)(i=rep) for rep in range(num_replicates))
     t2 = time()
     print("Replicate study takes ", t2 - t1)
 

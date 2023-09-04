@@ -1,5 +1,9 @@
 """
 Simulator generates the simulation result based on the weight set.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-04
 """
 from Planner.Planner import Planner
 from Simulators.CTD import CTD

@@ -82,7 +82,7 @@ class AgentPlotMyopic:
         """ plot truth"""
         ax = fig.add_subplot(gs[0])
         mu_truth = self.agent.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grid)
-        str_timestamp = datetime.fromtimestamp(self.auv.ctd.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        str_timestamp = datetime.fromtimestamp(self.agent.auv.ctd.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         self.plotf_vector(self.ygrid, self.xgrid, mu_truth, title="Ground truth field at " + str_timestamp,
                           cmap=get_cmap("BrBG", 10), vmin=15, vmax=36, cbar_title="Salinity", stepsize=1.5,
                           threshold=threshold)

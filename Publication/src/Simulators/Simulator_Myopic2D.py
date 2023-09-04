@@ -1,5 +1,9 @@
 """
 Simulator generates the simulation result based on different weight set.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-04
 """
 from Agents.AgentMyopic import Agent
 import numpy as np
