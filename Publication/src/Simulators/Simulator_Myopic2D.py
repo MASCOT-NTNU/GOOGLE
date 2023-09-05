@@ -34,8 +34,11 @@ class SimulatorMyopic2D:
 
     def extract_data_for_agent(self, agent: 'Agent' = None) -> tuple:
         traj = agent.trajectory
-        ibv = np.array(agent.ibv).reshape(-1, 1)
-        vr = np.array(agent.vr).reshape(-1, 1)
-        rmse = np.array(agent.rmse).reshape(-1, 1)
-        return traj, ibv, vr, rmse
+        mu_data = agent.mu_data
+        sigma_data = agent.sigma_data
+        mu_truth_data = agent.mu_truth_data
+        # ibv = np.array(agent.ibv).reshape(-1, 1)
+        # vr = np.array(agent.vr).reshape(-1, 1)
+        # rmse = np.array(agent.rmse).reshape(-1, 1)
+        return traj, mu_data, sigma_data, mu_truth_data
 

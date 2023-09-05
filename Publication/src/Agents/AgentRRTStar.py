@@ -57,10 +57,6 @@ class Agent:
         self.ap = AgentPlotRRTStar(self, figpath)
         self.counter = 0
 
-        # s5: set up monitoring metrics
-        self.ibv = []
-        self.vr = []
-        self.rmse = []
         self.threshold = self.grf.get_threshold()
 
     def run(self, num_steps: int = 5) -> None:
@@ -69,6 +65,10 @@ class Agent:
         """
         # start logging the data.
         self.trajectory = np.empty([0, 2])
+        N = self.grf.grid.shape[0]
+        self.mu_data = np.zeros([num_steps, N])
+        self.sigma_data = np.zeros([num_steps, N])
+        self.mu_truth_data = np.zeros([num_steps, N])
 
         t0 = time()
         for i in range(num_steps):
@@ -77,10 +77,10 @@ class Agent:
                   " Time remaining: ", (time() - t0) * (num_steps - i) / 60, " min")
             t0 = time()
             # s0: update simulation data
-            ibv, vr, rmse = self.update_metrics()
-            self.ibv.append(ibv)
-            self.vr.append(vr)
-            self.rmse.append(rmse)
+            mu, sigma_diag, mu_truth = self.update_metrics()
+            self.mu_data[i, :] = mu.flatten()
+            self.sigma_data[i, :] = sigma_diag.flatten()
+            self.mu_truth_data[i, :] = mu_truth.flatten()
 
             if self.debug:
                 self.ap.plot_agent()
@@ -105,11 +105,11 @@ class Agent:
     def update_metrics(self) -> tuple:
         mu = self.grf.get_mu()
         sigma_diag = np.diag(self.grf.get_covariance_matrix())
-        ibv = self.get_ibv(self.threshold, mu, sigma_diag)
+        # ibv = self.get_ibv(self.threshold, mu, sigma_diag)
         mu_truth = self.auv.ctd.get_salinity_at_dt_loc(dt=0, loc=self.grf.grid)  # dt=0 is cuz it is updated before
-        rmse = mean_squared_error(mu_truth, mu, squared=False)
-        vr = np.sum(sigma_diag)
-        return ibv, vr, rmse
+        # rmse = mean_squared_error(mu_truth, mu, squared=False)
+        # vr = np.sum(sigma_diag)
+        return mu, sigma_diag, mu_truth
 
     def get_ibv(self, threshold, mu, sigma_diag) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.

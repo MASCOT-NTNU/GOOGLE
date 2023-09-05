@@ -91,16 +91,24 @@ def run_replicates(i: int = 0):
             res_ivr = s.extract_data_for_agent(s.ag_ivr)
             res_eq = s.extract_data_for_agent(s.ag_eq)
 
-            """ Get each component. """
-            traj = np.stack((res_eibv[0], res_ivr[0], res_eq[0]), axis=0)
-            ibv = np.stack((res_eibv[1], res_ivr[1], res_eq[1]), axis=0)
-            vr = np.stack((res_eibv[2], res_ivr[2], res_eq[2]), axis=0)
-            rmse = np.stack((res_eibv[3], res_ivr[3], res_eq[3]), axis=0)
+            """ Save simulation II result. """
+            np.savez(simpath + "eibv.npz", traj=res_eibv[0], mu_data=res_eibv[1],
+                     sigma_data=res_eibv[2], mu_truth_data=res_eibv[3])
+            np.savez(simpath + "ivr.npz", traj=res_ivr[0], mu_data=res_ivr[1],
+                        sigma_data=res_ivr[2], mu_truth_data=res_ivr[3])
+            np.savez(simpath + "eq.npz", traj=res_eq[0], mu_data=res_eq[1],
+                        sigma_data=res_eq[2], mu_truth_data=res_eq[3])
 
-            np.save(simpath + "traj.npy", traj)
-            np.save(simpath + "ibv.npy", ibv)
-            np.save(simpath + "vr.npy", vr)
-            np.save(simpath + "rmse.npy", rmse)
+            """ Save simulation I result. """
+            # traj = np.stack((res_eibv[0], res_ivr[0], res_eq[0]), axis=0)
+            # ibv = np.stack((res_eibv[1], res_ivr[1], res_eq[1]), axis=0)
+            # vr = np.stack((res_eibv[2], res_ivr[2], res_eq[2]), axis=0)
+            # rmse = np.stack((res_eibv[3], res_ivr[3], res_eq[3]), axis=0)
+            #
+            # np.save(simpath + "traj.npy", traj)
+            # np.save(simpath + "ibv.npy", ibv)
+            # np.save(simpath + "vr.npy", vr)
+            # np.save(simpath + "rmse.npy", rmse)
 
 
 if __name__ == "__main__":

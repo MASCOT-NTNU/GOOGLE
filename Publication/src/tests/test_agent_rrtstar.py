@@ -31,20 +31,39 @@ class TestAgent(TestCase):
                             debug=debug, name="Equal", approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
 
     def test_run(self) -> None:
-        num_steps = 240
+        num_steps = 10
         self.agent1.run(num_steps)
         self.agent2.run(num_steps)
         self.agent3.run(num_steps)
 
         import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(self.agent1.ibv, label="EIBV")
-        plt.plot(self.agent2.ibv, label="IVR")
-        plt.plot(self.agent3.ibv, label="EQUAL")
-        plt.legend()
-        plt.xlabel("Steps")
-        plt.ylabel("IBV")
-        # plt.savefig("/Users/yaolin/Downloads/small_coef.png")
-        plt.show()
-        print("hello")
-        plt.show()
+        from matplotlib.pyplot import get_cmap
+
+        agents = [self.agent1, self.agent2, self.agent3]
+        grid = self.agent1.grf.grid
+        for agent in agents:
+            mu_data = agent.mu_data
+            sigma_data = agent.sigma_data
+            mu_truth_data = agent.mu_truth_data
+
+            for i in range(num_steps):
+                plt.figure(figsize=(15, 5))
+                plt.subplot(131)
+                plt.scatter(grid[:, 1], grid[:, 0], c=mu_data[i, :],
+                            cmap=get_cmap("BrBG", 10), vmin=10, vmax=30)
+                plt.colorbar()
+                plt.title("mu_data")
+
+                plt.subplot(132)
+                plt.scatter(grid[:, 1], grid[:, 0], c=mu_truth_data[i, :],
+                            cmap=get_cmap("BrBG", 10), vmin=10, vmax=30)
+                plt.colorbar()
+                plt.title("mu_truth_data")
+
+                plt.subplot(133)
+                plt.scatter(grid[:, 1], grid[:, 0], c=sigma_data[i, :],
+                            cmap=get_cmap("RdBu", 10), vmin=0, vmax=1)
+                plt.colorbar()
+                plt.title("sigma_data")
+
+                plt.show()
