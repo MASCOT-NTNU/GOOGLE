@@ -20,3 +20,7 @@ vendor
 *.nc
 **.nc
 
+*.npz
+**.npz
+*.npy
+**.npy
