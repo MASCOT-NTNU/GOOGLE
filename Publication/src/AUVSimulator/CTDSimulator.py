@@ -6,7 +6,6 @@ Email: geyaolin@gmail.com
 Date: 2023-08-28
 """
 from SINMOD import SINMOD
-from GRF.GRF import GRF
 import os
 from datetime import datetime
 import numpy as np
@@ -26,6 +25,7 @@ class CTDSimulator:
         Set up the CTD simulated truth field.
         """
         # Load SINMOD data from a specific file
+        t0 = time()
         np.random.seed(random_seed)
         filepath_sinmod = filepath
         datestring = filepath_sinmod.split("/")[-1].split("_")[-1][:-3].replace('.', '-') + " 10:00:00"
@@ -45,17 +45,10 @@ class CTDSimulator:
 
         # Set up essential parameters
         self.ar1_corr = .965
-        self.sigma = sigma
-        l_range = 700
-        eta = 4.5 / l_range
-        t0 = time()
-        dm = cdist(self.grid_sinmod, self.grid_sinmod)
-        cov = self.sigma ** 2 * ((1 + eta * dm) * np.exp(-eta * dm))
-        self.L = np.linalg.cholesky(cov)
-        print("Cholesky decomposition takes: ", time() - t0)
-
+        self.L = np.load(os.getcwd() + "/AUVSimulator/cholesky.npz")["L"]
         self.mu_truth = np.empty([0, len(self.grid_sinmod)])
         self.construct_ground_truth_field()
+        print("CTD simulator initialization takes: ", time() - t0)
 
     def construct_ground_truth_field(self) -> None:
         """
