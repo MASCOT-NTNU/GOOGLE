@@ -53,7 +53,7 @@ class SINMOD:
             self.__sorted_data = np.array(self.__sorted_data)
             self.sinmod_grid_tree = KDTree(self.__sorted_data[:, :3])
             t2 = time.time()
-            print("KDTree construction time: ", t2 - t1)
+            print("SINMOD KDTree construction time: ", t2 - t1)
 
     def get_data_at_locations(self, locations: np.array) -> np.ndarray:
         """

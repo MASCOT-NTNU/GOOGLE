@@ -12,20 +12,21 @@ Date: 2023-05-26
 #      __speed: speed of an AUV in m/s
 #      __ctd_data: ctd measurements gathered along the trajectory.
 """
-import numpy as np
 from AUVSimulator.CTDSimulator import CTDSimulator
 from AUVSimulator.Messenger import Messenger
+from Config import Config
+import numpy as np
 
 
 class AUVSimulator:
-    __loc = np.array([0, 0])
-    __loc_prev = np.array([0, 0])
-    __speed = 1.0
+    __speed = 1.0  # m/s
     __arrival = False
     __popup = False
 
-    def __init__(self, random_seed: int = 0, sigma: float = 1.,
-                 loc_start: np.ndarray = np.array([0, 0]), temporal_truth: bool = True) -> None:
+    def __init__(self, random_seed: int = 0) -> None:
+        self.__config = Config()
+        loc_start = self.__config.get_loc_start()
+        temporal_truth = self.__config.get_temporal_truth()
         self.temporal_truth = temporal_truth
         if self.temporal_truth:
             self.__ctd_data = np.empty([0, 4])
@@ -33,8 +34,14 @@ class AUVSimulator:
         else:
             self.__ctd_data = np.empty([0, 3])
             print("Temporal truth is OFF.")
-        self.ctd = CTDSimulator(random_seed=random_seed, sigma=sigma)
+
+        # s0, Set up the CTD simulator
+        self.ctd = CTDSimulator(random_seed=random_seed)
+
+        # s1, Set up the messenger
         self.messenger = Messenger()
+
+        # s2, Set up the starting location
         self.__loc = loc_start
         self.__loc_prev = loc_start
 

@@ -21,9 +21,9 @@ from shapely.geometry import Polygon, LineString
 class Config:
     """ Config contains essential setup for the simulation study. """
     def __init__(self) -> None:
-        """ Initializes the crucial parameters used later in the simulation. """
-
         """ Set up WGS polygons and starting and end locations. """
+        self.__waypoint_distance = 240  # meters between each waypoint.
+        self.__temporal_truth = True  # True: use temporal truth, False: use spatial truth.
         self.__wgs_polygon_border = pd.read_csv(os.getcwd() + "/csv/polygon_border.csv").to_numpy()
         self.__wgs_polygon_obstacle = pd.read_csv(os.getcwd() + "/csv/polygon_obstacle.csv").to_numpy()
         # self.__wgs_loc_start = np.array([63.456232, 10.435198])  # loc used in experiment.
@@ -35,7 +35,6 @@ class Config:
         # self.__wgs_loc_start = np.array([63.46674, 10.39385])  # upper middle above munkholm.
         # self.__wgs_loc_start = np.array([63.439385, 10.356280])  # far west close to margin of boundary.
         # self.__wgs_loc_start = np.array([63.45713, 10.37847])  # close to the middle and up in the corner.
-
         self.__wgs_loc_end = np.array([63.440618, 10.355851])   # location used in the experiment as the home location.
 
         """ Convert them to cartesian polygons and starting and end locations. """
@@ -56,7 +55,7 @@ class Config:
         self.__budget_mode = False
 
         """ Default simulation parameter seteup. """
-        self.__num_steps = 10  # number of steps.
+        self.__num_steps = 30  # number of steps.
         self.__num_replicates = 3  # number of replicates
         self.__num_cores = 3  # number of cores to use
 
@@ -65,6 +64,14 @@ class Config:
         """ Convert polygon containing wgs coordinates to polygon containing xy coordinates. """
         x, y = WGS.latlon2xy(value[:, 0], value[:, 1])
         return np.stack((x, y), axis=1)
+
+    def set_waypoint_distance(self, value: float) -> None:
+        """ Set the distance between each waypoint. """
+        self.__waypoint_distance = value
+
+    def set_temporal_truth(self, value: bool) -> None:
+        """ Set the temporal truth to be True or False. """
+        self.__temporal_truth = value
 
     def set_polygon_border(self, value: np.ndarray) -> None:
         """ Set operational area using polygon defined by lat lon coordinates.
@@ -119,6 +126,14 @@ class Config:
     def set_budget_mode(self, value: bool) -> None:
         """ Set the budget mode to be True or False. """
         self.__budget_mode = value
+
+    def get_waypoint_distance(self) -> float:
+        """ Return the distance between each waypoint. """
+        return self.__waypoint_distance
+
+    def get_temporal_truth(self) -> bool:
+        """ Return the temporal truth. """
+        return self.__temporal_truth
 
     def get_polygon_border(self) -> np.ndarray:
         """ Return polygon for opa in x y coordinates. """

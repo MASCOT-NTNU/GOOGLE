@@ -19,20 +19,21 @@ Date: 2023-08-24
 """
 from CostValley.Budget import Budget
 from GRF.GRF import GRF
+from Config import Config
 import numpy as np
 import time
 
 
 class CostValley:
     """ Cost fields construction. """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., sigma: float = 1., nugget: float = .4,
-                 budget_mode: bool = False, approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
+        self.__config = Config()
 
         """ Budget mode """
-        self.__budget_mode = budget_mode
+        self.__budget_mode = self.__config.get_budget_mode()
 
         """ GRF """
-        self.__grf = GRF(sigma=sigma, nugget=nugget, approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
+        self.__grf = GRF()
         self.__field = self.__grf.field
         self.__grid = self.__field.get_grid()
 

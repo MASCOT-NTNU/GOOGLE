@@ -14,21 +14,9 @@ class TestAgent(TestCase):
     def setUp(self) -> None:
         seed = 0
         debug = False
-        approximate_eibv = False
-        budget_mode = False
-        fast_eibv = True
-        sigma = .5
-        nugget = .01
-        neighbour_distance = 120
-        self.agent1 = Agent(neighbour_distance=neighbour_distance, weight_eibv=1.99, weight_ivr=.01,
-                            sigma=sigma, nugget=nugget, random_seed=seed,
-                            debug=debug, name="EIBV", approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
-        self.agent2 = Agent(neighbour_distance=neighbour_distance, weight_eibv=.01, weight_ivr=1.99,
-                            budget_mode=budget_mode, sigma=sigma, nugget=nugget, random_seed=seed,
-                            debug=debug, name="IVR", approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
-        self.agent3 = Agent(neighbour_distance=neighbour_distance, weight_eibv=1., weight_ivr=1.,
-                            budget_mode=budget_mode, sigma=sigma, nugget=nugget, random_seed=seed,
-                            debug=debug, name="Equal", approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
+        self.agent1 = Agent(weight_eibv=2., weight_ivr=.0, random_seed=seed, debug=debug, name="EIBV")
+        self.agent2 = Agent(weight_eibv=.0, weight_ivr=2., random_seed=seed, debug=debug, name="IVR")
+        self.agent3 = Agent(weight_eibv=1., weight_ivr=1., random_seed=seed, debug=debug, name="Equal")
 
     def test_run(self) -> None:
         num_steps = 10

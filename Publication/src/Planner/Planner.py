@@ -24,24 +24,17 @@ import numpy as np
 
 class Planner:
 
-    def __init__(self, loc_start: np.ndarray, neighhour_distance: float = 120,
-                 weight_eibv: float = 1., weight_ivr: float = 1.,
-                 sigma: float = .1, nugget: float = .01, budget_mode: bool = False,
-                 approximate_eibv: bool = False, fast_eibv: bool = True) -> None:
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
         """ Initial phase
         - Update the starting location to be loc.
         - Update current waypoint to be starting location.
         - Calculate two steps ahead in the pioneer planning.
         """
-        self.__budget_mode = budget_mode
-
-        # s0: load configuration
         self.__config = Config()
+        self.__budget_mode = self.__config.get_budget_mode()
 
         # s1: set up path planning strategies
-        self.__rrtstarcv = RRTStarCV(neighbour_distance=neighhour_distance, weight_eibv=weight_eibv,
-                                     weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                     budget_mode=budget_mode, approximate_eibv=approximate_eibv, fast_eibv=fast_eibv)
+        self.__rrtstarcv = RRTStarCV(weight_eibv=weight_eibv, weight_ivr=weight_ivr)
         self.__stepsize = self.__rrtstarcv.get_stepsize()
         self.__slpp = StraightLinePathPlanner()
 
@@ -55,7 +48,7 @@ class Planner:
         self.__grid = self.__grf.grid
 
         # s3: update the current waypoint location and append to trajectory and then get the minimum cost location.
-        self.__wp_now = loc_start
+        self.__wp_now = self.__config.get_loc_start()
         self.__wp_end = self.__config.get_loc_end()
 
         # s4: compute angle between the starting location to the minimum cost location.

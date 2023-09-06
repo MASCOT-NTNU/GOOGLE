@@ -11,19 +11,15 @@ from datetime import datetime
 import numpy as np
 from typing import Union
 from pykdtree.kdtree import KDTree
-from scipy.spatial.distance import cdist
 from time import time
 
 
 class CTDSimulator:
     """
-    CTD module handles the simulated truth value at each specific location.
+    CTDSimulator simulates the ground truth field for the CTD sensor to measure in the field.
     """
     def __init__(self, random_seed: int = 0,
-                 filepath: str = os.getcwd() + "/../sinmod/samples_2022.05.11.nc", sigma: float = 1.) -> None:
-        """
-        Set up the CTD simulated truth field.
-        """
+                 filepath: str = os.getcwd() + "/../sinmod/samples_2022.05.11.nc") -> None:
         # Load SINMOD data from a specific file
         t0 = time()
         np.random.seed(random_seed)

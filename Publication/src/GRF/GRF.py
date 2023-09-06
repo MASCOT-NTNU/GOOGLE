@@ -30,26 +30,22 @@ class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4,
-                 approximate_eibv: bool = False, fast_eibv: bool = True,
-                 filepath_prior: str = os.getcwd() + "/../sinmod/samples_2022.05.11.nc") -> None:
-        """ Initializes the parameters in GRF kernel. """
-        self.__approximate_eibv = approximate_eibv
-        self.__fast_eibv = fast_eibv
-
+    def __init__(self, filepath_prior: str = os.getcwd() + "/../sinmod/samples_2022.05.11.nc") -> None:
         self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
         self.__ar1_corr_range = 600   # [sec], AR1 correlation time range.
+        self.__approximate_eibv = False
+        self.__fast_eibv = True
 
         """ Empirical parameters """
         # spatial variability
-        self.__sigma = sigma
+        self.__sigma = .5
 
         # spatial correlation
         # self.__lateral_range = 200  # 680 in the experiment
         self.__lateral_range = 700  # 680 in the experiment
 
         # measurement noise
-        self.__nugget = nugget
+        self.__nugget = .1
 
         # threshold
         self.__threshold = 26.81189868
@@ -233,7 +229,7 @@ class GRF:
         self.__eibv_field = normalize(eibv_field)
         self.__ivr_field = 1 - normalize(ivr_field)
         t2 = time.time()
-        print("Approximate: ", self.__approximate_eibv, "; Total EI field takes: ", t2 - t1, " seconds.")
+        print("EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
 
     def __get_eibv_approximate(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:

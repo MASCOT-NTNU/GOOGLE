@@ -36,7 +36,7 @@ class EDA:
 
     def __init__(self) -> None:
         self.config = Config()
-        self.grf = GRF(sigma=1., nugget=.25)
+        self.grf = GRF()
         self.grid = self.grf.grid
         self.Ngrid = self.grid.shape[0]
         lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
@@ -64,8 +64,8 @@ class EDA:
         string_myopic = string_para + self.string_myopic + "/"
         string_rrt = string_para + self.string_rrt + "/"
 
-        self.traj_myopic, self.mu_myopic, self.sigma_myopic, self.truth_myopic = self.load_sim_data(string_myopic)
-        self.traj_rrt, self.mu_rrt, self.sigma_rrt, self.truth_rrt = self.load_sim_data(string_rrt)
+        # self.traj_myopic, self.mu_myopic, self.sigma_myopic, self.truth_myopic = self.load_sim_data(string_myopic)
+        # self.traj_rrt, self.mu_rrt, self.sigma_rrt, self.truth_rrt = self.load_sim_data(string_rrt)
 
         self.lon_min = np.min(self.polygon_border_wgs[:, 1])
         self.lon_max = np.max(self.polygon_border_wgs[:, 1])
@@ -74,13 +74,23 @@ class EDA:
         self.lon_ticks = np.round(np.arange(self.lon_min, self.lon_max, 0.02), 2)
         self.lat_ticks = np.round(np.arange(self.lat_min, self.lat_max, 0.005), 2)
 
+        # self.plot_trajectory()
+        self.load_data()
 
-        self.plot_trajectory()
         string_rrt
 
         # self.traj_myopic, self.ibv_myopic, self.vr_myopic, self.rmse_myopic = self.load_metricdata4simulator (string_myopic)
         # self.traj_rrt, self.ibv_rrt, self.vr_rrt, self.rmse_rrt = self.load_metricdata4simulator (string_rrt)
 
+    def load_data(self) -> None:
+        print("Loading data...")
+        filepath = os.getcwd() + "/npy/temporal/R_000/EIBV/"
+        data_myopic = np.load(filepath + "myopic.npz")
+        data_rrt = np.load(filepath + "rrtstar.npz")
+
+        data_rrt
+
+        pass
 
     def load_sim_data(self, string: str = "/sigma_10/nugget_025/SimulatorRRTStar") -> tuple:
         """
