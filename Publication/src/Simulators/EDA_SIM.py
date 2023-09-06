@@ -1,13 +1,14 @@
 """
 EDA for the simulation study.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-05
 """
 
 from WGS import WGS
 from Config import Config
 from GRF.GRF import GRF
-from Simulators.CTD import CTD
-from Field import Field
-from usr_func.checkfolder import checkfolder
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -26,27 +27,24 @@ from shapely.geometry import Polygon, Point
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 20
 
-filepath = "./npy/analytical/"
-figpath = os.getcwd() + "/../../../../OneDrive - NTNU/MASCOT_PhD/Projects/GOOGLE/Docs/fig/Paper/"
+filepath = "./npy/temporal/"
+figpath = os.getcwd() + ("/../../../../OneDrive - NTNU/MASCOT_PhD/"
+                         "Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/temporal")
+
 
 class EDA:
 
     def __init__(self) -> None:
         self.config = Config()
-
-        self.ctd = CTD(sigma=1., nugget=.25)
-        self.grf = self.ctd.grf
+        self.grf = GRF(sigma=1., nugget=.25)
         self.grid = self.grf.grid
+        self.Ngrid = self.grid.shape[0]
         lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
         self.grid_wgs = np.array([lat, lon]).T
 
-        self.polygon_border = self.config.get_polygon_border()
-        self.polygon_obstacle = self.config.get_polygon_obstacle()
-        lat, lon = WGS.xy2latlon(self.polygon_border[:, 0], self.polygon_border[:, 1])
-        self.polygon_border_wgs = np.array([lat, lon]).T
+        self.polygon_border_wgs = self.config.get_wgs_polygon_border()
         self.polygon_border_wgs_shapely = Polygon(self.polygon_border_wgs)
-        lat, lon = WGS.xy2latlon(self.polygon_obstacle[:, 0], self.polygon_obstacle[:, 1])
-        self.polygon_obstacle_wgs = np.array([lat, lon]).T
+        self.polygon_obstacle_wgs = self.config.get_wgs_polygon_obstacle()
         self.polygon_obstacle_wgs_shapely = Polygon(self.polygon_obstacle_wgs)
 
         self.num_steps = self.config.get_num_steps()
@@ -66,8 +64,8 @@ class EDA:
         string_myopic = string_para + self.string_myopic + "/"
         string_rrt = string_para + self.string_rrt + "/"
 
-        self.traj_myopic, self.ibv_myopic, self.vr_myopic, self.rmse_myopic = self.load_data4simulator(string_myopic)
-        self.traj_rrt, self.ibv_rrt, self.vr_rrt, self.rmse_rrt = self.load_data4simulator(string_rrt)
+        self.traj_myopic, self.mu_myopic, self.sigma_myopic, self.truth_myopic = self.load_sim_data(string_myopic)
+        self.traj_rrt, self.mu_rrt, self.sigma_rrt, self.truth_rrt = self.load_sim_data(string_rrt)
 
         self.lon_min = np.min(self.polygon_border_wgs[:, 1])
         self.lon_max = np.max(self.polygon_border_wgs[:, 1])
@@ -76,7 +74,99 @@ class EDA:
         self.lon_ticks = np.round(np.arange(self.lon_min, self.lon_max, 0.02), 2)
         self.lat_ticks = np.round(np.arange(self.lat_min, self.lat_max, 0.005), 2)
 
-    def load_data4simulator(self, string) -> tuple:
+
+        self.plot_trajectory()
+        string_rrt
+
+        # self.traj_myopic, self.ibv_myopic, self.vr_myopic, self.rmse_myopic = self.load_metricdata4simulator (string_myopic)
+        # self.traj_rrt, self.ibv_rrt, self.vr_rrt, self.rmse_rrt = self.load_metricdata4simulator (string_rrt)
+
+
+    def load_sim_data(self, string: str = "/sigma_10/nugget_025/SimulatorRRTStar") -> tuple:
+        """
+        Reorganize the data from the simulation study.
+        """
+        traj = np.empty([self.num_replicates, 3, self.num_steps, 2])
+        mu = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+        sigma = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+        truth = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+
+        for i in range(self.num_replicates):
+            rep = "R_{:03d}".format(i)
+            datapath = filepath + rep + string
+            data_eibv_dominant = np.load(datapath + "eibv.npz")
+            data_ivr_dominant = np.load(datapath + "ivr.npz")
+            data_equal = np.load(datapath + "eq.npz")
+
+            # s0, extract trajectory
+            traj[i, 0, :, :] = data_eibv_dominant["traj"]
+            traj[i, 1, :, :] = data_ivr_dominant["traj"]
+            traj[i, 2, :, :] = data_equal["traj"]
+
+            # s1, extract mu
+            mu[i, 0, :, :] = data_eibv_dominant["mu_data"]
+            mu[i, 1, :, :] = data_ivr_dominant["mu_data"]
+            mu[i, 2, :, :] = data_equal["mu_data"]
+
+            # s2, extract sigma
+            sigma[i, 0, :, :] = data_eibv_dominant["sigma_data"]
+            sigma[i, 1, :, :] = data_ivr_dominant["sigma_data"]
+            sigma[i, 2, :, :] = data_equal["sigma_data"]
+
+            # s3, extract truth
+            truth[i, 0, :, :] = data_eibv_dominant["mu_truth_data"]
+            truth[i, 1, :, :] = data_ivr_dominant["mu_truth_data"]
+            truth[i, 2, :, :] = data_equal["mu_truth_data"]
+        return traj, mu, sigma, truth
+
+    def plot_trajectory(self) -> None:
+        def make_subplot(traj, num_step, j: int = 0):
+            for k in range(traj.shape[0]):
+                lat, lon = WGS.xy2latlon(traj[k, j, :num_step, 0], traj[k, j, :num_step, 1])
+                # df = pd.DataFrame(np.stack((lat.flatten(), lon.flatten()), axis=1), columns=['lat', 'lon'])
+                # sns.kdeplot(df, x='lon', y='lat', fill=True, cmap="Blues", levels=25, thresh=.1)
+                plt.plot(lon, lat, 'k.-', alpha=.5)
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
+                              linestyle='-.')
+            plt.gca().add_patch(plg)
+            plt.xlabel("Longitude")
+
+            plt.xticks(self.lon_ticks)
+
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+            plt.title(["EIBV dominant" if j == 0 else "IVR dominant" if j == 1 else "Equal"][0])
+
+        for num_step in range(1, self.num_steps):
+            print("NUM: ", num_step)
+            fig = plt.figure(figsize=(36, 20))
+            gs = GridSpec(nrows=2, ncols=3)
+            ax = fig.add_subplot(gs[0, 0])
+            make_subplot(self.traj_rrt, num_step, 0)
+
+            ax = fig.add_subplot(gs[0, 1])
+            make_subplot(self.traj_rrt, num_step, 1)
+
+            ax = fig.add_subplot(gs[0, 2])
+            make_subplot(self.traj_rrt, num_step, 2)
+
+            ax = fig.add_subplot(gs[1, 0])
+            make_subplot(self.traj_myopic, num_step, 0)
+
+            ax = fig.add_subplot(gs[1, 1])
+            make_subplot(self.traj_myopic, num_step, 1)
+
+            ax = fig.add_subplot(gs[1, 2])
+            make_subplot(self.traj_myopic, num_step, 2)
+
+            plt.savefig(figpath + "/P_{:03d}.png".format(num_step))
+            plt.close("all")
+
+        self.rmse
+        pass
+
+    def load_metricdata4simulator(self, string) -> tuple:
         self.traj = None
         self.ibv = None
         self.rmse = None
@@ -140,6 +230,7 @@ class EDA:
         plt.savefig(figpath + "/Simulation/P_{:03d}.png".format(num_step))
         # plt.show()
         plt.close("all")
+
     def plot_metric_analysis(self) -> None:
         # def organize_dataset(data_myopic, data_rrt, num_steps, metric) -> 'pd.DataFrame':
         #     dataset = []

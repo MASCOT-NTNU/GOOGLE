@@ -1,5 +1,13 @@
+"""
+Unit tests for the EDA simulator.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-05
+"""
+
 from unittest import TestCase
-from Simulators.EDA import EDA
+from Simulators.EDA_SIM import EDA
 
 
 class TestEDA(TestCase):
