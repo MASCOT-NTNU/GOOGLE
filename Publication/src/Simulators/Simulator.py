@@ -37,23 +37,29 @@ class Simulator:
         self.__datapath = os.getcwd() + "/npy/temporal/R_{:03d}/".format(replicate_id) + self.__name + "/"
         checkfolder(self.__datapath)
 
-    def run(self) -> None:
+    def run_myopic(self) -> None:
         """ Run the simulation for all the agents. """
         t0 = time()
         self.__agent_myopic.run()
         print("Myopic simulation takes {:.2f} seconds.".format(time() - t0))
-        self.__agent_rrtstar.run()
-        print("RRT* simulation takes {:.2f} seconds.".format(time() - t0))
 
         t0 = time()
         (traj_myopic, ibv_myopic, rmse_myopic, vr_myopic,
          mu_data_myopic, cov_myopic, sigma_data_myopic, mu_truth_data_myopic) = self.__agent_myopic.get_metrics()
 
+        np.savez(self.__datapath + "myopic.npz", traj=traj_myopic, ibv=ibv_myopic, rmse=rmse_myopic, vr=vr_myopic,
+                    mu=mu_data_myopic, cov=cov_myopic, sigma=sigma_data_myopic, truth=mu_truth_data_myopic)
+        print("Saving data takes {:.2f} seconds.".format(time() - t0))
+
+    def run_rrt(self) -> None:
+        """ Run the simulation for all the agents. """
+        t0 = time()
+        self.__agent_rrtstar.run()
+        print("RRT* simulation takes {:.2f} seconds.".format(time() - t0))
+
         (traj_rrtstar, ibv_rrtstar, rmse_rrtstar, vr_rrtstar,
          mu_data_rrtstar, cov_rrtstar, sigma_data_rrtstar, mu_truth_data_rrtstar) = self.__agent_rrtstar.get_metrics()
 
-        np.savez(self.__datapath + "myopic.npz", traj=traj_myopic, ibv=ibv_myopic, rmse=rmse_myopic, vr=vr_myopic,
-                    mu=mu_data_myopic, cov=cov_myopic, sigma=sigma_data_myopic, truth=mu_truth_data_myopic)
         np.savez(self.__datapath + "rrtstar.npz", traj=traj_rrtstar, ibv=ibv_rrtstar, rmse=rmse_rrtstar, vr=vr_rrtstar,
                     mu=mu_data_rrtstar, cov=cov_rrtstar, sigma=sigma_data_rrtstar, truth=mu_truth_data_rrtstar)
         print("Saving data takes {:.2f} seconds.".format(time() - t0))
