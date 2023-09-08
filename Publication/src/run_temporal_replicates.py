@@ -48,7 +48,7 @@ def run_replicates(sws: np.ndarray = np.array([0, 102, 1., 1.])):
     print("Replicate: ", i, " | Seed: ", seed, " | Weight EIBV: ", weight_eibv, " | Weight IVR: ", weight_ivr)
     simulator = Simulator(weight_eibv=weight_eibv, weight_ivr=weight_ivr,
                           random_seed=seed, replicate_id=i, debug=debug)
-    # simulator.run_myopic()
+    simulator.run_myopic()
     simulator.run_rrt()
 
 
