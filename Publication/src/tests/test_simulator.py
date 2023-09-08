@@ -14,7 +14,7 @@ class TestSimulator(TestCase):
 
     def setUp(self) -> None:
         seed = 0
-        debug = True
+        debug = False
         weight_eibv = 2.
         weight_ivr = 0.
         self.simulator = Simulator(weight_eibv=weight_eibv, weight_ivr=weight_ivr,

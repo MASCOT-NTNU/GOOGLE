@@ -18,10 +18,7 @@ from matplotlib.pyplot import get_cmap
 class TestMyopic2D(TestCase):
     def setUp(self) -> None:
         self.c = Config()
-        loc = np.array([2000, -1500])
-        self.myopic = Myopic2D(loc, neighbour_distance=240,
-                               weight_eibv=1., weight_ivr=1., sigma=1., nugget=.1,
-                               approximate_eibv=False, fast_eibv=True)
+        self.myopic = Myopic2D(weight_eibv=1., weight_ivr=1.)
         self.cv = self.myopic.getCostValley()
         self.field = self.myopic.get_field()
         self.polygon_border = self.c.get_polygon_border()
@@ -29,12 +26,11 @@ class TestMyopic2D(TestCase):
     def test_get_next_waypoint(self) -> None:
         figpath = "/Users/yaolin/Downloads/fig/"
 
-        ctd = np.array([[1234, 2000, -1500, 25]])
         id_s, id_n = self.myopic.get_candidates_indices()
-        wp_next = self.myopic.update_next_waypoint(ctd)
         wp_curr = self.myopic.get_current_waypoint()
         wp_prev = self.myopic.get_previous_waypoint()
-        loc_cand = self.myopic.get_loc_cand()
+        wp_next = self.myopic.get_next_waypoint()
+
         traj = self.myopic.get_trajectory()
         grid = self.myopic.getCostValley().get_grf_model().grid
         plt.figure(figsize=(15, 15))
@@ -67,7 +63,7 @@ class TestMyopic2D(TestCase):
             wp_next = self.myopic.update_next_waypoint(ctd)
             wp_curr = self.myopic.get_current_waypoint()
             wp_prev = self.myopic.get_previous_waypoint()
-            loc_cand = self.myopic.get_loc_cand()
+
             traj = self.myopic.get_trajectory()
             plt.figure(figsize=(15, 15))
             plt.scatter(grid[:, 1], grid[:, 0], c=self.cv.get_cost_field(),

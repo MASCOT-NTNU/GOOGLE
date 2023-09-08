@@ -62,7 +62,10 @@ class Agent:
         self.rmse = np.empty([self.num_steps, ])
         self.vr = np.empty([self.num_steps, ])
         self.mu_data = np.empty([self.num_steps, N])
-        self.cov_data = np.empty([self.num_steps // 15, N, N])
+        if self.num_steps > 15:
+            self.cov_data = np.empty([self.num_steps // 15, N, N])
+        else:
+            self.cov_data = np.empty([1, N, N])
         self.sigma_data = np.empty([self.num_steps, N])
         self.mu_truth_data = np.empty([self.num_steps, N])
 
@@ -86,10 +89,12 @@ class Agent:
             if self.debug:
                 self.ap.plot_agent()
 
-            # s1: update the waypoint trackers
-            self.planner.update_planning_trackers()
+            # s0, get the current waypoint
             wp_now = self.planner.get_current_waypoint()
             self.trajectory = np.append(self.trajectory, wp_now.reshape(1, -1), axis=0)
+
+            # s1: update the waypoint trackers
+            self.planner.update_planning_trackers()
 
             # s2: obtain CTD data
             self.auv.move_to_location(wp_now)

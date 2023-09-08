@@ -57,7 +57,10 @@ class Agent:
         self.rmse = np.empty([self.__num_steps, ])
         self.vr = np.empty([self.__num_steps, ])
         self.mu_data = np.empty([self.__num_steps, N])
-        self.cov_data = np.empty([self.__num_steps // 15, N, N])
+        if self.__num_steps > 15:
+            self.cov_data = np.empty([self.__num_steps // 15, N, N])
+        else:
+            self.cov_data = np.empty([1, N, N])
         self.sigma_data = np.empty([self.__num_steps, N])
         self.mu_truth_data = np.empty([self.__num_steps, N])
 
@@ -82,11 +85,11 @@ class Agent:
                 self.ap.plot_agent()
 
             # p1: parallel move AUV to the first location
-            wp_now = self.myopic.get_current_waypoint()
-            self.trajectory = np.append(self.trajectory, wp_now.reshape(1, -1), axis=0)
+            wp_next = self.myopic.get_next_waypoint()
+            self.trajectory = np.append(self.trajectory, wp_next.reshape(1, -1), axis=0)
 
             # s2: obtain CTD data
-            self.auv.move_to_location(wp_now)
+            self.auv.move_to_location(wp_next)
             ctd_data = self.auv.get_ctd_data()
 
             # s3: update pioneer waypoint

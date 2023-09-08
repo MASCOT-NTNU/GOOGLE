@@ -55,7 +55,7 @@ class Config:
         self.__budget_mode = False
 
         """ Default simulation parameter seteup. """
-        self.__num_steps = 30  # number of steps.
+        self.__num_steps = 3  # number of steps.
         self.__num_replicates = 3  # number of replicates
         self.__num_cores = 3  # number of cores to use
 

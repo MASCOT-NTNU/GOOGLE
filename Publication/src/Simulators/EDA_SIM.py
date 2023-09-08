@@ -9,6 +9,7 @@ Date: 2023-09-05
 from WGS import WGS
 from Config import Config
 from GRF.GRF import GRF
+from usr_func.checkfolder import checkfolder
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -20,6 +21,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde
 from matplotlib.cm import get_cmap
 from sklearn.neighbors import KernelDensity
+from time import time
 from matplotlib import tri
 from shapely.geometry import Polygon, Point
 
@@ -60,9 +62,9 @@ class EDA:
                 self.num_replicates += 1
         print("Number of replicates: ", self.num_replicates)
 
-        string_para = "/sigma_10/nugget_025/"
-        string_myopic = string_para + self.string_myopic + "/"
-        string_rrt = string_para + self.string_rrt + "/"
+        # string_para = "/sigma_10/nugget_025/"
+        # string_myopic = string_para + self.string_myopic + "/"
+        # string_rrt = string_para + self.string_rrt + "/"
 
         # self.traj_myopic, self.mu_myopic, self.sigma_myopic, self.truth_myopic = self.load_sim_data(string_myopic)
         # self.traj_rrt, self.mu_rrt, self.sigma_rrt, self.truth_rrt = self.load_sim_data(string_rrt)
@@ -75,22 +77,51 @@ class EDA:
         self.lat_ticks = np.round(np.arange(self.lat_min, self.lat_max, 0.005), 2)
 
         # self.plot_trajectory()
-        self.load_data()
+        self.dataset = self.load_data()
 
-        string_rrt
+    def load_data(self) -> 'dict':
+        t0 = time()
+        folderpath = os.getcwd() + "/npy/temporal/"
+        files = os.listdir(folderpath)
+        cv = ["eibv", "ivr", "equal"]
+        planners = ['myopic', 'rrt']
+        metrics = ['traj', 'ibv', 'rmse', 'vr', 'mu', 'cov', 'sigma', 'truth']
+        dataset = {}
 
-        # self.traj_myopic, self.ibv_myopic, self.vr_myopic, self.rmse_myopic = self.load_metricdata4simulator (string_myopic)
-        # self.traj_rrt, self.ibv_rrt, self.vr_rrt, self.rmse_rrt = self.load_metricdata4simulator (string_rrt)
+        # s0, initialize the dataset dictionary.
+        for i in range(self.num_replicates):
+            num_replicate = "R_{:03d}".format(i)
+            dataset[num_replicate] = {}
+            for item in cv:
+                dataset[num_replicate][item] = {}
+                for planner in planners:
+                    dataset[num_replicate][item][planner] = {}
+                    for metric in metrics:
+                        dataset[num_replicate][item][planner][metric] = None
 
-    def load_data(self) -> None:
-        print("Loading data...")
-        filepath = os.getcwd() + "/npy/temporal/R_000/EIBV/"
-        data_myopic = np.load(filepath + "myopic.npz")
-        data_rrt = np.load(filepath + "rrtstar.npz")
+        # s1, load actual data.
+        for file in files:
+            if file.startswith("R_"):
+                for item in cv:
+                    filepath = folderpath + file + "/" + item.upper() + "/"
+                    print("Loading data from: ", filepath)
+                    for planner in planners:
+                        if planner == "myopic":
+                            data = np.load(filepath + "myopic.npz")
+                        else:
+                            data = np.load(filepath + "rrtstar.npz")
 
-        data_rrt
+                        for metric in metrics:
+                            dataset[file][item][planner][metric] = data[metric]
 
-        pass
+        # s2, make it array.
+        # for item in cv:
+        #     for planner in planners:
+        #         for metric in metrics:
+        #             dataset[item][planner][metric] = np.array(dataset[item][planner][metric])
+
+        print("Loading data takes {:.2f} seconds.".format(time() - t0))
+        return dataset
 
     def load_sim_data(self, string: str = "/sigma_10/nugget_025/SimulatorRRTStar") -> tuple:
         """
@@ -129,7 +160,62 @@ class EDA:
             truth[i, 2, :, :] = data_equal["mu_truth_data"]
         return traj, mu, sigma, truth
 
-    def plot_trajectory(self) -> None:
+    def plot_trajectory_temporal(self) -> None:
+
+        cv = ['eibv', 'ivr', 'equal']
+        planners = ['myopic', 'rrt']
+        fields = ['mu', 'sigma', 'truth']
+
+        def make_subplot(traj, value, num_step, cmap=get_cmap("BrBG", 10),
+                         vmin: float = 10, vmax: float = 30, name: str = "Test"):
+            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=value[num_step, :],
+                        cmap=cmap, vmin=vmin, vmax=vmax, alpha=.5)
+            plt.colorbar()
+            lat, lon = WGS.xy2latlon(traj[:num_step, 0], traj[:num_step, 1])
+            plt.plot(lon, lat, 'k.-')
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
+                              linestyle='-.')
+            plt.gca().add_patch(plg)
+            plt.xlabel("Longitude")
+            plt.xticks(self.lon_ticks)
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+            plt.title(name)
+
+        for num_step in range(1, self.num_steps):
+            print("NUM: ", num_step)
+            for num_replicate in range(self.num_replicates):
+                for field in fields:
+                    fpath = figpath + "/R_{:03d}".format(num_replicate) + "/" + field + "/"
+                    checkfolder(fpath)
+                    fig = plt.figure(figsize=(25, 15))
+                    gs = GridSpec(nrows=2, ncols=3)
+
+                    for i in range(len(planners)):
+                        for j in range(len(cv)):
+
+                            traj = self.dataset["R_{:03d}".format(num_replicate)][cv[j]][planners[i]]["traj"]
+                            data_field = self.dataset["R_{:03d}".format(num_replicate)][cv[j]][planners[i]][field]
+
+                            ax = fig.add_subplot(gs[i, j])
+                            if field == "sigma":
+                                vmin=0
+                                vmax=.5
+                                cmap=get_cmap("RdBu", 10)
+                            else:
+                                vmin=10
+                                vmax=30
+                                cmap=get_cmap("BrBG", 10)
+                            make_subplot(traj, data_field, num_step, name=planners[i] + " " + cv[j],
+                                         cmap=cmap, vmin=vmin, vmax=vmax)
+
+                    plt.savefig(fpath + "/P_{:03d}.png".format(num_step))
+
+        self.dataset
+        print("he")
+
+    def plot_trajectory_static_truth(self) -> None:
         def make_subplot(traj, num_step, j: int = 0):
             for k in range(traj.shape[0]):
                 lat, lon = WGS.xy2latlon(traj[k, j, :num_step, 0], traj[k, j, :num_step, 1])
