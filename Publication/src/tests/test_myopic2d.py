@@ -20,13 +20,13 @@ class TestMyopic2D(TestCase):
         self.c = Config()
         self.myopic = Myopic2D(weight_eibv=1., weight_ivr=1.)
         self.cv = self.myopic.getCostValley()
-        self.field = self.myopic.get_field()
+        self.field = Field()
         self.polygon_border = self.c.get_polygon_border()
 
     def test_get_next_waypoint(self) -> None:
         figpath = "/Users/yaolin/Downloads/fig/"
 
-        id_s, id_n = self.myopic.get_candidates_indices()
+        wp_s, wp_n = self.myopic.get_candidates_waypoints()
         wp_curr = self.myopic.get_current_waypoint()
         wp_prev = self.myopic.get_previous_waypoint()
         wp_next = self.myopic.get_next_waypoint()
@@ -38,11 +38,9 @@ class TestMyopic2D(TestCase):
                     cmap=get_cmap("BrBG", 10), vmin=.0, vmax=2., s=250)
         plt.colorbar()
 
-        for iid in id_n:
-            wp = self.field.get_location_from_ind(iid)
+        for wp in wp_n:
             plt.plot(wp[1], wp[0], 'b.', label="Neighbour locations", markersize=35)
-        for iid in id_s:
-            wp = self.field.get_location_from_ind(iid)
+        for wp in wp_s:
             plt.plot(wp[1], wp[0], 'y.', label="Candidate locations", markersize=30)
 
         plt.plot(wp_next[1], wp_next[0], 'r.', label="Next waypoint", markersize=25)
@@ -56,10 +54,10 @@ class TestMyopic2D(TestCase):
         plt.close("all")
         # plt.show()
 
-        for i in range(30):
+        for i in range(120):
             print(i)
             ctd = np.array([[i * 600 + 1623450000, wp_curr[0], wp_curr[1], 25 + np.random.rand()]])
-            id_s, id_n = self.myopic.get_candidates_indices()
+            wp_s, wp_n = self.myopic.get_candidates_waypoints()
             wp_next = self.myopic.update_next_waypoint(ctd)
             wp_curr = self.myopic.get_current_waypoint()
             wp_prev = self.myopic.get_previous_waypoint()
@@ -70,11 +68,9 @@ class TestMyopic2D(TestCase):
                         cmap=get_cmap("BrBG", 10), vmin=.0, vmax=2., s=250)
             plt.colorbar()
 
-            for iid in id_n:
-                wp = self.field.get_location_from_ind(iid)
+            for wp in wp_n:
                 plt.plot(wp[1], wp[0], 'b.', label="Neighbour locations", markersize=35)
-            for iid in id_s:
-                wp = self.field.get_location_from_ind(iid)
+            for wp in wp_s:
                 plt.plot(wp[1], wp[0], 'y.', label="Candidate locations", markersize=30)
 
             plt.plot(wp_next[1], wp_next[0], 'r.', label="Next waypoint", markersize=25)

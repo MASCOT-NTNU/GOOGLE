@@ -10,6 +10,10 @@
 *RRT_Random_Locations.npy
 **RRT_Random_Locations.npy
 
+*/npy
+**/npy
+*npy
+**npy
 
 _site
 .sass-cache
@@ -24,3 +28,7 @@ vendor
 **.npz
 *.npy
 **.npy
+
+*.joblib
+**.joblib
+

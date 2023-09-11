@@ -14,12 +14,13 @@ class TestSimulator(TestCase):
 
     def setUp(self) -> None:
         seed = 0
-        debug = False
+        debug = True
         weight_eibv = 2.
         weight_ivr = 0.
         self.simulator = Simulator(weight_eibv=weight_eibv, weight_ivr=weight_ivr,
                                    random_seed=seed, replicate_id=0, debug=debug)
 
     def test_run(self) -> None:
-        self.simulator.run()
+        self.simulator.run_myopic()
+        self.simulator.run_rrt()
         pass

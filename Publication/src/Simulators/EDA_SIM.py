@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 import os
 from tqdm import tqdm
 from matplotlib.gridspec import GridSpec
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, dump, load
+from concurrent.futures import ThreadPoolExecutor
 import seaborn as sns
 import pandas as pd
 from scipy.stats import gaussian_kde
@@ -29,7 +30,7 @@ from shapely.geometry import Polygon, Point
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 20
 
-filepath = "./npy/temporal/"
+folderpath = "./npy/temporal/"
 figpath = os.getcwd() + ("/../../../../OneDrive - NTNU/MASCOT_PhD/"
                          "Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/temporal")
 
@@ -55,7 +56,7 @@ class EDA:
         self.string_myopic = "SimulatorMyopic2D"
         self.string_rrt = "SimulatorRRTStar"
 
-        replicates = os.listdir(filepath)
+        replicates = os.listdir(folderpath)
         self.num_replicates = 0
         for rep in replicates:
             if rep.startswith("R_"):
@@ -76,89 +77,192 @@ class EDA:
         self.lon_ticks = np.round(np.arange(self.lon_min, self.lon_max, 0.02), 2)
         self.lat_ticks = np.round(np.arange(self.lat_min, self.lat_max, 0.005), 2)
 
-        # self.plot_trajectory()
-        self.dataset = self.load_data()
+        self.load_data()
+        self.plot_ground_truth()
 
-    def load_data(self) -> 'dict':
+        self.trajectory
+
+    def load_data(self) -> None:
         t0 = time()
-        folderpath = os.getcwd() + "/npy/temporal/"
+        fpath = os.getcwd() + "/../simulation_result/temporal/"
+        self.trajectory = load(fpath + "trajectory.joblib")
+        self.ibv = load(fpath + "ibv.joblib")
+        self.rmse = load(fpath + "rmse.joblib")
+        self.vr = load(fpath + "vr.joblib")
+        self.mu = load(fpath + "mu.joblib")
+        self.cov = load(fpath + "cov.joblib")
+        self.sigma = load(fpath + "sigma.joblib")
+        self.truth = load(fpath + "truth.joblib")
+        print("Loading data takes {:.2f} seconds.".format(time() - t0))
+
+    def plot_ground_truth(self) -> None:
+        """
+        Plot the ground truth for one replicate to check.
+        """
+        num_replicate = 0
+        fpath = figpath + "/R_{:03d}/".format(num_replicate)
+        checkfolder(fpath)
+        for i in range(1, self.num_steps):
+            plt.figure(figsize=(20, 5))
+            gs = GridSpec(nrows=1, ncols=3)
+            ax = plt.subplot(gs[0, 0])
+            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=self.truth["myopic"]["eibv"][num_replicate, i, :],
+                        cmap=get_cmap("BrBG", 10), vmin=10, vmax=30, alpha=.5)
+            plt.colorbar()
+            traj = self.trajectory["myopic"]["eibv"][num_replicate, :i, :]
+            lat, lon = WGS.xy2latlon(traj[:, 0], traj[:, 1])
+            plt.plot(lon, lat, 'k.-')
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
+                                linestyle='-.')
+            plt.gca().add_patch(plg)
+            plt.xlabel("Longitude")
+            plt.xticks(self.lon_ticks)
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+            plt.title("Myopic EIBV")
+
+            ax = plt.subplot(gs[0, 1])
+            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=self.truth["rrt"]["eibv"][num_replicate, i, :],
+                        cmap=get_cmap("BrBG", 10), vmin=10, vmax=30, alpha=.5)
+            plt.colorbar()
+            traj = self.trajectory["rrt"]["eibv"][num_replicate, :i, :]
+            lat, lon = WGS.xy2latlon(traj[:, 0], traj[:, 1])
+            plt.plot(lon, lat, 'k.-')
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
+                                linestyle='-.')
+            plt.gca().add_patch(plg)
+            plt.xlabel("Longitude")
+            plt.xticks(self.lon_ticks)
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+            plt.title("RRT EIBV")
+
+            ax = plt.subplot(gs[0, 2])
+            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=self.truth["myopic"]["eibv"][num_replicate, i, :] -
+                        self.truth["rrt"]["eibv"][num_replicate, i, :], cmap=get_cmap("RdBu", 10), vmin=-1, vmax=1)
+            plt.colorbar()
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+            plt.xlabel("Longitude")
+            plt.xticks(self.lon_ticks)
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+            plt.title("Difference")
+
+            plt.tight_layout()
+            plt.savefig(fpath + "P_{:03d}.png".format(i))
+            plt.close("all")
+
+    def load_raw_data_from_replicate_files(self) -> 'dict':
+        """
+        Load raw data from the replicate files. Needed after running the simulation study.
+        """
+        def load_single_file_data(file) -> 'dict':
+            """
+            Load data from a single file.
+            """
+            single_file_dataset = {}
+            single_file_dataset[file] = {}
+            for item in self.cv:
+                filepath = folderpath + file + "/" + item + "/"
+                single_file_dataset[file][item] = {}
+                for planner in self.planners:
+                    if planner == "myopic":
+                        data = np.load(filepath + "myopic.npz")
+                    else:
+                        data = np.load(filepath + "rrtstar.npz")
+                    single_file_dataset[file][item][planner] = {}
+                    for metric in self.metrics:
+                        single_file_dataset[file][item][planner][metric] = data[metric]
+            return single_file_dataset
+
+        self.cv = ['eibv', 'ivr', 'equal']
+        self.planners = ['myopic', 'rrt']
+        self.metrics = ['traj', 'ibv', 'rmse', 'vr', 'mu', 'cov', 'sigma', 'truth']
+
+        t0 = time()
         files = os.listdir(folderpath)
-        cv = ["eibv", "ivr", "equal"]
-        planners = ['myopic', 'rrt']
-        metrics = ['traj', 'ibv', 'rmse', 'vr', 'mu', 'cov', 'sigma', 'truth']
         dataset = {}
 
         # s0, initialize the dataset dictionary.
         for i in range(self.num_replicates):
             num_replicate = "R_{:03d}".format(i)
             dataset[num_replicate] = {}
-            for item in cv:
+            for item in self.cv:
                 dataset[num_replicate][item] = {}
-                for planner in planners:
+                for planner in self.planners:
                     dataset[num_replicate][item][planner] = {}
-                    for metric in metrics:
+                    for metric in self.metrics:
+                        # print("num_replicate: ", num_replicate, " | item: ", item, " | planner: ", planner, " | metric: ", metric)
                         dataset[num_replicate][item][planner][metric] = None
 
-        # s1, load actual data.
-        for file in files:
-            if file.startswith("R_"):
-                for item in cv:
-                    filepath = folderpath + file + "/" + item.upper() + "/"
-                    print("Loading data from: ", filepath)
-                    for planner in planners:
-                        if planner == "myopic":
-                            data = np.load(filepath + "myopic.npz")
-                        else:
-                            data = np.load(filepath + "rrtstar.npz")
-
-                        for metric in metrics:
-                            dataset[file][item][planner][metric] = data[metric]
-
-        # s2, make it array.
-        # for item in cv:
-        #     for planner in planners:
-        #         for metric in metrics:
-        #             dataset[item][planner][metric] = np.array(dataset[item][planner][metric])
+        with ThreadPoolExecutor(max_workers=16) as executor:
+            futures = [executor.submit(load_single_file_data, file) for file in files if file.startswith("R_")]
+            for future in tqdm(futures):
+                data = future.result()
+                file = list(data.keys())[0]
+                dataset[file] = data[file]
 
         print("Loading data takes {:.2f} seconds.".format(time() - t0))
         return dataset
 
-    def load_sim_data(self, string: str = "/sigma_10/nugget_025/SimulatorRRTStar") -> tuple:
+    def organize_data_to_dict(self) -> None:
         """
-        Reorganize the data from the simulation study.
+        Organize the data to a dictionary. Only once, no need for future use.
         """
-        traj = np.empty([self.num_replicates, 3, self.num_steps, 2])
-        mu = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
-        sigma = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
-        truth = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+        self.trajectory = {}
+        self.ibv = {}
+        self.rmse = {}
+        self.vr = {}
+        self.mu = {}
+        self.cov = {}
+        self.sigma = {}
+        self.truth = {}
 
+        t0 = time()
+        for planner in self.planners:
+            self.trajectory[planner] = {}
+            self.ibv[planner] = {}
+            self.rmse[planner] = {}
+            self.vr[planner] = {}
+            self.mu[planner] = {}
+            self.cov[planner] = {}
+            self.sigma[planner] = {}
+            self.truth[planner] = {}
+            for item in self.cv:
+                self.trajectory[planner][item] = np.empty([self.num_replicates, self.num_steps, 2])
+                self.ibv[planner][item] = np.empty([self.num_replicates, self.num_steps])
+                self.rmse[planner][item] = np.empty([self.num_replicates, self.num_steps])
+                self.vr[planner][item] = np.empty([self.num_replicates, self.num_steps])
+                self.mu[planner][item] = np.empty([self.num_replicates, self.num_steps, self.Ngrid])
+                self.cov[planner][item] = np.empty([self.num_replicates, self.num_steps // 15, self.Ngrid, self.Ngrid])
+                self.sigma[planner][item] = np.empty([self.num_replicates, self.num_steps, self.Ngrid])
+                self.truth[planner][item] = np.empty([self.num_replicates, self.num_steps, self.Ngrid])
         for i in range(self.num_replicates):
-            rep = "R_{:03d}".format(i)
-            datapath = filepath + rep + string
-            data_eibv_dominant = np.load(datapath + "eibv.npz")
-            data_ivr_dominant = np.load(datapath + "ivr.npz")
-            data_equal = np.load(datapath + "eq.npz")
+            num_replicate = "R_{:03d}".format(i)
+            for planner in self.planners:
+                for item in self.cv:
+                    self.trajectory[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['traj']
+                    self.ibv[planner][item][i, :] = self.dataset[num_replicate][item][planner]['ibv']
+                    self.rmse[planner][item][i, :] = self.dataset[num_replicate][item][planner]['rmse']
+                    self.vr[planner][item][i, :] = self.dataset[num_replicate][item][planner]['vr']
+                    self.mu[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['mu']
+                    self.cov[planner][item][i, :, :, :] = self.dataset[num_replicate][item][planner]['cov']
+                    self.sigma[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['sigma']
+                    self.truth[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['truth']
 
-            # s0, extract trajectory
-            traj[i, 0, :, :] = data_eibv_dominant["traj"]
-            traj[i, 1, :, :] = data_ivr_dominant["traj"]
-            traj[i, 2, :, :] = data_equal["traj"]
-
-            # s1, extract mu
-            mu[i, 0, :, :] = data_eibv_dominant["mu_data"]
-            mu[i, 1, :, :] = data_ivr_dominant["mu_data"]
-            mu[i, 2, :, :] = data_equal["mu_data"]
-
-            # s2, extract sigma
-            sigma[i, 0, :, :] = data_eibv_dominant["sigma_data"]
-            sigma[i, 1, :, :] = data_ivr_dominant["sigma_data"]
-            sigma[i, 2, :, :] = data_equal["sigma_data"]
-
-            # s3, extract truth
-            truth[i, 0, :, :] = data_eibv_dominant["mu_truth_data"]
-            truth[i, 1, :, :] = data_ivr_dominant["mu_truth_data"]
-            truth[i, 2, :, :] = data_equal["mu_truth_data"]
-        return traj, mu, sigma, truth
+        fpath = os.getcwd() + "/../simulation_result/temporal/"
+        dump(self.trajectory, fpath + "trajectory.joblib")
+        dump(self.ibv, fpath + "ibv.joblib")
+        dump(self.rmse, fpath + "rmse.joblib")
+        dump(self.vr, fpath + "vr.joblib")
+        dump(self.mu, fpath + "mu.joblib")
+        dump(self.cov, fpath + "cov.joblib")
+        dump(self.sigma, fpath + "sigma.joblib")
+        dump(self.truth, fpath + "truth.joblib")
+        t1 = time()
+        print("Reorganizing data takes {:.2f} seconds.".format(t1 - t0))
 
     def plot_trajectory_temporal(self) -> None:
 
@@ -194,7 +298,7 @@ class EDA:
 
                     for i in range(len(planners)):
                         for j in range(len(cv)):
-
+                            print("planner: ", planners[i], " cv: ", cv[j], " field: ", field)
                             traj = self.dataset["R_{:03d}".format(num_replicate)][cv[j]][planners[i]]["traj"]
                             data_field = self.dataset["R_{:03d}".format(num_replicate)][cv[j]][planners[i]][field]
 
@@ -214,6 +318,43 @@ class EDA:
 
         self.dataset
         print("he")
+
+    def load_sim_data(self, string: str = "/sigma_10/nugget_025/SimulatorRRTStar") -> tuple:
+        """
+        Reorganize the data from the simulation study.
+        """
+        traj = np.empty([self.num_replicates, 3, self.num_steps, 2])
+        mu = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+        sigma = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+        truth = np.empty([self.num_replicates, 3, self.num_steps, self.Ngrid])
+
+        for i in range(self.num_replicates):
+            rep = "R_{:03d}".format(i)
+            datapath = folderpath + rep + string
+            data_eibv_dominant = np.load(datapath + "eibv.npz")
+            data_ivr_dominant = np.load(datapath + "ivr.npz")
+            data_equal = np.load(datapath + "eq.npz")
+
+            # s0, extract trajectory
+            traj[i, 0, :, :] = data_eibv_dominant["traj"]
+            traj[i, 1, :, :] = data_ivr_dominant["traj"]
+            traj[i, 2, :, :] = data_equal["traj"]
+
+            # s1, extract mu
+            mu[i, 0, :, :] = data_eibv_dominant["mu_data"]
+            mu[i, 1, :, :] = data_ivr_dominant["mu_data"]
+            mu[i, 2, :, :] = data_equal["mu_data"]
+
+            # s2, extract sigma
+            sigma[i, 0, :, :] = data_eibv_dominant["sigma_data"]
+            sigma[i, 1, :, :] = data_ivr_dominant["sigma_data"]
+            sigma[i, 2, :, :] = data_equal["sigma_data"]
+
+            # s3, extract truth
+            truth[i, 0, :, :] = data_eibv_dominant["mu_truth_data"]
+            truth[i, 1, :, :] = data_ivr_dominant["mu_truth_data"]
+            truth[i, 2, :, :] = data_equal["mu_truth_data"]
+        return traj, mu, sigma, truth
 
     def plot_trajectory_static_truth(self) -> None:
         def make_subplot(traj, num_step, j: int = 0):
@@ -276,7 +417,7 @@ class EDA:
         for i in range(self.num_replicates):
             rep = "R_{:03d}".format(i)
 
-            datapath = filepath + rep + string
+            datapath = folderpath + rep + string
             r_traj = np.load(datapath + "traj.npy").reshape(1, 3, self.num_steps, 2)
             r_ibv = np.load(datapath + "ibv.npy").reshape(1, 3, self.num_steps)
             r_vr = np.load(datapath + "vr.npy").reshape(1, 3, self.num_steps)

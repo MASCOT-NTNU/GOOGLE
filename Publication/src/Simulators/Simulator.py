@@ -34,7 +34,7 @@ class Simulator:
         self.__agent_rrtstar = AgentRRTStar(weight_eibv=weight_eibv, weight_ivr=weight_ivr,
                                             random_seed=self.__random_seed, debug=self.__debug, name=self.__name)
 
-        self.__datapath = os.getcwd() + "/npy/temporal/R_{:03d}/".format(replicate_id) + self.__name + "/"
+        self.__datapath = os.getcwd() + "/npy/temporal/Synced/R_{:03d}/".format(replicate_id) + self.__name + "/"
         checkfolder(self.__datapath)
 
     def run_myopic(self) -> None:

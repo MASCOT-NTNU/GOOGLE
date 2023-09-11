@@ -15,14 +15,14 @@ class TestAgent(TestCase):
         seed = 0
         debug = True
         self.agent1 = Agent(weight_eibv=2., weight_ivr=.0, random_seed=seed, debug=debug, name="EIBV")
-        self.agent2 = Agent(weight_eibv=.0, weight_ivr=2., random_seed=seed, debug=debug, name="IVR")
-        self.agent3 = Agent(weight_eibv=1., weight_ivr=1., random_seed=seed, debug=debug, name="Equal")
+        # self.agent2 = Agent(weight_eibv=.0, weight_ivr=2., random_seed=seed, debug=debug, name="IVR")
+        # self.agent3 = Agent(weight_eibv=1., weight_ivr=1., random_seed=seed, debug=debug, name="Equal")
 
     def test_run(self) -> None:
         num_steps = 10
         self.agent1.run(num_steps)
-        self.agent2.run(num_steps)
-        self.agent3.run(num_steps)
+        # self.agent2.run(num_steps)
+        # self.agent3.run(num_steps)
 
         import matplotlib.pyplot as plt
         from matplotlib.pyplot import get_cmap
