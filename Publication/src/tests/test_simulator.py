@@ -23,4 +23,3 @@ class TestSimulator(TestCase):
     def test_run(self) -> None:
         self.simulator.run_myopic()
         self.simulator.run_rrt()
-        pass
