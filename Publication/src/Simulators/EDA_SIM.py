@@ -30,9 +30,9 @@ from shapely.geometry import Polygon, Point
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 20
 
-folderpath = "./npy/temporal/"
+folderpath = "./npy/temporal/Synced/"
 figpath = os.getcwd() + ("/../../../../OneDrive - NTNU/MASCOT_PhD/"
-                         "Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/temporal")
+                         "Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/temporal/Total/")
 
 
 class EDA:
@@ -56,12 +56,12 @@ class EDA:
         self.string_myopic = "SimulatorMyopic2D"
         self.string_rrt = "SimulatorRRTStar"
 
-        replicates = os.listdir(folderpath)
-        self.num_replicates = 0
-        for rep in replicates:
-            if rep.startswith("R_"):
-                self.num_replicates += 1
-        print("Number of replicates: ", self.num_replicates)
+        # replicates = os.listdir(folderpath)
+        # self.num_replicates = 0
+        # for rep in replicates:
+        #     if rep.startswith("R_"):
+        #         self.num_replicates += 1
+        # print("Number of replicates: ", self.num_replicates)
 
         # string_para = "/sigma_10/nugget_025/"
         # string_myopic = string_para + self.string_myopic + "/"
@@ -77,14 +77,20 @@ class EDA:
         self.lon_ticks = np.round(np.arange(self.lon_min, self.lon_max, 0.02), 2)
         self.lat_ticks = np.round(np.arange(self.lat_min, self.lat_max, 0.005), 2)
 
-        self.load_data()
-        self.plot_ground_truth()
+        """ Only DO ONCE!!! Load raw data and then reorganize it. """
+        # self.load_raw_data_from_replicate_files()
+        # self.organize_data_to_dict()
+        """ End of Data loading!!! """
 
+        self.load_data()
+        # self.plot_metric_with_temporal_traffic()
+        # self.plot_temporal_traffic_density_map()
+        self.plot_ground_truth()
         self.trajectory
 
     def load_data(self) -> None:
         t0 = time()
-        fpath = os.getcwd() + "/../simulation_result/temporal/"
+        fpath = os.getcwd() + "/../simulation_result/Synced/"
         self.trajectory = load(fpath + "trajectory.joblib")
         self.ibv = load(fpath + "ibv.joblib")
         self.rmse = load(fpath + "rmse.joblib")
@@ -94,6 +100,129 @@ class EDA:
         self.sigma = load(fpath + "sigma.joblib")
         self.truth = load(fpath + "truth.joblib")
         print("Loading data takes {:.2f} seconds.".format(time() - t0))
+
+        self.ibv_max = np.max(self.ibv['myopic']['equal'])
+        self.ibv_min = np.min(self.ibv['myopic']['equal'])
+        self.rmse_max = np.max(self.rmse['myopic']['equal'])
+        self.rmse_min = np.min(self.rmse['myopic']['equal'])
+        self.vr_max = np.max(self.vr['myopic']['equal'])
+        self.vr_min = np.min(self.vr['myopic']['equal'])
+        self.ibv_max += .05 * self.ibv_max
+        self.ibv_min -= .05 * self.ibv_min
+        self.rmse_max += .05 * self.rmse_max
+        self.rmse_min -= .05 * self.rmse_min
+        self.vr_max += .05 * self.vr_max
+        self.vr_min -= .05 * self.vr_min
+
+        self.xticks = np.arange(0, self.num_steps, 20)
+        self.xticklabels = ['{:d}'.format(i) for i in self.xticks]
+
+    def plot_metric_with_temporal_traffic(self) -> None:
+        """
+        Plot the metric with the temporal traffic density.
+        """
+        for i in tqdm(range(1, self.num_steps)):
+            fig = plt.figure(figsize=(50, 27))
+            gs = GridSpec(nrows=3, ncols=6, figure=fig)
+
+            """ Section I, make the other plot. """
+
+            """ Section II, make traffic density plot. """
+            self.plot_temporal_traffic_density_map(i, 0, 2, fig, gs)
+
+            """ Section III, make the metric plot. """
+            self.plot_metrics(i, 0, 4, fig, gs)
+
+            """ Section Final, save the figure. """
+            plt.savefig(figpath + "P_{:03d}.png".format(i))
+            plt.close("all")
+
+    def plot_temporal_traffic_density_map(self, step: 'int', row_ind, col_ind, fig, gs) -> None:
+        """
+        Plot the traffic density map for each specific case.
+
+        !!! Note: the trajectory starts from index 1 instead of 0.
+        """
+        def make_subplot(planner, item, step: int = 0):
+            traj = self.trajectory[planner][item][:, :step, :]
+            lat, lon = WGS.xy2latlon(traj[:, :, 0], traj[:, :, 1])
+            for k in range(lat.shape[0]):
+                plt.plot(lon[k, :], lat[k, :], 'k.-', alpha=.005)
+            df = pd.DataFrame(np.stack((lat.flatten(), lon.flatten()), axis=1), columns=['lat', 'lon'])
+            sns.kdeplot(df, x='lon', y='lat', fill=True, cmap="Blues", levels=25, thresh=.1)
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
+                              linestyle='-.')
+            plt.gca().add_patch(plg)
+            plt.xlabel("Longitude")
+            plt.xticks(self.lon_ticks)
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+            plt.title(planner.upper() + " " + item.upper())
+
+        ax = fig.add_subplot(gs[row_ind, col_ind])
+        make_subplot('myopic', 'eibv', step=step)
+
+        ax = fig.add_subplot(gs[row_ind + 1, col_ind])
+        make_subplot('myopic', 'ivr', step=step)
+
+        ax = fig.add_subplot(gs[row_ind + 2, col_ind])
+        make_subplot('myopic', 'equal', step=step)
+
+        ax = fig.add_subplot(gs[row_ind, col_ind + 1])
+        make_subplot('rrt', 'eibv', step=step)
+
+        ax = fig.add_subplot(gs[row_ind + 1, col_ind + 1])
+        make_subplot('rrt', 'ivr', step=step)
+
+        ax = fig.add_subplot(gs[row_ind + 2, col_ind + 1])
+        make_subplot('rrt', 'equal', step=step)
+
+    def plot_metrics(self, step, row_ind, col_ind, fig, gs) -> None:
+        """
+        Plot the metrics for each specific case.
+        """
+        def make_subplot_metric(data, metric, planner):
+            ax.errorbar(np.arange(step), y=np.mean(data['eibv'][:, :step], axis=0),
+                        yerr=np.std(data['eibv'][:, :step], axis=0)/np.sqrt(self.num_replicates) * 1.645, fmt="-o", capsize=5,
+                        label="EIBV dominant" + planner)
+            ax.errorbar(np.arange(step), y=np.mean(data['ivr'][:, :step], axis=0),
+                        yerr=np.std(data['ivr'][:, :step], axis=0)/np.sqrt(self.num_replicates) * 1.645, fmt="-o", capsize=5,
+                        label="IVR dominant" + planner)
+            ax.errorbar(np.arange(step), y=np.mean(data['equal'][:, :step], axis=0),
+                        yerr=np.std(data['equal'][:, :step], axis=0)/np.sqrt(self.num_replicates) * 1.645, fmt="-o", capsize=5,
+                        label="Equal weighted" + planner)
+            ax.set_xticks(self.xticks, self.xticklabels)
+            ax.set_xlim([0, self.num_steps])
+            ax.set_xlabel("Time Step")
+            ax.set_ylabel(metric)
+            plt.legend(loc="upper right")
+            if metric == "ibv":
+                ax.set_ylim([self.ibv_min, self.ibv_max])
+            elif metric == "rmse":
+                ax.set_ylim([self.rmse_min, self.rmse_max])
+            elif metric == "vr":
+                ax.set_ylim([self.vr_min, self.vr_max])
+            else:
+                pass
+
+        ax = fig.add_subplot(gs[row_ind, col_ind])
+        make_subplot_metric(self.ibv['myopic'], "IBV", "Myopic")
+
+        ax = fig.add_subplot(gs[row_ind + 1, col_ind])
+        make_subplot_metric(self.rmse['myopic'], "RMSE", "Myopic")
+
+        ax = fig.add_subplot(gs[row_ind + 2, col_ind])
+        make_subplot_metric(self.vr['myopic'], "VR", "Myopic")
+
+        ax = fig.add_subplot(gs[row_ind, col_ind + 1])
+        make_subplot_metric(self.ibv['rrt'], "IBV", "RRT")
+
+        ax = fig.add_subplot(gs[row_ind + 1, col_ind + 1])
+        make_subplot_metric(self.rmse['rrt'], "RMSE", "RRT")
+
+        ax = fig.add_subplot(gs[row_ind + 2, col_ind + 1])
+        make_subplot_metric(self.vr['rrt'], "VR", "RRT")
 
     def plot_ground_truth(self) -> None:
         """
@@ -150,11 +279,10 @@ class EDA:
             plt.ylim([self.lat_min, self.lat_max])
             plt.title("Difference")
 
-            plt.tight_layout()
             plt.savefig(fpath + "P_{:03d}.png".format(i))
             plt.close("all")
 
-    def load_raw_data_from_replicate_files(self) -> 'dict':
+    def load_raw_data_from_replicate_files(self) -> None:
         """
         Load raw data from the replicate files. Needed after running the simulation study.
         """
@@ -205,7 +333,7 @@ class EDA:
                 dataset[file] = data[file]
 
         print("Loading data takes {:.2f} seconds.".format(time() - t0))
-        return dataset
+        self.dataset = dataset
 
     def organize_data_to_dict(self) -> None:
         """
@@ -252,7 +380,7 @@ class EDA:
                     self.sigma[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['sigma']
                     self.truth[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['truth']
 
-        fpath = os.getcwd() + "/../simulation_result/temporal/"
+        fpath = os.getcwd() + "/../simulation_result/Synced/"
         dump(self.trajectory, fpath + "trajectory.joblib")
         dump(self.ibv, fpath + "ibv.joblib")
         dump(self.rmse, fpath + "rmse.joblib")
