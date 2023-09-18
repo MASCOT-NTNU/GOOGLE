@@ -41,6 +41,7 @@ class EDA:
         self.config = Config()
         self.grf = GRF()
         self.grid = self.grf.grid
+        self.threshold = self.grf.get_threshold()
         self.Ngrid = self.grid.shape[0]
         lat, lon = WGS.xy2latlon(self.grid[:, 0], self.grid[:, 1])
         self.grid_wgs = np.array([lat, lon]).T
@@ -85,7 +86,8 @@ class EDA:
         self.load_data()
         # self.plot_metric_with_temporal_traffic()
         # self.plot_temporal_traffic_density_map()
-        self.plot_ground_truth()
+        # self.plot_ground_truth()
+        self.plot_es()
         self.trajectory
 
     def load_data(self) -> None:
@@ -136,6 +138,18 @@ class EDA:
             """ Section Final, save the figure. """
             plt.savefig(figpath + "P_{:03d}.png".format(i))
             plt.close("all")
+
+    def plot_es(self) -> None:
+        """
+        Plot the excusion set.
+        """
+        self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], self.truth['myopic']['eibv'][0, 0, :],
+                          alpha=1., cmap=get_cmap("BrBG", 25), title="Truth", vmin=10, vmax=30, stepsize=1.5,
+                          colorbar=True, cbar_title="Cost", threshold=self.threshold,
+                          polygon_border=self.polygon_border_wgs, polygon_obstacle=self.polygon_obstacle_wgs)
+        plt.show()
+        self.truth
+        pass
 
     def plot_temporal_traffic_density_map(self, step: 'int', row_ind, col_ind, fig, gs) -> None:
         """

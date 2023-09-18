@@ -17,6 +17,7 @@ class TestEDA(TestCase):
 
     def test_all(self) -> None:
         # self.e.load_raw_data_from_replicate_files()
-        self.e.plot_trajectory_temporal()
+        self.e.plot_es()
+        # self.e.plot_trajectory_temporal()
         # self.e.plot_metric_analysis()
         # self.e.plot_cost_components()
