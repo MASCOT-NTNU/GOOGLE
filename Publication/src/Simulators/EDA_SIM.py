@@ -57,6 +57,10 @@ class EDA:
         self.string_myopic = "SimulatorMyopic2D"
         self.string_rrt = "SimulatorRRTStar"
 
+        self.cv = ['eibv', 'ivr', 'equal']
+        self.planners = ['myopic', 'rrt']
+        self.metrics = ['traj', 'ibv', 'rmse', 'vr', 'mu', 'cov', 'sigma', 'truth']
+
         # replicates = os.listdir(folderpath)
         # self.num_replicates = 0
         # for rep in replicates:
@@ -143,6 +147,33 @@ class EDA:
         """
         Plot the excusion set.
         """
+        B = 5
+        def get_excursion_set(mu: np.ndarray) -> np.ndarray:
+            """
+            Return the excursion set.
+            """
+            es = np.zeros_like(mu)
+            es[mu <= self.threshold] = 1
+            return es
+
+        es = get_excursion_set(self.mu['myopic']['eibv'][0, 0, :])
+        es_truth = get_excursion_set(self.truth['myopic']['eibv'][0, 0, :])
+        N_cov = self.cov['myopic']['eibv'].shape[1]
+
+        for planner in self.planners:
+            for item in self.cv:
+                for i in range(N_cov):
+                    for j in range(self.num_replicates):
+                        mu_cond = self.mu[planner][item][j, i * 15, :]
+                        cov_cond = self.cov[planner][item][j, i, :, :]
+                        L_cond = np.linalg.cholesky(cov_cond)
+                        es_truth = get_excursion_set(self.truth[planner][item][j, i * 15, :])
+                        for k in range(B):
+                            mu_sample = mu_cond + L_cond @ np.random.randn(self.Ngrid)
+                            es_sample = get_excursion_set(mu_sample)
+                            es_diff = es_sample - es_truth
+
+
         self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], self.truth['myopic']['eibv'][0, 0, :],
                           alpha=1., cmap=get_cmap("BrBG", 25), title="Truth", vmin=10, vmax=30, stepsize=1.5,
                           colorbar=True, cbar_title="Cost", threshold=self.threshold,
@@ -318,10 +349,6 @@ class EDA:
                     for metric in self.metrics:
                         single_file_dataset[file][item][planner][metric] = data[metric]
             return single_file_dataset
-
-        self.cv = ['eibv', 'ivr', 'equal']
-        self.planners = ['myopic', 'rrt']
-        self.metrics = ['traj', 'ibv', 'rmse', 'vr', 'mu', 'cov', 'sigma', 'truth']
 
         t0 = time()
         files = os.listdir(folderpath)
