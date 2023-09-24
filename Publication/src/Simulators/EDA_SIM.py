@@ -5,6 +5,7 @@ Author: Yaolin Ge
 Email: geyaolin@gmail.com
 Date: 2023-09-05
 """
+import datetime
 
 from WGS import WGS
 from Config import Config
@@ -18,10 +19,13 @@ from matplotlib.gridspec import GridSpec
 from joblib import Parallel, delayed, dump, load
 from concurrent.futures import ThreadPoolExecutor
 import seaborn as sns
+from matplotlib.patches import PathPatch
+from matplotlib.path import Path
 import pandas as pd
 from scipy.stats import gaussian_kde
 from matplotlib.cm import get_cmap
 from sklearn.neighbors import KernelDensity
+from statsmodels.nonparametric.smoothers_lowess import lowess
 from time import time
 from matplotlib import tri
 from shapely.geometry import Polygon, Point
@@ -90,7 +94,9 @@ class EDA:
         self.load_data()
         # self.plot_metrics_total()
         # self.plot_temporal_traffic_density_map()
-        self.plot_ground_truth()
+        # self.plot_temporal_traffic_flow_density_map4paper()
+        self.plot_metrics4paper()
+        # self.plot_ground_truth()
         # self.plot_es()
         self.trajectory
 
@@ -255,6 +261,57 @@ class EDA:
         #         plt.savefig(fpath + "P_{:03d}.png".format(k))
         #         plt.close("all")
 
+    def plot_temporal_traffic_flow_density_map4paper(self) -> None:
+        """
+        Plot the traffic flow density map for each specific case. For the paper. No need to save all the figures.
+        """
+        num_steps = [29, 59, 89, 119]
+        time_start = datetime.datetime(2022, 5, 11, 9, 52)
+        fpath = figpath + "TrafficFlow/"
+        checkfolder(fpath)
+
+        def make_subplot(planner, item):
+            fig = plt.figure(figsize=(48, 10))
+            gs = GridSpec(nrows=1, ncols=4, figure=fig)
+            for i in range(len(num_steps)):
+                num_step = num_steps[i]
+                traj = self.trajectory[planner][item][:, :num_step, :]
+                lat, lon = WGS.xy2latlon(traj[:, :, 0], traj[:, :, 1])
+                df = pd.DataFrame(np.stack((lat.flatten(), lon.flatten()), axis=1), columns=['lat', 'lon'])
+                ax = fig.add_subplot(gs[i])
+                sns.kdeplot(df, x='lon', y='lat', fill=True, cmap="Reds", levels=25, thresh=.1)
+                plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'k-.')
+                plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='k', fill=True,
+                                  linestyle='-.')
+                plt.gca().add_patch(plg)
+
+                # Plot border and create a mask
+                border_path = Path(self.polygon_border_wgs[:, ::-1])
+                border_patch = PathPatch(border_path, facecolor='none', edgecolor='none')
+                ax.add_patch(border_patch)
+
+                # Mask KDE using border path
+                for collection in ax.collections:
+                    collection.set_clip_path(border_patch)
+
+                if i == 0:
+                    plt.ylabel("Latitude")
+                else:
+                    plt.ylabel("")
+                plt.xlabel("Longitude")
+                date_string = time_start + datetime.timedelta(hours=(num_step + 1)/30 * 2)
+                plt.title(f"Density map at " + date_string.strftime("%H:%M"))
+                plt.xticks(self.lon_ticks)
+                plt.xlim([self.lon_min, self.lon_max])
+                plt.ylim([self.lat_min, self.lat_max])
+
+            plt.savefig(fpath + "TF_{:s}_{:s}.png".format(planner, item))
+            plt.close("all")
+
+        for planner in self.planners:
+            for item in self.cv:
+                make_subplot(planner, item)
+
     def plot_temporal_traffic_density_map(self, step: 'int', row_ind, col_ind, fig, gs) -> None:
         """
         Plot the traffic density map for each specific case.
@@ -295,6 +352,166 @@ class EDA:
 
         ax = fig.add_subplot(gs[row_ind + 2, col_ind + 1])
         make_subplot('rrt', 'equal', step=step)
+
+    def plot_metrics4paper(self) -> None:
+        """
+        Plot the metrics for each specific case. For the paper. No need to save all the figures.
+        """
+        fpath = figpath + "Metrics/"
+        checkfolder(fpath)
+        def make_subplot_metric(data, metric, title, ax):
+            # Define a mapping for the legend labels
+            legend_map = {
+                'eibv': 'EIBV dominant',
+                'ivr': 'IVR dominant',
+                'equal': 'Equal weighted'
+            }
+
+            # Preparing data for Seaborn
+            df_list = []
+            for key in ['eibv', 'ivr', 'equal']:
+                temp_df = pd.DataFrame({
+                    'Time Step': np.tile(np.arange(self.num_steps), self.num_replicates),
+                    metric: data[key].flatten(),
+                    'Type': [legend_map[key]] * self.num_steps * self.num_replicates  # Use the mapping here
+                })
+                df_list.append(temp_df)
+
+            df = pd.concat(df_list, axis=0)
+
+            # Using Seaborn's lineplot with uncertainty envelopes
+            sns.lineplot(data=df, x='Time Step', y=metric, hue='Type', ax=ax, ci="sd", err_style="band")
+
+            # ax.errorbar(np.arange(self.num_steps), y=np.mean(data['eibv'], axis=0),
+            #             yerr=np.std(data['eibv'], axis=0) / np.sqrt(self.num_replicates) * 1.645, fmt="-o",
+            #             capsize=5, label="EIBV dominant")
+            # ax.errorbar(np.arange(self.num_steps), y=np.mean(data['ivr'], axis=0),
+            #             yerr=np.std(data['ivr'], axis=0) / np.sqrt(self.num_replicates) * 1.645, fmt="-o",
+            #             capsize=5, label="IVR dominant")
+            # ax.errorbar(np.arange(self.num_steps), y=np.mean(data['equal'], axis=0),
+            #             yerr=np.std(data['equal'], axis=0) / np.sqrt(self.num_replicates) * 1.645, fmt="-o",
+            #             capsize=5, label="Equal weighted")
+            ax.set_xticks(self.xticks, self.xticklabels)
+            ax.set_xlim([0, self.num_steps])
+            ax.set_xlabel("Time Step")
+            ax.set_ylabel(metric)
+            ax.set_title(title)
+            plt.legend(loc="upper left")
+            if metric == "ibv":
+                ax.set_ylim([self.ibv_min, self.ibv_max])
+            elif metric == "rmse":
+                ax.set_ylim([self.rmse_min, self.rmse_max])
+            elif metric == "vr":
+                ax.set_ylim([self.vr_min, self.vr_max])
+            else:
+                pass
+        def make_subplot(metric):
+            if metric == "ibv":
+                data = self.ibv
+            elif metric == "rmse":
+                data = self.rmse
+            elif metric == "vr":
+                data = self.vr
+            else:
+                pass
+            fig = plt.figure(figsize=(24, 10))
+            gs = GridSpec(nrows=1, ncols=2, figure=fig)
+
+            ax1 = fig.add_subplot(gs[0])
+            make_subplot_metric(data['myopic'], metric.upper(), "Myopic", ax1)
+
+            ax2 = fig.add_subplot(gs[1])
+            make_subplot_metric(data['rrt'], metric.upper(), "RRT*", ax2)
+
+            # Determine the global y-limits
+            ylim_min = min(ax1.get_ylim()[0], ax2.get_ylim()[0])
+            ylim_max = max(ax1.get_ylim()[1], ax2.get_ylim()[1])
+
+            # Set y-limits for both subplots
+            ax1.set_ylim([ylim_min, ylim_max])
+            ax2.set_ylim([ylim_min, ylim_max])
+
+            plt.savefig(fpath + f"{metric}.png")
+            plt.close("all")
+
+
+
+        # def make_subplot_metric(data, metric, ax):
+        #     # Define line styles for different methods
+        #     linestyle_map = {
+        #         'myopic': '-',
+        #         'rrt': '--'
+        #     }
+        #
+        #     # Define colors for different keys
+        #     color_map = {
+        #         'EIBV dominant': 'blue',
+        #         'IVR dominant': 'red',
+        #         'Equal weighted': 'green'
+        #     }
+        #
+        #     # Define a mapping for the legend labels
+        #     legend_map = {
+        #         'eibv': 'EIBV dominant',
+        #         'ivr': 'IVR dominant',
+        #         'equal': 'Equal weighted'
+        #     }
+        #
+        #     # Preparing data for Seaborn
+        #     # Preparing data for Seaborn
+        #     df_list = []
+        #     for method in ['myopic', 'rrt']:
+        #         for key in ['eibv', 'ivr', 'equal']:
+        #             temp_df = pd.DataFrame({
+        #                 'Time Step': np.tile(np.arange(self.num_steps), self.num_replicates),
+        #                 metric: data[method][key].flatten(),
+        #                 'Type': [legend_map[key]] * self.num_steps * self.num_replicates,
+        #                 'LineStyle': [linestyle_map[method]] * self.num_steps * self.num_replicates
+        #                 # Additional column for linestyle
+        #             })
+        #             df_list.append(temp_df)
+        #
+        #     df = pd.concat(df_list, axis=0)
+        #
+        #     # Using Seaborn's lineplot with uncertainty envelopes
+        #     sns.lineplot(data=df, x='Time Step', y=metric, hue='Type', style="LineStyle", palette=color_map, ax=ax,
+        #                  ci="sd", err_style="band")
+        #
+        #     ax.set_xticks(self.xticks, self.xticklabels)
+        #     ax.set_xlim([0, self.num_steps])
+        #     ax.set_xlabel("Time Step")
+        #     ax.set_ylabel(metric)
+        #     ax.set_title(metric.upper())
+        #     plt.legend(loc="upper left")
+        #     if metric == "ibv":
+        #         ax.set_ylim([self.ibv_min, self.ibv_max])
+        #     elif metric == "rmse":
+        #         ax.set_ylim([self.rmse_min, self.rmse_max])
+        #     elif metric == "vr":
+        #         ax.set_ylim([self.vr_min, self.vr_max])
+        #     else:
+        #         pass
+        #
+        # def make_subplot(metric):
+        #     if metric == "ibv":
+        #         data = self.ibv
+        #     elif metric == "rmse":
+        #         data = self.rmse
+        #     elif metric == "vr":
+        #         data = self.vr
+        #     else:
+        #         pass
+        #     fig, ax = plt.subplots(figsize=(12, 8))
+        #     make_subplot_metric(data, metric, ax)
+        #     plt.savefig(fpath + f"{metric}.png")
+        #     plt.close("all")
+        #
+        make_subplot("ibv")
+        make_subplot("rmse")
+        make_subplot("vr")
+
+        self.ibv_min
+
 
     def plot_metrics(self, step, row_ind, col_ind, fig, gs) -> None:
         """

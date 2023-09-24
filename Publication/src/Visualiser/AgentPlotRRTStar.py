@@ -246,7 +246,7 @@ class AgentPlotRRTStar:
                 lat, lon = WGS.xy2latlon(np.array([loc[0], loc_p[0]]),
                                          np.array([loc[1], loc_p[1]]))
                 ax.plot([lon[0], lon[1]],
-                        [lat[0], lat[1]], "-b", alpha=.3)
+                        [lat[0], lat[1]], "-g", alpha=.5)
         ax.plot(rrt_traj[:, 1], rrt_traj[:, 0], 'k-', linewidth=2)
 
         plt.savefig(self.figpath + "P_{:03d}.png".format(self.cnt))
