@@ -28,11 +28,11 @@ from shapely.geometry import Polygon, Point
 
 
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams["font.size"] = 20
+plt.rcParams["font.size"] = 30
 
 folderpath = "./npy/temporal/Synced/"
 figpath = os.getcwd() + ("/../../../../OneDrive - NTNU/MASCOT_PhD/"
-                         "Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/temporal/Total/")
+                         "Projects/GOOGLE/Docs/fig/Sim_2DNidelva/Simulator/temporal/")
 
 
 class EDA:
@@ -88,10 +88,10 @@ class EDA:
         """ End of Data loading!!! """
 
         self.load_data()
-        # self.plot_metric_with_temporal_traffic()
+        # self.plot_metrics_total()
         # self.plot_temporal_traffic_density_map()
-        # self.plot_ground_truth()
-        self.plot_es()
+        self.plot_ground_truth()
+        # self.plot_es()
         self.trajectory
 
     def load_data(self) -> None:
@@ -102,9 +102,13 @@ class EDA:
         self.rmse = load(fpath + "rmse.joblib")
         self.vr = load(fpath + "vr.joblib")
         self.mu = load(fpath + "mu.joblib")
-        self.cov = load(fpath + "cov.joblib")
+        # self.cov = load(fpath + "cov.joblib")
         self.sigma = load(fpath + "sigma.joblib")
         self.truth = load(fpath + "truth.joblib")
+
+        """ Load the excursion set area difference. """
+        self.es_diff = load(fpath + "es_diff.joblib")
+
         print("Loading data takes {:.2f} seconds.".format(time() - t0))
 
         self.ibv_max = np.max(self.ibv['myopic']['equal'])
@@ -123,7 +127,7 @@ class EDA:
         self.xticks = np.arange(0, self.num_steps, 20)
         self.xticklabels = ['{:d}'.format(i) for i in self.xticks]
 
-    def plot_metric_with_temporal_traffic(self) -> None:
+    def plot_metrics_total(self) -> None:
         """
         Plot the metric with the temporal traffic density.
         """
@@ -132,6 +136,7 @@ class EDA:
             gs = GridSpec(nrows=3, ncols=6, figure=fig)
 
             """ Section I, make the other plot. """
+            self.plot_es(i, 0, 0, fig, gs)
 
             """ Section II, make traffic density plot. """
             self.plot_temporal_traffic_density_map(i, 0, 2, fig, gs)
@@ -143,44 +148,112 @@ class EDA:
             plt.savefig(figpath + "P_{:03d}.png".format(i))
             plt.close("all")
 
-    def plot_es(self) -> None:
+    def plot_es(self, step, row_ind, col_ind, fig, gs) -> None:
         """
-        Plot the excusion set.
+        Plot the excusion set associated metrics.
+
+        1. Area difference ratio
+        2. Over set
+        3. Under set
         """
-        B = 5
-        def get_excursion_set(mu: np.ndarray) -> np.ndarray:
-            """
-            Return the excursion set.
-            """
-            es = np.zeros_like(mu)
-            es[mu <= self.threshold] = 1
-            return es
-
-        es = get_excursion_set(self.mu['myopic']['eibv'][0, 0, :])
-        es_truth = get_excursion_set(self.truth['myopic']['eibv'][0, 0, :])
-        N_cov = self.cov['myopic']['eibv'].shape[1]
-
-        for planner in self.planners:
+        # m1, calculate the area metric
+        def make_subplot_area(planner, step, ax):
             for item in self.cv:
-                for i in range(N_cov):
-                    for j in range(self.num_replicates):
-                        mu_cond = self.mu[planner][item][j, i * 15, :]
-                        cov_cond = self.cov[planner][item][j, i, :, :]
-                        L_cond = np.linalg.cholesky(cov_cond)
-                        es_truth = get_excursion_set(self.truth[planner][item][j, i * 15, :])
-                        for k in range(B):
-                            mu_sample = mu_cond + L_cond @ np.random.randn(self.Ngrid)
-                            es_sample = get_excursion_set(mu_sample)
-                            es_diff = es_sample - es_truth
+                es_temp = np.abs(self.es_diff[planner][item][:step, :, :, :])
+                ax.errorbar(np.arange(step), y=np.mean(np.mean(np.mean(es_temp, axis=1), axis=1), axis=1),
+                            yerr=np.std(np.mean(np.mean(es_temp, axis=1), axis=2)) / np.sqrt(self.num_replicates) * 1.645,
+                            fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
+            ax.set_xticks(np.arange(8))
+            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
+            ax.set_xlim([0, 7])
+            ax.set_xlabel("Time Step")
+            ax.set_ylabel("Area Difference Ratio")
+            ax.set_ylim([.1, .3])
+            plt.legend(loc="upper right")
 
+        # m2, calculate the over set and under set
+        def make_subplot_overset_underset(planner, step, is_over, ax):
+            for item in self.cv:
+                es_temp = self.es_diff[planner][item][:step, :, :, :]
+                if is_over:
+                    oset = np.sum(es_temp == 1, axis=-1)
+                else:
+                    oset = np.sum(es_temp == -1, axis=-1)
+                ax.errorbar(np.arange(step), y=np.mean(np.mean(oset, axis=1), axis=1),
+                            yerr=np.std(np.mean(oset, axis=2), axis=1) / np.sqrt(self.num_replicates) * 1.645,
+                            fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
+            ax.set_xticks(np.arange(8))
+            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
+            ax.set_xlim([0, 7])
+            ax.set_xlabel("Time Step")
+            if is_over:
+                ax.set_ylabel("Over set")
+                ax.set_ylim([40, 100])
+            else:
+                ax.set_ylabel("Under set")
+                ax.set_ylim([80, 160])
+            plt.legend(loc="upper right")
 
-        self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], self.truth['myopic']['eibv'][0, 0, :],
-                          alpha=1., cmap=get_cmap("BrBG", 25), title="Truth", vmin=10, vmax=30, stepsize=1.5,
-                          colorbar=True, cbar_title="Cost", threshold=self.threshold,
-                          polygon_border=self.polygon_border_wgs, polygon_obstacle=self.polygon_obstacle_wgs)
-        plt.show()
-        self.truth
-        pass
+        step_ind = step // 15
+        ax = fig.add_subplot(gs[row_ind, col_ind])
+        make_subplot_area('myopic', step_ind, ax)
+        ax = fig.add_subplot(gs[row_ind, col_ind+1])
+        make_subplot_area('rrt', step_ind, ax)
+        ax = fig.add_subplot(gs[row_ind+1, col_ind])
+        make_subplot_overset_underset('myopic', step_ind, True, ax)
+        ax = fig.add_subplot(gs[row_ind+2, col_ind])
+        make_subplot_overset_underset('myopic', step_ind, False, ax)
+        ax = fig.add_subplot(gs[row_ind+1, col_ind+1])
+        make_subplot_overset_underset('rrt', step_ind, True, ax)
+        ax = fig.add_subplot(gs[row_ind+2, col_ind+1])
+        make_subplot_overset_underset('rrt', step_ind, False, ax)
+
+        # fpath = figpath + "/../ES/"
+        # checkfolder(fpath)
+        # def make_subplot_es(planner, item, ind_row, ind_col, step, replicate_id):
+        #     # s0, plot mean
+        #     es_mean = np.mean(self.es_diff[planner][item][step, replicate_id, :, :], axis=0)
+        #     es_mean[es_mean >= .5] = 1
+        #     es_mean[es_mean <= -.5] = -1
+        #     es_mean[np.abs(es_mean) < .5] = 0
+        #     ax = fig.add_subplot(gs[ind_row, ind_col])
+        #     plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=es_mean,
+        #                 cmap=get_cmap("RdBu", 3), vmin=-1, vmax=1)
+        #     plt.colorbar()
+        #     plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+        #     plt.plot(self.polygon_obstacle_wgs[:, 1], self.polygon_obstacle_wgs[:, 0], 'r-.')
+        #     plt.xlabel("Longitude")
+        #     plt.xticks(self.lon_ticks)
+        #     plt.xlim([self.lon_min, self.lon_max])
+        #     plt.ylim([self.lat_min, self.lat_max])
+        #     plt.title(planner.upper() + " " + item.upper())
+        #
+        #     # s1, plot std
+        #     es_std = np.std(self.es_diff[planner][item][step, replicate_id, :, :], axis=0)
+        #     ax = fig.add_subplot(gs[ind_row + 1, ind_col])
+        #     plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=es_std,
+        #                 cmap=get_cmap("Blues", 3), vmin=0, vmax=1)
+        #     plt.colorbar()
+        #     plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
+        #     plt.plot(self.polygon_obstacle_wgs[:, 1], self.polygon_obstacle_wgs[:, 0], 'r-.')
+        #     plt.xlabel("Longitude")
+        #     plt.xticks(self.lon_ticks)
+        #     plt.xlim([self.lon_min, self.lon_max])
+        #     plt.ylim([self.lat_min, self.lat_max])
+        #     plt.title(planner.upper() + " " + item.upper())
+        #
+        # for zz in tqdm(range(self.num_replicates)):
+        #     fpath = figpath + "/../ES/R_{:03d}/".format(zz)
+        #     checkfolder(fpath)
+        #     for k in range(8):
+        #         fig = plt.figure(figsize=(25, 32))
+        #         gs = GridSpec(nrows=4, ncols=3, figure=fig)
+        #
+        #         for i in range(len(self.planners)):
+        #             for j in range(len(self.cv)):
+        #                 make_subplot_es(self.planners[i], self.cv[j], i * 2, j, k, zz)
+        #         plt.savefig(fpath + "P_{:03d}.png".format(k))
+        #         plt.close("all")
 
     def plot_temporal_traffic_density_map(self, step: 'int', row_ind, col_ind, fig, gs) -> None:
         """
@@ -274,58 +347,35 @@ class EDA:
         Plot the ground truth for one replicate to check.
         """
         num_replicate = 0
-        fpath = figpath + "/R_{:03d}/".format(num_replicate)
+        fpath = figpath + "Truth/"
         checkfolder(fpath)
-        for i in range(1, self.num_steps):
-            plt.figure(figsize=(20, 5))
-            gs = GridSpec(nrows=1, ncols=3)
-            ax = plt.subplot(gs[0, 0])
-            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=self.truth["myopic"]["eibv"][num_replicate, i, :],
-                        cmap=get_cmap("BrBG", 10), vmin=10, vmax=30, alpha=.5)
-            plt.colorbar()
-            traj = self.trajectory["myopic"]["eibv"][num_replicate, :i, :]
-            lat, lon = WGS.xy2latlon(traj[:, 0], traj[:, 1])
-            plt.plot(lon, lat, 'k.-')
-            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
-            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
-                                linestyle='-.')
-            plt.gca().add_patch(plg)
-            plt.xlabel("Longitude")
-            plt.xticks(self.lon_ticks)
-            plt.xlim([self.lon_min, self.lon_max])
-            plt.ylim([self.lat_min, self.lat_max])
-            plt.title("Myopic EIBV")
+        tid_start = 10
 
-            ax = plt.subplot(gs[0, 1])
-            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=self.truth["rrt"]["eibv"][num_replicate, i, :],
-                        cmap=get_cmap("BrBG", 10), vmin=10, vmax=30, alpha=.5)
-            plt.colorbar()
-            traj = self.trajectory["rrt"]["eibv"][num_replicate, :i, :]
-            lat, lon = WGS.xy2latlon(traj[:, 0], traj[:, 1])
-            plt.plot(lon, lat, 'k.-')
-            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
-            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='r', fill=True,
-                                linestyle='-.')
-            plt.gca().add_patch(plg)
-            plt.xlabel("Longitude")
-            plt.xticks(self.lon_ticks)
-            plt.xlim([self.lon_min, self.lon_max])
-            plt.ylim([self.lat_min, self.lat_max])
-            plt.title("RRT EIBV")
+        ind = np.random.randint(0, self.num_replicates, 1)
+        fig = plt.figure(figsize=(48, 10))
+        gs = GridSpec(nrows=1, ncols=4, figure=fig)
+        for i in range(29, self.num_steps, 30):
+            truth_temp = np.mean(self.truth['myopic']['eibv'][ind, i, :], axis=0)
+            ax = fig.add_subplot(gs[i // 30])
+            print(i)
+            if i == 119:
+                cbar = False
+            else:
+                cbar = False
+            self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], truth_temp, alpha=1., cmap=get_cmap("BrBG", 10),
+                              title="Truth", vmin=10, vmax=33, stepsize=1.5, threshold=self.threshold,
+                              colorbar=cbar, cbar_title="Salinity (PSU)", polygon_border=self.polygon_border_wgs,
+                              polygon_obstacle=self.polygon_obstacle_wgs)
+            ax.set_xlabel("Longitude")
+            if i == 29:
+                ax.set_ylabel("Latitude")
+            ax.set_title(f"Ground truth field at {int(tid_start + i / 30 * 2)}:00 ")
+            # cbar = plt.colorbar(, ax=ax, label='Colorbar Title', pad=-0.15, orientation='vertical')
 
-            ax = plt.subplot(gs[0, 2])
-            plt.scatter(self.grid_wgs[:, 1], self.grid_wgs[:, 0], c=self.truth["myopic"]["eibv"][num_replicate, i, :] -
-                        self.truth["rrt"]["eibv"][num_replicate, i, :], cmap=get_cmap("RdBu", 10), vmin=-1, vmax=1)
-            plt.colorbar()
-            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'r-.')
-            plt.xlabel("Longitude")
-            plt.xticks(self.lon_ticks)
-            plt.xlim([self.lon_min, self.lon_max])
-            plt.ylim([self.lat_min, self.lat_max])
-            plt.title("Difference")
-
-            plt.savefig(fpath + "P_{:03d}.png".format(i))
-            plt.close("all")
+        # plt.savefig(fpath + "groundtruth2.png")
+        # plt.close("all")
+        plt.show()
+        truth_temp
 
     def load_raw_data_from_replicate_files(self) -> None:
         """
@@ -421,6 +471,39 @@ class EDA:
                     self.sigma[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['sigma']
                     self.truth[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['truth']
 
+        """ Calculate the excursion set. """
+        B = 100
+        N_cov = self.cov['myopic']['eibv'].shape[1]
+        self.es_diff = {}
+        def get_excursion_set(mu: np.ndarray) -> np.ndarray:
+            """
+            Return the excursion set.
+            """
+            es = np.zeros_like(mu)
+            es[mu <= self.threshold] = 1
+            return es
+
+        t0 = time()
+        for planner in self.planners:
+            self.es_diff[planner] = {}
+            for item in self.cv:
+                self.es_diff[planner][item] = []
+                for i in range(N_cov):
+                    self.es_diff[planner][item].append([])
+                    for j in range(self.num_replicates):
+                        self.es_diff[planner][item][i].append([])
+                        mu_cond = self.mu[planner][item][j, i * 15, :]
+                        cov_cond = self.cov[planner][item][j, i, :, :]
+                        L_cond = np.linalg.cholesky(cov_cond)
+                        es_truth = get_excursion_set(self.truth[planner][item][j, i * 15, :])
+                        for k in range(B):
+                            mu_sample = mu_cond + L_cond @ np.random.randn(self.Ngrid)
+                            es_sample = get_excursion_set(mu_sample)
+                            es_diff_temp = es_sample - es_truth
+                            self.es_diff[planner][item][i][j].append(es_diff_temp)
+                self.es_diff[planner][item] = np.array(self.es_diff[planner][item])
+        print("Generating excursion set takes {:.2f} seconds.".format(time() - t0))
+
         fpath = os.getcwd() + "/../simulation_result/Synced/"
         dump(self.trajectory, fpath + "trajectory.joblib")
         dump(self.ibv, fpath + "ibv.joblib")
@@ -430,6 +513,10 @@ class EDA:
         dump(self.cov, fpath + "cov.joblib")
         dump(self.sigma, fpath + "sigma.joblib")
         dump(self.truth, fpath + "truth.joblib")
+
+        """ Save the excursion set area difference. """
+        dump(self.es_diff, fpath + "es_diff.joblib")
+
         t1 = time()
         print("Reorganizing data takes {:.2f} seconds.".format(t1 - t0))
 
@@ -786,7 +873,6 @@ class EDA:
         # self.plotf_vector(self.grid_wgs[:, 0], self.grid_wgs[:, 1], eibv, alpha=1., cmap=get_cmap("RdBu", 25),
         #                   title="EIBV", vmin=0, vmax=1.1, stepsize=.1, colorbar=True, cbar_title="Cost",
         #                   polygon_border=self.polygon_border_wgs, polygon_obstacle=self.polygon_obstacle_wgs)
-        #
 
         fig = plt.figure(figsize=(20, 8))
         gs = GridSpec(nrows=1, ncols=2)
@@ -916,8 +1002,9 @@ class EDA:
             # cax = fig.add_axes([0.85, .1, 0.03, 0.25])  # left, bottom, width, height, in percentage for left and bottom
             # cbar = fig.colorbar(contourplot, cax=cax, ticks=ticks)
 
-            cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks)
-            cbar.ax.set_title(cbar_title)
+            cbar = plt.colorbar(contourplot, ax=ax, ticks=ticks, orientation='vertical')
+            # cbar.ax.set_title(cbar_title, rotation=270)
+            cbar.ax.set_ylabel(cbar_title, rotation=270, labelpad=40)
         ax.set_title(title)
 
         if polygon_border is not None:

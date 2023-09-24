@@ -82,7 +82,8 @@ class Agent:
             self.mu_truth_data[i, :] = mu_truth.flatten()
 
             if self.debug:
-                self.ap.plot_agent()
+                # self.ap.plot_agent()
+                self.ap.plot_agent4paper()
 
             # p1: parallel move AUV to the first location
             wp_next = self.myopic.get_next_waypoint()

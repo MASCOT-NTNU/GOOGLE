@@ -19,8 +19,7 @@ class TestAgent(TestCase):
         # self.agent3 = Agent(weight_eibv=1., weight_ivr=1., random_seed=seed, debug=debug, name="Equal")
 
     def test_run(self) -> None:
-        num_steps = 10
-        self.agent1.run(num_steps)
+        self.agent1.run()
         # self.agent2.run(num_steps)
         # self.agent3.run(num_steps)
 

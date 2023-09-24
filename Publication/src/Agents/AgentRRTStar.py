@@ -87,7 +87,8 @@ class Agent:
             self.mu_truth_data[i, :] = mu_truth.flatten()
 
             if self.debug:
-                self.ap.plot_agent()
+                # self.ap.plot_agent()
+                self.ap.plot_agent4paper()
 
             # s0, get the current waypoint
             wp_now = self.planner.get_current_waypoint()
