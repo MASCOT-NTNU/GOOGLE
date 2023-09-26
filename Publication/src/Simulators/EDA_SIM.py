@@ -95,7 +95,8 @@ class EDA:
         # self.plot_metrics_total()
         # self.plot_temporal_traffic_density_map()
         # self.plot_temporal_traffic_flow_density_map4paper()
-        self.plot_metrics4paper()
+        # self.plot_metrics4paper()
+        self.plot_es4paper()
         # self.plot_ground_truth()
         # self.plot_es()
         self.trajectory
@@ -153,6 +154,96 @@ class EDA:
             """ Section Final, save the figure. """
             plt.savefig(figpath + "P_{:03d}.png".format(i))
             plt.close("all")
+
+    def plot_es4paper(self) -> None:
+        """
+        Plot the excusion set associated metrics.
+
+        1. Area difference ratio
+        2. Over set
+        3. Under set
+
+        Since it is used to plot the over set only, so only over set is selected!
+        """
+        def make_subplot_area(ax):
+            for planner in self.planners:
+                for item in self.cv:
+                # for item in ['equal']:
+                    es_temp = np.abs(self.es_diff[planner][item])
+                    ax.errorbar(np.arange(8), y=np.mean(np.mean(np.mean(es_temp, axis=1), axis=1), axis=1),
+                                yerr=np.std(np.mean(np.mean(es_temp, axis=1), axis=2)) / np.sqrt(self.num_replicates) * 1.645,
+                                fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
+            ax.set_xticks(np.arange(8))
+            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
+            ax.set_xlim([0, 7])
+            ax.set_xlabel("Time Step")
+            ax.set_ylabel("Area Difference Ratio")
+            ax.set_ylim([.1, .3])
+            plt.legend(loc="upper right")
+
+        def make_time_adjusted_subplot_area(ax):
+            for planner in self.planners:
+                for item in self.cv:
+                    # esd = -np.diff(np.abs(self.es_diff[planner][item]), axis=0)
+                    # for i in range(1, 6):
+                    #     esd[i+1, :, :, :] += esd[i, :, :, :]
+                    #     esd[i, :, :, :] = esd[i, :, :, :] / (i / 6)
+                    es_temp = np.abs(self.es_diff[planner][item])
+                    ax.errorbar(np.arange(8), y=np.mean(np.mean(np.mean(es_temp, axis=1), axis=1), axis=1),
+                                yerr=np.std(np.mean(np.mean(es_temp, axis=1), axis=2)) / np.sqrt(self.num_replicates) * 1.645,
+                                fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
+            ax.set_xticks(np.arange(8))
+            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
+            ax.set_xlim([0, 7])
+            ax.set_xlabel("Time Step")
+            ax.set_ylabel("Area Difference Ratio Over Time")
+            plt.legend(loc="upper right")
+
+        def make_subplot_overset_underset(is_over):
+            ax = plt.gca()
+            for planner in self.planners:
+                for item in self.cv:
+                    es_temp = self.es_diff[planner][item]
+                    if is_over:
+                        oset = np.sum(es_temp == 1, axis=-1)
+                    else:
+                        oset = np.sum(es_temp == -1, axis=-1)
+                    ax.errorbar(np.arange(8), y=np.mean(np.mean(oset, axis=2), axis=1),
+                                yerr=np.std(np.mean(oset, axis=2), axis=1) / np.sqrt(self.num_replicates) * 1.645,
+                                fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
+            ax.set_xticks(np.arange(8))
+            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
+            ax.set_xlim([0, 7])
+            ax.set_xlabel("Time Step")
+            if is_over:
+                ax.set_ylabel("Over set")
+                ax.set_ylim([35, 100])
+            else:
+                ax.set_ylabel("Under set")
+                ax.set_ylim([80, 160])
+            plt.legend(loc="upper right")
+
+        fig = plt.figure(figsize=(24, 20))
+        gs = GridSpec(nrows=1, ncols=2, figure=fig)
+        ax = fig.add_subplot(gs[0])
+        make_subplot_area(ax)
+
+        ax = fig.add_subplot(gs[1])
+        make_time_adjusted_subplot_area(ax)
+        # make_time_adjusted_subplot_area(ax)
+
+        plt.show()
+
+        self.es_diff
+
+        # ax = fig.add_subplot(gs[0, 0])
+        # make_subplot_overset_underset(True)
+        #
+        # ax = fig.add_subplot(gs[0, 1])
+        # make_subplot_overset_underset(False)
+
+        plt.show()
+        ax
 
     def plot_es(self, step, row_ind, col_ind, fig, gs) -> None:
         """
