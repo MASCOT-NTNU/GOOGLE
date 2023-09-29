@@ -234,7 +234,7 @@ class AgentPlotRRTStar:
         """ plot cost valley and trees. """
         ax = fig.add_subplot(gs[2])
         self.plotf_vector_wgs(self.lat_grid, self.lon_grid, cost_valley, title="Updated cost valley at " + str_timestamp,
-                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=2.1, stepsize=.2, cbar_title="Cost")
+                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=1.1, stepsize=.1, cbar_title="Cost")
         plot_waypoints()
 
         ax.set_xlim([self.xlim_wgs[0], self.xlim_wgs[1]])
@@ -249,7 +249,7 @@ class AgentPlotRRTStar:
                         [lat[0], lat[1]], "-g", alpha=.5)
         ax.plot(rrt_traj[:, 1], rrt_traj[:, 0], 'k-', linewidth=2)
 
-        plt.savefig(self.figpath + "P_{:03d}.png".format(self.cnt))
+        plt.savefig(self.figpath + "RRT_{:03d}.png".format(self.cnt))
         # plt.show()
         plt.close("all")
 

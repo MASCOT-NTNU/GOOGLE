@@ -165,38 +165,29 @@ class EDA:
 
         Since it is used to plot the over set only, so only over set is selected!
         """
-        def make_subplot_area(ax):
+        fpath = figpath + "../../../Paper/"
+        def make_subplot_area(item):
             for planner in self.planners:
-                for item in self.cv:
-                # for item in ['equal']:
-                    es_temp = np.abs(self.es_diff[planner][item])
-                    ax.errorbar(np.arange(8), y=np.mean(np.mean(np.mean(es_temp, axis=1), axis=1), axis=1),
-                                yerr=np.std(np.mean(np.mean(es_temp, axis=1), axis=2)) / np.sqrt(self.num_replicates) * 1.645,
-                                fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
-            ax.set_xticks(np.arange(8))
-            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
-            ax.set_xlim([0, 7])
-            ax.set_xlabel("Time Step")
-            ax.set_ylabel("Area Difference Ratio")
+                es_temp = np.abs(self.es_diff[planner][item])
+                if planner == 'myopic':
+                    label = "Myopic"
+                else:
+                    label = "Long-horizon RRT*"
+                ax.errorbar(np.arange(1, 9), y=np.mean(np.mean(np.mean(es_temp, axis=1), axis=1), axis=1),
+                            yerr=np.std(np.mean(np.mean(es_temp, axis=-1), axis=2), axis=1) / np.sqrt(self.num_replicates) * 1.645,
+                            fmt="-o", capsize=5, label=label)
+            ax.set_xticks(np.arange(1, 9))
+            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(1, 9)])
+            ax.set_xlim([1, 8])
+            ax.set_xlabel("Hours")
             ax.set_ylim([.1, .3])
-            plt.legend(loc="upper right")
-
-        def make_time_adjusted_subplot_area(ax):
-            for planner in self.planners:
-                for item in self.cv:
-                    # esd = -np.diff(np.abs(self.es_diff[planner][item]), axis=0)
-                    # for i in range(1, 6):
-                    #     esd[i+1, :, :, :] += esd[i, :, :, :]
-                    #     esd[i, :, :, :] = esd[i, :, :, :] / (i / 6)
-                    es_temp = np.abs(self.es_diff[planner][item])
-                    ax.errorbar(np.arange(8), y=np.mean(np.mean(np.mean(es_temp, axis=1), axis=1), axis=1),
-                                yerr=np.std(np.mean(np.mean(es_temp, axis=1), axis=2)) / np.sqrt(self.num_replicates) * 1.645,
-                                fmt="-o", capsize=5, label=planner.upper() + " " + item.upper())
-            ax.set_xticks(np.arange(8))
-            ax.set_xticklabels(['{:d}'.format(i) for i in np.arange(8)])
-            ax.set_xlim([0, 7])
-            ax.set_xlabel("Time Step")
-            ax.set_ylabel("Area Difference Ratio Over Time")
+            if item == 'eibv':
+                ax.set_title("EIBV Dominant")
+                ax.set_ylabel("Classification Error")
+            elif item == 'ivr':
+                ax.set_title("IVR Dominant")
+            elif item == 'equal':
+                ax.set_title("Equal Weight")
             plt.legend(loc="upper right")
 
         def make_subplot_overset_underset(is_over):
@@ -223,18 +214,20 @@ class EDA:
                 ax.set_ylim([80, 160])
             plt.legend(loc="upper right")
 
-        fig = plt.figure(figsize=(24, 20))
-        gs = GridSpec(nrows=1, ncols=2, figure=fig)
+        fig = plt.figure(figsize=(36, 10))
+        gs = GridSpec(nrows=1, ncols=3, figure=fig)
         ax = fig.add_subplot(gs[0])
-        make_subplot_area(ax)
+        make_subplot_area('eibv')
 
         ax = fig.add_subplot(gs[1])
-        make_time_adjusted_subplot_area(ax)
+        make_subplot_area('ivr')
+
+        ax = fig.add_subplot(gs[2])
+        make_subplot_area('equal')
+
         # make_time_adjusted_subplot_area(ax)
-
-        plt.show()
-
-        self.es_diff
+        plt.savefig(fpath + "ClassificationError.png")
+        plt.close("all")
 
         # ax = fig.add_subplot(gs[0, 0])
         # make_subplot_overset_underset(True)
@@ -780,7 +773,7 @@ class EDA:
                     self.truth[planner][item][i, :, :] = self.dataset[num_replicate][item][planner]['truth']
 
         """ Calculate the excursion set. """
-        B = 100
+        B = 200
         N_cov = self.cov['myopic']['eibv'].shape[1]
         self.es_diff = {}
         def get_excursion_set(mu: np.ndarray) -> np.ndarray:

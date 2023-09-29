@@ -117,7 +117,7 @@ class AgentPlotMyopic:
         """ plot cost valley and trees. """
         ax = fig.add_subplot(gs[3])
         self.plotf_vector(self.ygrid, self.xgrid, cost_valley, title="Cost Valley",
-                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=2.1, stepsize=.1, cbar_title="Cost")
+                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=1.1, stepsize=.1, cbar_title="Cost")
         plot_waypoints()
 
         ax.set_xlim([self.xlim[0], self.xlim[1]])
@@ -205,13 +205,13 @@ class AgentPlotMyopic:
         """ plot cost valley. """
         ax = fig.add_subplot(gs[2])
         self.plotf_vector_wgs(self.lat_grid, self.lon_grid, cost_valley, title="Updated cost valley at " + str_timestamp,
-                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=2.1, stepsize=.2, cbar_title="Cost")
+                          cmap=get_cmap("GnBu", 10), vmin=0, vmax=1.1, stepsize=.1, cbar_title="Cost")
         plot_waypoints()
 
         ax.set_xlim([self.xlim_wgs[0], self.xlim_wgs[1]])
         ax.set_ylim([self.ylim_wgs[0], self.ylim_wgs[1]])
 
-        plt.savefig(self.figpath + "P_{:03d}.png".format(self.cnt))
+        plt.savefig(self.figpath + "MYP/MYP_{:03d}.png".format(self.cnt))
         # plt.show()
         plt.close("all")
 
