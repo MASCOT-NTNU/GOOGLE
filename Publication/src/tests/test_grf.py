@@ -44,7 +44,7 @@ class TestGRF(TestCase):
 
     def setUp(self) -> None:
         self.c = Config()
-        self.g = GRF(sigma=1.5, nugget=.4, approximate_eibv=False, fast_eibv=True)
+        self.g = GRF()
         # self.g = GRF(sigma=1., nugget=.4)
         self.f = self.g.field
         self.grid = self.f.get_grid()
