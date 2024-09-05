@@ -94,9 +94,11 @@ class EDA:
         self.load_data()
         # self.plot_metrics_total()
         # self.plot_temporal_traffic_density_map()
-        # self.plot_temporal_traffic_flow_density_map4paper()
+        # self.plot_temporal_traffic_flow_density_map4paper_include_middle_steps()
+        # self.plot_temporal_traffic_flow_density_map4thesis()
+        self.plot_temporal_traffic_flow_density_map4paper_last_step()
         # self.plot_metrics4paper()
-        self.plot_es4paper()
+        # self.plot_es4paper()d
         # self.plot_ground_truth()
         # self.plot_es()
         self.trajectory
@@ -345,11 +347,143 @@ class EDA:
         #         plt.savefig(fpath + "P_{:03d}.png".format(k))
         #         plt.close("all")
 
-    def plot_temporal_traffic_flow_density_map4paper(self) -> None:
+
+
+    def plot_temporal_traffic_flow_density_map4paper_last_step(self) -> None:
+        """
+        Plot the traffic flow density map for each specific case. For the paper. No need to save all the figures.
+        """
+
+        time_start = datetime.datetime(2022, 5, 11, 9, 52)
+        fpath = figpath + "TrafficFlow/KnowledgeBasedSystem/"
+        checkfolder(fpath)
+
+        def make_subplot(planner, item):
+            plt.figure(figsize=(12, 10))
+            num_step = self.trajectory[planner][item].shape[1] - 1
+            traj = self.trajectory[planner][item][:, :num_step, :]
+            lat, lon = WGS.xy2latlon(traj[:, :, 0], traj[:, :, 1])
+            df = pd.DataFrame(np.stack((lat.flatten(), lon.flatten()), axis=1), columns=['lat', 'lon'])
+            ax = plt.gca()
+            sns.kdeplot(df, x='lon', y='lat', fill=True, cmap="Reds", levels=25, thresh=.1)
+            plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'k-.')
+            plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='k', fill=True,
+                              linestyle='-.')
+            plt.gca().add_patch(plg)
+
+            # Plot border and create a mask
+            border_path = Path(self.polygon_border_wgs[:, ::-1])
+            border_patch = PathPatch(border_path, facecolor='none', edgecolor='none')
+            ax.add_patch(border_patch)
+
+            # Mask KDE using border path
+            for collection in ax.collections:
+                collection.set_clip_path(border_patch)
+
+            plt.ylabel("Latitude")
+            plt.xlabel("Longitude")
+            date_string = time_start + datetime.timedelta(hours=(num_step + 1)/30 * 2)
+            plt.title(f"Density map at " + date_string.strftime("%H:%M"))
+            plt.xticks(self.lon_ticks)
+            plt.xlim([self.lon_min, self.lon_max])
+            plt.ylim([self.lat_min, self.lat_max])
+
+            plt.savefig(fpath + "TF_{:s}_{:s}.png".format(planner, item))
+            plt.close("all")
+
+        for planner in self.planners:
+            for item in self.cv:
+                make_subplot(planner, item)
+
+    def plot_temporal_traffic_flow_density_map4thesis(self) -> None:
+        """
+        Plot the traffic flow density map for each specific case. For the paper. No need to save all the figures.
+        """
+        # num_steps = [29, 59, 89, 119]
+        # num_steps = np.arange(119)
+        time_start = datetime.datetime(2022, 5, 11, 9, 52)
+        fpath = figpath + "TrafficFlow/THESIS/"
+        checkfolder(fpath)
+
+        def make_subplot(item):
+            for i in np.arange(119):
+                fig = plt.figure(figsize=(24, 10))
+                gs = GridSpec(nrows=1, ncols=2, figure=fig)
+                ffpath = fpath + "{:s}/".format(item.upper())
+                checkfolder(ffpath)
+
+                traj_myopic = self.trajectory["myopic"][item][:, :i+1, :]
+                lat, lon = WGS.xy2latlon(traj_myopic[:, :, 0], traj_myopic[:, :, 1])
+                df = pd.DataFrame(np.stack((lat.flatten(), lon.flatten()), axis=1), columns=['lat', 'lon'])
+                ax = fig.add_subplot(gs[0])
+                sns.kdeplot(df, x='lon', y='lat', fill=True, cmap="Reds", levels=25, thresh=.1)
+                plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'k-.')
+                plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='k', fill=True,
+                                  linestyle='-.')
+                plt.gca().add_patch(plg)
+
+                # Plot border and create a mask
+                border_path = Path(self.polygon_border_wgs[:, ::-1])
+                border_patch = PathPatch(border_path, facecolor='none', edgecolor='none')
+                ax.add_patch(border_patch)
+
+                # Mask KDE using border path
+                for collection in ax.collections:
+                    collection.set_clip_path(border_patch)
+                plt.ylabel("Latitude")
+                plt.xlabel("Longitude")
+                date_string = time_start + datetime.timedelta(hours=(i + 1)/30 * 2)
+                plt.title(f"Myopic traffic density map at " + date_string.strftime("%H:%M"))
+                plt.xticks(self.lon_ticks)
+                plt.xlim([self.lon_min, self.lon_max])
+                plt.ylim([self.lat_min, self.lat_max])
+
+
+                traj_rrt = self.trajectory["rrt"][item][:, :i+1, :]
+                lat, lon = WGS.xy2latlon(traj_rrt[:, :, 0], traj_rrt[:, :, 1])
+                df = pd.DataFrame(np.stack((lat.flatten(), lon.flatten()), axis=1), columns=['lat', 'lon'])
+                ax = fig.add_subplot(gs[1])
+                sns.kdeplot(df, x='lon', y='lat', fill=True, cmap="Reds", levels=25, thresh=.1)
+                plt.plot(self.polygon_border_wgs[:, 1], self.polygon_border_wgs[:, 0], 'k-.')
+                plg = plt.Polygon(np.fliplr(self.polygon_obstacle_wgs), facecolor='w', edgecolor='k', fill=True,
+                                  linestyle='-.')
+                plt.gca().add_patch(plg)
+
+                # Plot border and create a mask
+                border_path = Path(self.polygon_border_wgs[:, ::-1])
+                border_patch = PathPatch(border_path, facecolor='none', edgecolor='none')
+                ax.add_patch(border_patch)
+
+                # Mask KDE using border path
+                for collection in ax.collections:
+                    collection.set_clip_path(border_patch)
+
+                # if i == 0:
+                # else:
+                plt.ylabel("")
+
+                plt.xlabel("Longitude")
+                date_string = time_start + datetime.timedelta(hours=(i + 1)/30 * 2)
+                plt.title(f"RRT* traffic density map at " + date_string.strftime("%H:%M"))
+                plt.xticks(self.lon_ticks)
+                plt.xlim([self.lon_min, self.lon_max])
+                plt.ylim([self.lat_min, self.lat_max])
+
+                # plt.show()
+
+                plt.savefig(ffpath + "P_{:03d}.png".format(i))
+                plt.close("all")
+
+        # for planner in self.planners:
+        for item in self.cv:
+            make_subplot(item)
+
+    def plot_temporal_traffic_flow_density_map4paper_include_middle_steps(self) -> None:
         """
         Plot the traffic flow density map for each specific case. For the paper. No need to save all the figures.
         """
         num_steps = [29, 59, 89, 119]
+        # num_steps = np.arange(119)
         time_start = datetime.datetime(2022, 5, 11, 9, 52)
         fpath = figpath + "TrafficFlow/"
         checkfolder(fpath)
