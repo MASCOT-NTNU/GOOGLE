@@ -96,7 +96,8 @@ class EDA:
         # self.plot_temporal_traffic_density_map()
         # self.plot_temporal_traffic_flow_density_map4paper_include_middle_steps()
         # self.plot_temporal_traffic_flow_density_map4thesis()
-        self.plot_temporal_traffic_flow_density_map4paper_last_step()
+        # self.plot_temporal_traffic_flow_density_map4paper_last_step()
+        self.print_metrics_summary_last_step_for_paper()
         # self.plot_metrics4paper()
         # self.plot_es4paper()d
         # self.plot_ground_truth()
@@ -135,6 +136,13 @@ class EDA:
 
         self.xticks = np.arange(0, self.num_steps, 20)
         self.xticklabels = ['{:d}'.format(i) for i in self.xticks]
+
+    def print_metrics_summary_last_step_for_paper(self) -> None:
+        for item in self.cv:
+            for planner in self.planners:
+                print("Planner: ", planner, " Item: ", item)
+                print(f"RMSE:{np.mean(self.rmse[planner][item], axis=0)[-1]:.2f}|{np.std(self.rmse[planner][item], axis=0)[-1]:.2f}")
+        pass
 
     def plot_metrics_total(self) -> None:
         """
@@ -359,7 +367,7 @@ class EDA:
         checkfolder(fpath)
 
         def make_subplot(planner, item):
-            plt.figure(figsize=(12, 10))
+            plt.figure(figsize=(15, 14))
             num_step = self.trajectory[planner][item].shape[1] - 1
             traj = self.trajectory[planner][item][:, :num_step, :]
             lat, lon = WGS.xy2latlon(traj[:, :, 0], traj[:, :, 1])
@@ -382,8 +390,11 @@ class EDA:
 
             plt.ylabel("Latitude")
             plt.xlabel("Longitude")
-            date_string = time_start + datetime.timedelta(hours=(num_step + 1)/30 * 2)
-            plt.title(f"Density map at " + date_string.strftime("%H:%M"))
+            if item == "equal":
+                title_string = "Equal weight"
+            else:
+                title_string = item.upper() + " dominant"
+            plt.title(title_string)
             plt.xticks(self.lon_ticks)
             plt.xlim([self.lon_min, self.lon_max])
             plt.ylim([self.lat_min, self.lat_max])
