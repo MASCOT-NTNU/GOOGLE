@@ -1,5 +1,9 @@
 """
 Unittest for the agent
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-04
 """
 
 from unittest import TestCase
@@ -10,31 +14,46 @@ class TestAgent(TestCase):
     def setUp(self) -> None:
         seed = 0
         debug = True
-        sigma = .1
-        nugget = .01
-        self.agent1 = Agent(weight_eibv=1.99, weight_ivr=.01, sigma=sigma, nugget=nugget,
-                            random_seed=seed, debug=debug, name="EIBV")
-        self.agent2 = Agent(weight_eibv=.01, weight_ivr=1.99, sigma=sigma, nugget=nugget,
-                            random_seed=seed, debug=debug, name="IVR")
-        self.agent3 = Agent(weight_eibv=1., weight_ivr=1., sigma=sigma, nugget=nugget,
-                            random_seed=seed, debug=debug, name="Equal")
+        self.agent1 = Agent(weight_eibv=1., weight_ivr=.0, random_seed=seed, debug=debug, name="EIBV")
+        # self.agent2 = Agent(weight_eibv=.0, weight_ivr=2., random_seed=seed, debug=debug, name="IVR")
+        # self.agent3 = Agent(weight_eibv=1., weight_ivr=1., random_seed=seed, debug=debug, name="Equal")
 
     def test_run(self) -> None:
-        num_steps = 50
-        self.agent1.run(num_steps)
-        self.agent2.run(num_steps)
-        self.agent3.run(num_steps)
+        self.agent1.run()
+        # self.agent2.run(num_steps)
+        # self.agent3.run(num_steps)
 
         import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(self.agent1.ibv, label="EIBV")
-        plt.plot(self.agent2.ibv, label="IVR")
-        plt.plot(self.agent3.ibv, label="EQUAL")
-        plt.legend()
-        plt.xlabel("Steps")
-        plt.ylabel("IBV")
-        plt.show()
+        from matplotlib.pyplot import get_cmap
 
-        # self.agent3.run(num_steps)
+        agents = [self.agent1, self.agent2, self.agent3]
+        grid = self.agent1.grf.grid
+        for agent in agents:
+            mu_data = agent.mu_data
+            sigma_data = agent.sigma_data
+            mu_truth_data = agent.mu_truth_data
+
+            for i in range(num_steps):
+                plt.figure(figsize=(30, 10))
+                plt.subplot(131)
+                plt.scatter(grid[:, 1], grid[:, 0], c=mu_data[i, :],
+                            cmap=get_cmap("BrBG", 10), vmin=10, vmax=30)
+                plt.colorbar()
+                plt.title("mu_data")
+
+                plt.subplot(132)
+                plt.scatter(grid[:, 1], grid[:, 0], c=mu_truth_data[i, :],
+                            cmap=get_cmap("BrBG", 10), vmin=10, vmax=30)
+                plt.colorbar()
+                plt.title("mu_truth_data")
+
+                plt.subplot(133)
+                plt.scatter(grid[:, 1], grid[:, 0], c=sigma_data[i, :],
+                            cmap=get_cmap("RdBu", 10), vmin=0, vmax=1)
+                plt.colorbar()
+                plt.title("sigma_data")
+
+                plt.show()
+
         print("h")
 

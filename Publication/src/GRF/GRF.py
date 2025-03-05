@@ -3,41 +3,49 @@ GRF builds the kernel for simulation study.
 - udpate the field.
 - assimilate data.
 - get eibv for a specific location.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-22
 """
 from Field import Field
+from SINMOD import SINMOD
 from usr_func.vectorize import vectorize
 from usr_func.checkfolder import checkfolder
+from usr_func.normalize import normalize
+from usr_func.calculate_analytical_ebv import calculate_analytical_ebv
 from scipy.spatial.distance import cdist
 import numpy as np
 from scipy.stats import norm, multivariate_normal
-from usr_func.normalize import normalize
-from usr_func.calculate_analytical_ebv import calculate_analytical_ebv
+from numba import jit
 from joblib import Parallel, delayed
+from pykdtree.kdtree import KDTree
+from datetime import datetime
 import time
 import pandas as pd
+import os
 
 
 class GRF:
     """
     GRF kernel
     """
-    def __init__(self, sigma: float = 1., nugget: float = .4, approximate_eibv: bool = True, parallel_eibv: bool = False) -> None:
-        """ Initializes the parameters in GRF kernel. """
-        self.__approximate_eibv = approximate_eibv
-        self.__parallel_eibv = parallel_eibv
-
+    def __init__(self, filepath_prior: str = os.getcwd() + "/../sinmod/samples_2022.05.11.nc") -> None:
         self.__ar1_coef = .965  # AR1 coef, timestep is 10 mins.
-        self.__ar1_corr = 600   # [sec], AR1 correlation time range.
+        self.__ar1_corr_range = 600   # [sec], AR1 correlation time range.
+        self.__approximate_eibv = False
+        self.__fast_eibv = True
 
         """ Empirical parameters """
         # spatial variability
-        self.__sigma = sigma
+        self.__sigma = .5
 
         # spatial correlation
+        # self.__lateral_range = 200  # 680 in the experiment
         self.__lateral_range = 700  # 680 in the experiment
 
         # measurement noise
-        self.__nugget = nugget
+        self.__nugget = .1
 
         # threshold
         self.__threshold = 26.81189868
@@ -59,19 +67,33 @@ class GRF:
         self.__ivr_field = None
 
         # s0: construct grf covariance matrix.
-        self.field = Field()
+        self.field = Field(neighbour_distance=100)
         self.grid = self.field.get_grid()
+        self.grid_kdtree = KDTree(self.grid)
         self.Ngrid = len(self.grid)
         self.__Fgrf = np.ones([1, self.Ngrid])
         self.__xg = vectorize(self.grid[:, 0])
         self.__yg = vectorize(self.grid[:, 1])
         self.__distance_matrix = None
         self.__construct_grf_field()
+        self.__Sigma_prior = self.__Sigma
 
         # s1: update prior mean
-        self.__construct_prior_mean()
-        self.__mu_prior = self.__mu
-        self.__Sigma_prior = self.__Sigma
+        datestring = filepath_prior.split("/")[-1].split("_")[-1][:-3].replace('.', '-') + " 10:00:00"
+        timestamp_prior = np.array([datetime.strptime(datestring, "%Y-%m-%d %H:%M:%S").timestamp()])
+        self.__sinmod = SINMOD(filepath_prior)
+        self.__salinity_sinmod = self.__sinmod.get_salinity()[:, 0, :, :]
+        x, y, *_ = self.__sinmod.get_coordinates()
+        self.__grid_sinmod = np.stack((x.flatten(), y.flatten()), axis=1)
+        self.__grid_sinmod_tree = KDTree(self.__grid_sinmod)
+        *_, self.__ind_sinmod4grid = self.__grid_sinmod_tree.query(self.grid)
+        self.__timestamp_sinmod = self.__sinmod.get_timestamp()
+        self.__timestamp_sinmod_tree = KDTree(self.__timestamp_sinmod)
+        *_, ind_prior_time = self.__timestamp_sinmod_tree.query(timestamp_prior)
+        self.__mu = self.__salinity_sinmod[ind_prior_time, :, :].flatten()[self.__ind_sinmod4grid].reshape(-1, 1)
+
+        # s2: load cdf table
+        self.__load_cdf_table()
 
     def __construct_grf_field(self) -> None:
         """ Construct distance matrix and thus Covariance matrix for the kernel. """
@@ -79,16 +101,15 @@ class GRF:
         self.__Sigma = self.__sigma ** 2 * ((1 + self.__eta * self.__distance_matrix) *
                                             np.exp(-self.__eta * self.__distance_matrix))
 
-    def __construct_prior_mean(self) -> None:
-        # s0: get delft3d dataset
-        dataset_sinmod = pd.read_csv("./../prior/sinmod.csv").to_numpy()
-        grid_sinmod = dataset_sinmod[:, :2]
-        sal_sinmod = dataset_sinmod[:, -1]
-
-        # s1: interpolate onto grid.
-        dm_grid_sinmod = cdist(self.grid, grid_sinmod)
-        ind_close = np.argmin(dm_grid_sinmod, axis=1)
-        self.__mu = vectorize(sal_sinmod[ind_close])
+    def __load_cdf_table(self) -> None:
+        """
+        Load cdf table for the analytical solution.
+        """
+        table = np.load("./../prior/cdf.npz")
+        self.__cdf_z1 = table["z1"]
+        self.__cdf_z2 = table["z2"]
+        self.__cdf_rho = table["rho"]
+        self.__cdf_table = table["cdf"]
 
     def assimilate_data(self, dataset: np.ndarray) -> None:
         """
@@ -98,15 +119,7 @@ class GRF:
             dataset: np.array([x, y, sal])
             cnt_waypoint: int
         """
-        # t1 = time.time()
-        xd = dataset[:, 0].reshape(-1, 1)
-        yd = dataset[:, 1].reshape(-1, 1)
-        Fdata = np.ones([dataset.shape[0], 1])
-        # t1 = time.time()
-        dx = (xd @ self.__Fgrf - Fdata @ self.__xg.T) ** 2
-        dy = (yd @ self.__Fgrf - Fdata @ self.__yg.T) ** 2
-        dist = dx + dy
-        ind_min_distance = np.argmin(dist, axis=1)  # used only for unittest.
+        distance_min, ind_min_distance = self.grid_kdtree.query(dataset[:, :2])
         ind_assimilated = np.unique(ind_min_distance)
         salinity_assimilated = np.zeros([len(ind_assimilated), 1])
         for i in range(len(ind_assimilated)):
@@ -116,7 +129,7 @@ class GRF:
         # t2 = time.time()
         # print("Data assimilation takes: ", t2 - t1, " seconds")
 
-    def __update(self, ind_measured: np.ndarray, salinity_measured: np.ndarray):
+    def __update(self, ind_measured: np.ndarray, salinity_measured: np.ndarray) -> None:
         """
         Update GRF kernel based on sampled data.
         :param ind_measured: indices where the data is assimilated.
@@ -143,28 +156,23 @@ class GRF:
         """
         t_start = dataset[0, 0]
         t_end = dataset[-1, 0]
-        t_steps = int((t_end - t_start) // self.__ar1_corr)
-        # t1 = time.time()
-        xd = dataset[:, 1].reshape(-1, 1)
-        yd = dataset[:, 2].reshape(-1, 1)
-        Fdata = np.ones([dataset.shape[0], 1])
-        # t1 = time.time()
-        dx = (xd @ self.__Fgrf - Fdata @ self.__xg.T) ** 2
-        dy = (yd @ self.__Fgrf - Fdata @ self.__yg.T) ** 2
-        dist = dx + dy
-        ind_min_distance = np.argmin(dist, axis=1)  # used only for unittest.
+        t_steps = int((t_end - t_start) // self.__ar1_corr_range)
+
+        *_, ind_min_distance = self.grid_kdtree.query(dataset[:, 1:3])
         ind_assimilated = np.unique(ind_min_distance)
         salinity_assimilated = np.zeros([len(ind_assimilated), 1])
         for i in range(len(ind_assimilated)):
             ind_selected = np.where(ind_min_distance == ind_assimilated[i])[0]
             salinity_assimilated[i] = np.mean(dataset[ind_selected, -1])
-        self.__update_temporal(ind_measured=ind_assimilated, salinity_measured=salinity_assimilated, timestep=t_steps)
+        self.__update_temporal(ind_measured=ind_assimilated, salinity_measured=salinity_assimilated,
+                               timestep=t_steps, timestamp=np.array([t_end]))
         # t2 = time.time()
         # print("Data assimilation takes: ", t2 - t1, " seconds")
         """ Just for debugging. """
         return ind_assimilated, salinity_assimilated
 
-    def __update_temporal(self, ind_measured: np.ndarray, salinity_measured: np.ndarray, timestep=0):
+    def __update_temporal(self, ind_measured: np.ndarray, salinity_measured: np.ndarray,
+                          timestep=0, timestamp: np.ndarray = np.array([123424332])):
         """ Update GRF kernel with AR1 process.
         timestep here can only be 1, no larger than 1, if it is larger than 1, then the data assimilation needs to be
         properly adjusted to make sure that they correspond with each other.
@@ -176,14 +184,19 @@ class GRF:
             F[i, ind_measured[i]] = True
         R = np.eye(msamples) * self.__tau ** 2
 
+        # s1, get timestamped prior mean from SINMOD
+        *_, ind_time = self.__timestamp_sinmod_tree.query(timestamp)
+        salinity_sinmod = self.__salinity_sinmod[ind_time, :, :].flatten()
+        mu_prior = salinity_sinmod[self.__ind_sinmod4grid].reshape(-1, 1)
+
         t1 = time.time()
         # propagate
-        mt0 = self.__mu_prior + self.__ar1_coef * (self.__mu - self.__mu_prior)
+        mt0 = mu_prior + self.__ar1_coef * (self.__mu - mu_prior)
         St0 = self.__ar1_coef ** 2 * self.__Sigma + (1 - self.__ar1_coef ** 2) * self.__Sigma_prior
         mts = mt0
         Sts = St0
         for s in range(timestep):
-            mts = self.__mu_prior + self.__ar1_coef * (mts - self.__mu_prior)
+            mts = mu_prior + self.__ar1_coef * (mts - mu_prior)
             Sts = self.__ar1_coef**2 * Sts + (1 - self.__ar1_coef**2) * self.__Sigma_prior
 
         self.__mu = mts + Sts @ F.T @ np.linalg.solve(F @ Sts @ F.T + R, salinity_measured - F @ mts)
@@ -205,38 +218,19 @@ class GRF:
                 eibv_field[i] = self.__get_eibv_approximate(self.__mu, sigma_diag)
             else:
                 vr_diag = np.diag(VR).reshape(-1, 1)
-                if self.__parallel_eibv:
-                    eibv_field[i] = self.__get_eibv_analytical_para(self.__mu, sigma_diag, vr_diag)
+                if self.__fast_eibv:
+                    eibv_field[i] = self.__get_eibv_analytical_fast(mu=self.__mu, sigma_diag=sigma_diag, vr_diag=vr_diag,
+                                                                    threshold=self.__threshold, cdf_z1=self.__cdf_z1,
+                                                                    cdf_z2=self.__cdf_z2, cdf_rho=self.__cdf_rho,
+                                                                    cdf_table=self.__cdf_table)
                 else:
                     eibv_field[i] = self.__get_eibv_analytical(self.__mu, sigma_diag, vr_diag)
             ivr_field[i] = np.sum(np.diag(VR))
         self.__eibv_field = normalize(eibv_field)
         self.__ivr_field = 1 - normalize(ivr_field)
         t2 = time.time()
-        print("Approximate: ", self.__approximate_eibv, "; Total EI field takes: ", t2 - t1, " seconds.")
+        print("EI field takes: ", t2 - t1, " seconds.")
         return self.__eibv_field, self.__ivr_field
-
-    # def get_ei_at_locations(self, locs: np.ndarray) -> tuple:
-    #     """ Get EI values at given locations. """
-    #     ind = self.field.get_ind_from_location(locs)
-    #     N = len(ind)
-    #     t1 = time.time()
-    #     eibv = np.zeros(N)
-    #     ivr = np.zeros(N)
-    #     for i in range(N):
-    #         id = ind[i]
-    #         SF = self.__Sigma[:, id].reshape(-1, 1)
-    #         MD = 1 / (self.__Sigma[id, id] + self.__nugget)
-    #         VR = SF @ SF.T * MD
-    #         SP = self.__Sigma - VR
-    #         sigma_diag = np.diag(SP).reshape(-1, 1)
-    #         eibv[i] = self.__get_ibv(self.__mu, sigma_diag)
-    #         ivr[i] = np.sum(np.diag(VR))
-    #     self.__eibv_field = normalize(eibv)
-    #     self.__ivr_field = 1 - normalize(ivr)
-    #     t2 = time.time()
-    #     print("Calcuating EI at given locations takes: ", t2 - t1, " seconds.")
-    #     return self.__eibv_field, self.__ivr_field
 
     def __get_eibv_approximate(self, mu: np.ndarray, sigma_diag: np.ndarray) -> np.ndarray:
         """ !!! Be careful with dimensions, it can lead to serious problems.
@@ -253,7 +247,6 @@ class GRF:
     def __get_eibv_analytical(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
         """
         Calculate the eibv using the analytical formula with a bivariate cumulative dentisty function.
-
         """
         eibv = .0
         for i in range(len(mu)):
@@ -271,6 +264,37 @@ class GRF:
             eibv += multivariate_normal.cdf(np.array([0, 0]), np.array([-mur, mur]).squeeze(),
                                             np.array([[sig2r_1, -sig2r],
                                                       [-sig2r, sig2r_1]]).squeeze())
+        return eibv
+
+    @staticmethod
+    @jit
+    def __get_eibv_analytical_fast(mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray,
+                                   threshold: float, cdf_z1: np.ndarray, cdf_z2: np.ndarray,
+                                   cdf_rho: np.ndarray, cdf_table: np.ndarray) -> float:
+        """
+        Calculate the eibv using the analytical formula but using a loaded cdf dataset.
+        """
+        eibv = .0
+        for i in range(len(mu)):
+            sn2 = sigma_diag[i]
+            vn2 = vr_diag[i]
+
+            sn = np.sqrt(sn2)
+            m = mu[i]
+
+            mur = (threshold - m) / sn
+
+            sig2r_1 = sn2 + vn2
+            sig2r = vn2
+
+            z1 = mur
+            z2 = -mur
+            rho = -sig2r / sig2r_1
+
+            ind1 = np.argmin(np.abs(z1 - cdf_z1))
+            ind2 = np.argmin(np.abs(z2 - cdf_z2))
+            ind3 = np.argmin(np.abs(rho - cdf_rho))
+            eibv += cdf_table[ind1][ind2][ind3]
         return eibv
 
     def __get_eibv_analytical_para(self, mu: np.ndarray, sigma_diag: np.ndarray, vr_diag: np.ndarray) -> float:
@@ -307,7 +331,7 @@ class GRF:
         #     print(ps)
 
         # Parallel(n_jobs=6)(delayed(makeGraph)(graph_type=graph, nodes=vertex, edge_probability=prob, power_exponent=exponent) for vertex in vertices for prob in edge_probabilities for exponent in power_exponents for graph in graph_types)
-        res = Parallel(n_jobs=5)(delayed(calculate_analytical_ebv)(ps) for ps in parameter_sets)
+        res = Parallel(n_jobs=30)(delayed(calculate_analytical_ebv)(ps) for ps in parameter_sets)
 
         eibv = sum(res)
         return eibv

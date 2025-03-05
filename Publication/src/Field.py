@@ -3,6 +3,10 @@ Field handles field discretization and validation.
 - generate grid discretization.
 - check legal conditions of given locations.
 - check collision with obstacles.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-22
 """
 from Config import Config
 import numpy as np
@@ -10,6 +14,7 @@ from shapely.geometry import Point, LineString
 from scipy.spatial.distance import cdist
 from math import cos, sin, radians
 from typing import Union
+from pykdtree.kdtree import KDTree
 
 
 class Field:
@@ -44,6 +49,10 @@ class Field:
         # grid element
         self.__grid = np.empty([0, 2])
         self.__construct_grid()
+        self.__grid_tree = KDTree(self.__grid)
+
+        # neighbour element
+        self.__neighbour_hash_table = dict()
 
         # neighbour element
         self.__neighbour_hash_table = dict()
@@ -154,17 +163,20 @@ class Field:
         """
         Args:
             location: np.array([xp, yp])
-        Returns: index of the closest waypoint.
-        """
 
+        Returns: index of the closest waypoint.
+            ind: np.array([ind])
+        """
         if len(location) > 0:
             dm = location.ndim
             if dm == 1:
-                d = cdist(self.__grid, location.reshape(1, -1))
-                return np.argmin(d, axis=0)
+                return self.__grid_tree.query(location.reshape(1, -1))[1]
+                # d = cdist(self.__grid, location.reshape(1, -1))
+                # return np.argmin(d, axis=0)
             elif dm == 2:
-                d = cdist(self.__grid, location)
-                return np.argmin(d, axis=0)
+                return self.__grid_tree.query(location)[1]
+                # d = cdist(self.__grid, location)
+                # return np.argmin(d, axis=0)
             else:
                 return None
         else:

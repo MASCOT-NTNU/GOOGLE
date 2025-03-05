@@ -1,5 +1,9 @@
 """ Unit test for Field
 This module tests the field object.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-22
 """
 from unittest import TestCase
 from Field import Field

@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     FIGPATH = os.getcwd() + "/../../fig/prm/"
 
-    prm = PRM()
+    prm = PRM(starting_loc, ending_loc, np.array([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]), np.array(OBSTACLES))
     prm.set_obstacles()
     prm.get_all_random_nodes()
     prm.get_road_maps()

@@ -25,62 +25,96 @@ num_steps = config.get_num_steps()
 # seeds = np.random.randint(0, 10000, num_replicates)
 seeds = np.random.choice(10000, num_replicates, replace=False)  # to generate non-repetitive seeds.
 
+neighbour_distance = 120
+
 """
 Return values are tuple and hereby need careful check with smaller steps 
 of replicates to extract the result correctly. 
 """
 Simulators = [SimulatorRRTStar, SimulatorMyopic2D]
-sigmas = [1.5, 1., .5, .1]
-nuggets = [.4, .25, .1, .01]
-datapath = "npy/"
+# sigmas = [1.5, 1., .5, .1]
+# nuggets = [.4, .25, .1, .01]
 
+# sigmas_nuggets = np.array([[1., .25],
+#                            [1., .1],
+#                            [1.5, .25],
+#                            [1.5, .1],
+#                            [.5, .25],
+#                            [.5, .1],
+#                            [.1, .1],
+#                            [.1, .01]])
+sigmas_nuggets = np.array([[1., .25]])
+# datapath = "npy/"
+
+# sigmas = [1.]
+# nuggets = [.4]
+
+# sigmas = [.5]
+# nuggets = [.25]
+
+
+datapath = "npy/temporal/"
 
 def run_replicates(i: int = 0):
     print("seed: ", seeds[i])
+    print("replicate: ", i)
     folderpath = datapath + "R_{:03d}/".format(i)
     checkfolder(folderpath)
-    for sigma in sigmas:
-        print("sigma: ", sigma)
+    for k in range(sigmas_nuggets.shape[0]):
+        sigma = sigmas_nuggets[k, 0]
+        nugget = sigmas_nuggets[k, 1]
+
+        print("sigma: ", sigma, " nugget: ", nugget)
         sigpath = folderpath + "sigma_{:02d}/".format(int(10 * sigma))
         checkfolder(sigpath)
-        for nugget in nuggets:
-            print("nugget: ", nugget)
-            nuggetpath = sigpath + "nugget_{:03d}/".format(int(100 * nugget))
-            checkfolder(nuggetpath)
-            for Simulator in Simulators:
-                print("simulator: ", Simulator.__name__)
-                simpath = nuggetpath + Simulator.__name__ + "/"
-                checkfolder(simpath)
+        nuggetpath = sigpath + "nugget_{:03d}/".format(int(100 * nugget))
+        checkfolder(nuggetpath)
 
-                s = Simulator(sigma=sigma, nugget=nugget, seed=seeds[i], debug=False)
-                """ Save simulation figures. """
-                # if "Myopic" in Simulator.__name__:
-                #     ap = AgentPlotMyopic
-                # else:
-                #     ap = AgentPlotRRTStar
-                # app = ap(s.ag_eq, simpath)
-                # app.plot_ground_truth(title="truth", seed=seeds[i])
-                """ End of plotting. """
+        for Simulator in Simulators:
+            print("simulator: ", Simulator.__name__)
+            simpath = nuggetpath + Simulator.__name__ + "/"
+            checkfolder(simpath)
 
-                s.run_all(num_steps=num_steps)
-                res_eibv = s.extract_data_for_agent(s.ag_eibv)
-                res_ivr = s.extract_data_for_agent(s.ag_ivr)
-                res_eq = s.extract_data_for_agent(s.ag_eq)
+            s = Simulator(neighbour_distance=neighbour_distance, sigma=sigma, nugget=nugget,
+                          seed=seeds[i], debug=False, approximate_eibv=False, fast_eibv=True)
+            """ Save simulation figures. """
+            # if "Myopic" in Simulator.__name__:
+            #     ap = AgentPlotMyopic
+            # else:
+            #     ap = AgentPlotRRTStar
+            # app = ap(s.ag_eq, simpath)
+            # app.plot_ground_truth(title="truth", seed=seeds[i])
+            """ End of plotting. """
 
-                """ Get each component. """
-                traj = np.stack((res_eibv[0], res_ivr[0], res_eq[0]), axis=0)
-                ibv = np.stack((res_eibv[1], res_ivr[1], res_eq[1]), axis=0)
-                vr = np.stack((res_eibv[2], res_ivr[2], res_eq[2]), axis=0)
-                rmse = np.stack((res_eibv[3], res_ivr[3], res_eq[3]), axis=0)
+            s.run_all(num_steps=num_steps)
+            res_eibv = s.extract_data_for_agent(s.ag_eibv)
+            res_ivr = s.extract_data_for_agent(s.ag_ivr)
+            res_eq = s.extract_data_for_agent(s.ag_eq)
 
-                np.save(simpath + "traj.npy", traj)
-                np.save(simpath + "ibv.npy", ibv)
-                np.save(simpath + "vr.npy", vr)
-                np.save(simpath + "rmse.npy", rmse)
+            """ Save simulation II result. """
+            np.savez(simpath + "eibv.npz", traj=res_eibv[0], mu_data=res_eibv[1],
+                     sigma_data=res_eibv[2], mu_truth_data=res_eibv[3])
+            np.savez(simpath + "ivr.npz", traj=res_ivr[0], mu_data=res_ivr[1],
+                        sigma_data=res_ivr[2], mu_truth_data=res_ivr[3])
+            np.savez(simpath + "eq.npz", traj=res_eq[0], mu_data=res_eq[1],
+                        sigma_data=res_eq[2], mu_truth_data=res_eq[3])
+
+            """ Save simulation I result. """
+            # traj = np.stack((res_eibv[0], res_ivr[0], res_eq[0]), axis=0)
+            # ibv = np.stack((res_eibv[1], res_ivr[1], res_eq[1]), axis=0)
+            # vr = np.stack((res_eibv[2], res_ivr[2], res_eq[2]), axis=0)
+            # rmse = np.stack((res_eibv[3], res_ivr[3], res_eq[3]), axis=0)
+            #
+            # np.save(simpath + "traj.npy", traj)
+            # np.save(simpath + "ibv.npy", ibv)
+            # np.save(simpath + "vr.npy", vr)
+            # np.save(simpath + "rmse.npy", rmse)
 
 
 if __name__ == "__main__":
+    import sys
     t1 = time()
+    # run_replicates(i=int(sys.argv[1]))
     res = Parallel(n_jobs=num_cores)(delayed(run_replicates)(i=rep) for rep in range(num_replicates))
     t2 = time()
     print("Replicate study takes ", t2 - t1)

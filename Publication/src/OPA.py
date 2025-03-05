@@ -1,5 +1,9 @@
 """
 It generates the operational area using GIS shape file.
+
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 # TODO: I need to double check the tutorials to make sure I fully understand the process of using QGIS.
 """
 
@@ -26,7 +30,6 @@ class OpArea:
     def __init__(self):
         self.get_operational_area()
         # self.save_operational_areas()
-        pass
 
     def get_operational_area(self):
         self.munkholmen_shape_file = geopandas.read_file(INPUT_PATH_MUNKHOLMEN_SHAPE_FILE)

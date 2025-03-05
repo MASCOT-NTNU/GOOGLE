@@ -1,160 +1,71 @@
 """
-Simulator generates the simulation result based on the weight set.
-"""
-from Planner.Planner import Planner
-from Simulators.CTD import CTD
-from Simulators.Log import Log
-from Config import Config
-import numpy as np
-from time import time
-import matplotlib.pyplot as plt
-from Visualiser.Visualiser import plotf_vector
-# from matplotlib.cm import get_cmap
-from matplotlib.pyplot import get_cmap
-from usr_func.checkfolder import checkfolder
-import os
+Simulator launches the simulation for all the agents.
 
-# TODO: fix simulator issues.
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-09-06
+"""
+
+from Agents.AgentMyopic import Agent as AgentMyopic
+from Agents.AgentRRTStar import Agent as AgentRRTStar
+from Config import Config
+from usr_func.checkfolder import checkfolder
+import numpy as np
+import os
+from time import time
 
 
 class Simulator:
-    """
-    Simulator
-    """
-    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1., ctd: 'CTD' = None, debug: bool = False) -> None:
-        """
-        Set up the planning strategies and the AUV simulator for the operation.
-        """
-        self.debug = debug
 
-        # s0: load parameters
-        self.config = Config()
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.,
+                 random_seed: int = 0, replicate_id: int = 0, debug: bool = False) -> None:
+        self.__random_seed = random_seed
+        self.__debug = debug
+        self.__config = Config()
+        self.__num_steps = self.__config.get_num_steps()
+        if weight_eibv > weight_ivr:
+            self.__name = "EIBV"
+        elif weight_eibv < weight_ivr:
+            self.__name = "IVR"
+        else:
+            self.__name = "Equal"
+        self.__agent_myopic = AgentMyopic(weight_eibv=weight_eibv, weight_ivr=weight_ivr,
+                                          random_seed=self.__random_seed, debug=self.__debug, name=self.__name)
+        self.__agent_rrtstar = AgentRRTStar(weight_eibv=weight_eibv, weight_ivr=weight_ivr,
+                                            random_seed=self.__random_seed, debug=self.__debug, name=self.__name)
 
-        # s1: set the starting location.
-        self.loc_start = self.config.get_loc_start()
+        self.__datapath = os.getcwd() + "/npy/temporal/Synced/R_{:03d}/".format(replicate_id) + self.__name + "/"
+        checkfolder(self.__datapath)
 
-    def run_simulator(self, num_steps: int = 5) -> tuple:
-        """
-        Run the autonomous operation according to Sense, Plan, Act philosophy.
-        """
-        w_eibv = [1.9, 1., .1]
-        w_ivr = [.1, 1., 1.9]
+    def run_myopic(self) -> None:
+        """ Run the simulation for all the agents. """
+        t0 = time()
+        self.__agent_myopic.run()
+        print("Myopic simulation takes {:.2f} seconds.".format(time() - t0))
 
-        traj_sim = np.empty([0, num_steps+1, 2])
-        ibv = np.empty([0, num_steps+1])
-        rmse = np.empty([0, num_steps+1])
-        vr = np.empty([0, num_steps+1])
+        t0 = time()
+        (traj_myopic, ibv_myopic, rmse_myopic, vr_myopic,
+         mu_data_myopic, cov_myopic, sigma_data_myopic, mu_truth_data_myopic) = self.__agent_myopic.get_metrics()
 
-        for k in range(len(w_eibv)):
+        np.savez(self.__datapath + "myopic.npz", traj=traj_myopic, ibv=ibv_myopic, rmse=rmse_myopic, vr=vr_myopic,
+                    mu=mu_data_myopic, cov=cov_myopic, sigma=sigma_data_myopic, truth=mu_truth_data_myopic)
+        print("Saving data takes {:.2f} seconds.".format(time() - t0))
 
-            weight_eibv = w_eibv[k]
-            weight_ivr = w_ivr[k]
-            print("Weight_EIBV: ", weight_eibv, "Weight_IVR: ", weight_ivr)
+    def run_rrt(self) -> None:
+        """ Run the simulation for all the agents. """
+        t0 = time()
+        self.__agent_rrtstar.run()
+        print("RRT* simulation takes {:.2f} seconds.".format(time() - t0))
 
-            if weight_eibv > weight_ivr:
-                case = "EIBV"
-            elif weight_eibv < weight_ivr:
-                case = "IVR"
-            else:
-                case = "EQUAL"
+        (traj_rrtstar, ibv_rrtstar, rmse_rrtstar, vr_rrtstar,
+         mu_data_rrtstar, cov_rrtstar, sigma_data_rrtstar, mu_truth_data_rrtstar) = self.__agent_rrtstar.get_metrics()
 
-            # s0: set the planner according to their weight set.
-            planner = Planner(self.loc_start)
-            log = Log(ctd=self.ctd)
-            rrtstar = planner.get_rrtstarcv()
-            cv = rrtstar.get_CostValley()
-            cv.set_weight_eibv(weight_eibv)
-            cv.set_weight_ivr(weight_ivr)
-            cv.update_cost_valley()
-            grf = cv.get_grf_model()
-
-            if self.debug:
-                field = cv.get_field()
-                grid = field.get_grid()
-                polygon_border = self.config.get_polygon_border()
-                polygon_obstacle = self.config.get_polygon_obstacle()
-                figpath = os.getcwd() + "/../../fig/Sim_2DNidelva/Simulator/" + case + "/"
-                checkfolder(figpath)
-
-                plt.figure(figsize=(15, 12))
-                plotf_vector(grid[:, 1], grid[:, 0], grf.get_mu(), xlabel='East', ylabel='North',
-                             title='Prior', cbar_title="Salinity", cmap=get_cmap("RdBu", 10), vmin=10, vmax=33, stepsize=1.5)
-                plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'r-.')
-                plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'r-.')
-                plt.xlabel("East")
-                plt.ylabel("North")
-                plt.savefig(figpath + "Prior_" + case + ".png")
-                plt.show()
-
-                plt.figure(figsize=(15, 12))
-                plotf_vector(grid[:, 1], grid[:, 0], self.ctd.get_ground_truth(), xlabel='East', ylabel='North',
-                             title='GroundTruth', cbar_title="Salinity", cmap=get_cmap("RdBu", 10), vmin=10, vmax=33,
-                             stepsize=1.5)
-                plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'r-.')
-                plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'r-.')
-                plt.xlabel("East")
-                plt.ylabel("North")
-                plt.savefig(figpath + "Truth_" + case + ".png")
-                plt.show()
-
-            # start logging the data.
-            trajectory = np.empty([0, 2])
-            trajectory = np.append(trajectory, self.loc_start.reshape(1, -1), axis=0)
-            log.append_log(grf)
-            print("RMSE: ", log.rmse)
-
-            t1 = time()
-
-            for i in range(num_steps):
-            # for i in range(len(wps)):
-                t2 = time()
-                print("Step: ", i, " takes ", t2 - t1, " seconds. ")
-                t1 = time()
-
-                """ plotting seciton. """
-                if self.debug:
-                    plt.figure(figsize=(15, 12))
-                    cost_valley = cv.get_cost_field()
-                    plotf_vector(grid[:, 1], grid[:, 0], cost_valley, xlabel='East', ylabel='North', title='RRTCV',
-                                 cbar_title="Cost", cmap=get_cmap("RdBu", 10), vmin=0, vmax=2.2, stepsize=.25)
-                    if len(trajectory) > 0:
-                        plt.plot(trajectory[:, 1], trajectory[:, 0], 'k.-')
-                    plt.plot(polygon_border[:, 1], polygon_border[:, 0], 'r-.')
-                    plt.plot(polygon_obstacle[:, 1], polygon_obstacle[:, 0], 'r-.')
-                    plt.xlabel("East")
-                    plt.ylabel("North")
-                    plt.savefig(figpath + "P_{:03d}.png".format(i))
-                    plt.close("all")
-
-                planner.update_planning_trackers()
-
-                # p1: parallel move AUV to the first location
-                wp_now = planner.get_current_waypoint()
-                trajectory = np.append(trajectory, wp_now.reshape(1, -1), axis=0)
-
-                # s2: obtain CTD data
-                ctd_data = self.ctd.get_ctd_data(wp_now)
-
-                # s3: update pioneer waypoint
-                t1 = time()
-                # print("CTD: ", ctd_data)
-                planner.update_pioneer_waypoint(ctd_data)
-                t2 = time()
-                print("Update pioneer waypoint takes: ", t2 - t1)
-
-                # s4: update simulation data
-                log.append_log(grf)
-
-            traj_sim = np.append(traj_sim, trajectory.reshape(1, num_steps + 1, 2), axis=0)
-            rmse = np.append(rmse, np.array(log.rmse).reshape(1, -1), axis=0)
-            ibv = np.append(ibv, np.array(log.ibv).reshape(1, -1), axis=0)
-            vr = np.append(vr, np.array(log.vr).reshape(1, -1), axis=0)
-
-        return traj_sim, rmse, ibv, vr
+        np.savez(self.__datapath + "rrtstar.npz", traj=traj_rrtstar, ibv=ibv_rrtstar, rmse=rmse_rrtstar, vr=vr_rrtstar,
+                    mu=mu_data_rrtstar, cov=cov_rrtstar, sigma=sigma_data_rrtstar, truth=mu_truth_data_rrtstar)
+        print("Saving data takes {:.2f} seconds.".format(time() - t0))
+        print("Mission completed.")
 
 
 if __name__ == "__main__":
-    s = Simulator(debug=True)
-    t, r, i, v = s.run_simulator(num_steps=3)
-    t, r
+    s = Simulator()
 

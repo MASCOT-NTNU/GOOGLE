@@ -8,7 +8,9 @@ It utilizes the three-waypoint system to smooth out the planned trajectory.
 - Next waypoint: contains the next waypoint, and the AUV should go to next waypoint once it arrives at the current one.
 """
 from CostValley.CostValley import CostValley
+from Config import Config
 from usr_func.is_list_empty import is_list_empty
+from shapely.geometry import Point, LineString
 import numpy as np
 import os
 
@@ -17,16 +19,28 @@ class Myopic2D:
     """
     Myopic2D planner determines the next waypoint according to minimum EIBV criterion.
     """
-    def __init__(self, loc_start: np.ndarray, weight_eibv: float = 1., weight_ivr: float = 1.,
-                 sigma: float = .1, nugget: float = .01, approximate_eibv: bool = True) -> None:
-        # s0: set up default environment
-        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr, sigma=sigma, nugget=nugget,
-                                        approximate_eibv=approximate_eibv)
-        self.__grf = self.__cost_valley.get_grf_model()
-        self.__field = self.__grf.field
+    def __init__(self, weight_eibv: float = 1., weight_ivr: float = 1.) -> None:
+        # set the directional penalty
+        self.__config = Config()
+        self.__directional_penalty = False
+        print("Directional penalty: ", self.__directional_penalty)
 
-        # s1: set up trackers
-        self.__wp_curr = loc_start
+        # s0: set up default environment
+        self.__cost_valley = CostValley(weight_eibv=weight_eibv, weight_ivr=weight_ivr)
+        self.__grf = self.__cost_valley.get_grf_model()
+        self.__waypoint_distance = self.__config.get_waypoint_distance()
+        self.__candidates_angle = np.linspace(0, 2 * np.pi, 7)
+
+        # s1: add polygon border and polygon obstacles.
+        self.__polygon_border = self.__config.get_polygon_border()
+        self.__polygon_border_shapely = self.__config.get_polygon_border_shapely()
+        self.__line_border_shapely = self.__config.get_line_border_shapely()
+        self.__polygon_obstacle = self.__config.get_polygon_obstacle()
+        self.__polygon_obstacle_shapely = self.__config.get_polygon_obstacle_shapely()
+        self.__line_obstacle_shapely = self.__config.get_line_obstacle_shapely()
+
+        # s2: set up trackers
+        self.__wp_curr = self.__config.get_loc_start()
         self.__wp_prev = self.__wp_curr
         self.__wp_next = self.__wp_curr
         self.__loc_cand = None
@@ -41,35 +55,39 @@ class Myopic2D:
         Also the pioneer index can be modified here.
 
         Para:
-            ctd_data: np.array([[x, y, sal]])
+            ctd_data: np.array([[timestamp, x, y, sal]])
         Returns:
             id_pioneer: designed pioneer waypoint index.
         """
         # s0: update grf kernel
-        self.__grf.assimilate_data(ctd_data)
-        self.__cost_valley.update_cost_valley()
+        self.__grf.assimilate_temporal_data(ctd_data)
+        self.__cost_valley.update_cost_valley(self.__wp_curr)
 
         # s1: find candidate locations
-        id_smooth, id_neighbours = self.get_candidates_indices()
+        # id_smooth, id_neighbours = self.get_candidates_indices()
+        wp_smooth, wp_neighbours = self.get_candidates_waypoints()
 
-        if not is_list_empty(id_smooth):
+        if not is_list_empty(wp_smooth):
             # get cost associated with those valid candidate locations.
             costs = []
-            self.__loc_cand = self.__field.get_location_from_ind(id_smooth)
+            self.__loc_cand = wp_smooth
             for loc in self.__loc_cand:
                 costs.append(self.__cost_valley.get_cost_at_location(loc))
-            id_next = id_smooth[np.argmin(costs)]
+            wp_next = wp_smooth[np.argmin(costs)]
         else:
-            rng_ind = np.random.randint(0, len(id_neighbours))
-            id_next = id_neighbours[rng_ind]
+            angles = np.linspace(0, 2 * np.pi, 61)
+            for angle in angles:
+                wp_next = self.__wp_curr + self.__waypoint_distance * np.array([np.sin(angle), np.cos(angle)])
+                if self.is_location_legal(wp_next) and self.is_path_legal(self.__wp_curr, wp_next):
+                    break
 
-        self.__wp_next = self.__field.get_location_from_ind(id_next)
+        self.__wp_next = wp_next
         self.__wp_prev = self.__wp_curr
         self.__wp_curr = self.__wp_next
         self.__trajectory.append([self.__wp_curr[0], self.__wp_curr[1]])
         return self.__wp_next
 
-    def get_candidates_indices(self) -> tuple:
+    def get_candidates_waypoints(self) -> tuple:
         """
         Filter sharp turn, bottom up and dive down behaviours.
 
@@ -86,23 +104,59 @@ class Myopic2D:
             >>>         append(wp)
 
         Returns:
-            id_smooth: filtered candidate indices in the waypointgraph.
-            id_neighbours: all the neighbours at the current location.
+            wp_smooth: filtered candidate waypoints.
+            wp_neighbours: all the neighbours at the current location.
         """
         # s1: get vec from previous wp to current wp.
         vec1 = self.get_vector_between_two_waypoints(self.__wp_prev, self.__wp_curr)
 
-        # s2: get all neighbours.
-        id_neighbours = self.__field.get_neighbour_indices(self.__field.get_ind_from_location(self.__wp_curr))
+        # s2: get all neighbour waypoints
+        wp_neighbours = []
+        wp_smooth = []
+        for angle in self.__candidates_angle:
+            wp_temp = self.__wp_curr + self.__waypoint_distance * np.array([np.sin(angle), np.cos(angle)])
+            # s3: filter out illegal locations
+            if self.is_location_legal(wp_temp) and self.is_path_legal(self.__wp_curr, wp_temp):
+                wp_neighbours.append(wp_temp)
+                vec2 = self.get_vector_between_two_waypoints(self.__wp_curr, wp_temp)
+                if self.__directional_penalty:
+                    if vec1.T @ vec2 >= 0:
+                        wp_smooth.append(wp_temp)
+                else:
+                    wp_smooth.append(wp_temp)
+        return wp_smooth, wp_neighbours
 
-        # s3: smooth neighbour locations.
-        id_smooth = []
-        for iid in id_neighbours:
-            wp_n = self.__field.get_location_from_ind(iid)
-            vec2 = self.get_vector_between_two_waypoints(self.__wp_curr, wp_n)
-            if vec1.T @ vec2 >= 0:
-                id_smooth.append(iid)
-        return id_smooth, id_neighbours
+    def is_location_legal(self, loc: np.ndarray) -> bool:
+        """
+        Check if the location is legal.
+        Args:
+            loc: np.array([x, y])
+
+        Returns:
+            True if legal, False if illegal.
+        """
+        point = Point(loc[0], loc[1])
+        if self.__polygon_border_shapely.contains(point) and \
+                not self.__polygon_obstacle_shapely.contains(point):
+            return True
+        else:
+            return False
+
+    def is_path_legal(self, loc_start: np.ndarray, loc_end: np.ndarray) -> bool:
+        """
+        Check if the path is legal.
+        Args:
+            loc_start: np.array([x1, y1])
+            loc_end: np.array([x2, y2])
+
+        Returns:
+            True if legal, False if illegal.
+        """
+        line = LineString([loc_start, loc_end])
+        if self.__line_border_shapely.intersects(line) or self.__line_obstacle_shapely.intersects(line):
+            return False
+        else:
+            return True
 
     def get_previous_waypoint(self) -> np.ndarray:
         """ Previous waypoint. """
@@ -148,4 +202,3 @@ class Myopic2D:
 
 if __name__ == "__main__":
     m = Myopic2D()
-

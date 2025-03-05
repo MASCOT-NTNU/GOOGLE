@@ -1,7 +1,10 @@
 """ Unit test for planner
 
-This module tests the planner object.
+This module tests the planner object with temporal focus
 
+Author: Yaolin Ge
+Email: geyaolin@gmail.com
+Date: 2023-08-24
 """
 from unittest import TestCase
 from Planner.Planner import Planner
@@ -19,10 +22,12 @@ class TestPlanner(TestCase):
 
     def setUp(self) -> None:
         loc_start = np.array([1000, -1000])
-        sigma = .1
-        nugget = .01
+        sigma = 1.5
+        nugget = .4
         # self.planner = Planner(loc_start, sigma=sigma, nugget=nugget)
-        self.planner = Planner(loc_start, weight_eibv=2., weight_ivr=.0, sigma=sigma, nugget=nugget, budget_mode=True)
+        self.planner = Planner(loc_start, neighhour_distance=120, weight_eibv=1., weight_ivr=1.,
+                               sigma=sigma, nugget=nugget, budget_mode=False,
+                               approximate_eibv=False, fast_eibv=True)
         # self.planner = Planner(loc_start, weight_eibv=.0, weight_ivr=2., sigma=sigma, nugget=nugget)
         self.rrtstarcv = self.planner.get_rrtstarcv()
         self.cv = self.rrtstarcv.get_CostValley()
@@ -78,9 +83,9 @@ class TestPlanner(TestCase):
         xnn, ynn = self.planner.get_next_waypoint()
 
         # s2: on the way to the current location, update field.
-        ctd_data = np.array([[1500, -1200, 0, 20],
-                             [1800, -1300, 0, 23],
-                             [2300, -1500, 0, 30]])
+        ctd_data = np.array([[0, 1500, -1200, 20],
+                             [1200, 1800, -1300, 23],
+                             [2400, 2300, -1500, 30]])
 
         self.planner.update_pioneer_waypoint(ctd_data)
         xp, yp = self.planner.get_pioneer_waypoint()
@@ -102,9 +107,9 @@ class TestPlanner(TestCase):
         xnn, ynn = self.planner.get_next_waypoint()
 
         # s2: on the way to the current location, update field.
-        ctd_data = np.array([[2500, -2000, 0, 25],
-                             [3000, -800, 0, 30],
-                             [3300, -900, 0, 28]])
+        ctd_data = np.array([[2400, 2500, -2000, 25],
+                             [3600, 3000, -800, 30],
+                             [4800, 3300, -900, 28]])
 
         self.planner.update_pioneer_waypoint(ctd_data)
         xp, yp = self.planner.get_pioneer_waypoint()
@@ -119,9 +124,9 @@ class TestPlanner(TestCase):
         plt.show()
 
         # c3, one more step
-        ctd_data = np.array([[2800, -2000, 0, 25],
-                             [3000, -800, 0, 30],
-                             [3300, -900, 0, 28]])
+        ctd_data = np.array([[4800, 2800, -2000, 25],
+                             [6000, 3000, -800, 30],
+                             [7200, 3300, -900, 28]])
 
         self.planner.update_pioneer_waypoint(ctd_data)
         xp, yp = self.planner.get_pioneer_waypoint()

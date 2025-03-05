@@ -10,6 +10,29 @@
 *RRT_Random_Locations.npy
 **RRT_Random_Locations.npy
 
+*/npy
+**/npy
+*npy
+**npy
+
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor
+
+*.nc
+**.nc
+
+*.npz
+**.npz
+*.npy
+**.npy
+
+*.joblib
+**.joblib
+
+
 
 _site
 .sass-cache
