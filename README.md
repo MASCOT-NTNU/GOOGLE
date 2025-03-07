@@ -25,24 +25,13 @@ This study presents an adaptive sampling method using autonomous underwater vehi
 ## Installation
 Clone the repository:
 ```sh
-git clone https://github.com/MASCOT-NTNU/GOOGLE.git
-cd GOOGLE
+git clone https://github.com/MASCOT-NTNU/RRTCV.git
+cd RRTCV
 ```
 
 Install dependencies:
 ```sh
 pip install -r requirements.txt
-```
-
-## Usage
-To run a simulation with predefined parameters:
-```sh
-python simulate.py --config config/default.yaml
-```
-
-To visualize results:
-```sh
-python visualize.py --input data/simulation_results.json
 ```
 
 ## Citation
@@ -53,7 +42,7 @@ If you use this work in your research, please cite:
   title = {RRT*-Enhanced Long-Horizon Path Planning for AUV Adaptive Sampling using a Cost Valley},
   journal = {Knowledge-Based Systems},
   year = {2025},
-  doi = {TBD}
+  doi = {10.1016/j.knosys.2025.113261}
 }
 ```
 
