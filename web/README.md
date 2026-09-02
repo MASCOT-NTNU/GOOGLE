@@ -160,6 +160,13 @@ per step, which is the quickest way to check the numerics after a change.
 
 `.github/workflows/deploy-web.yml` builds `web/` and publishes it to GitHub Pages.
 It needs **Settings → Pages → Source: GitHub Actions** enabled once on the
-repository. It runs on pushes to `main` that touch `web/`, and can be started by
-hand from the Actions tab (useful for previewing a branch — GitHub may first need
-that branch allowed under **Settings → Environments → github-pages**).
+repository, then runs on pushes to `main` that touch `web/`.
+
+To publish a branch before merging it, use **Actions → Deploy web simulator → Run
+workflow** and pick that branch in the dropdown. Two things about that:
+
+- The workflow file has to be on the **default branch** for the Run workflow
+  button to exist at all — that is a GitHub rule about `workflow_dispatch`, not
+  something this workflow controls. The run itself then uses the branch you pick.
+- **Pick the branch in the dropdown.** Left on the default branch, the build has
+  no `web/` to compile and stops at the guard step with an error saying so.

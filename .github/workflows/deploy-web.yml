@@ -2,13 +2,16 @@ name: Deploy web simulator
 
 # Publishes web/ to GitHub Pages. Enable it once under
 # Settings -> Pages -> Source: GitHub Actions.
+#
+# The simulator lives in web/, so this only has something to build on a ref that
+# contains that directory. Until the branch carrying it is merged, use
+# Actions -> Deploy web simulator -> Run workflow and pick that branch.
 on:
   push:
     branches:
       - main
     paths:
       - "web/**"
-      - ".github/workflows/deploy-web.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,9 +32,20 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      # Without this, a ref that has no web/ fails several steps later inside
+      # setup-node's dependency cache, which does not say what is actually wrong.
+      - name: Check this ref carries the web app
+        working-directory: .
+        run: |
+          if [ ! -f web/package-lock.json ]; then
+            echo "::error::'${{ github.ref_name }}' has no web/package-lock.json."
+            echo "::error::This workflow builds the simulator in web/. Re-run it against a branch that contains web/, or merge that branch into the default branch first."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -48,7 +62,7 @@ jobs:
       - name: Smoke-test the simulation core
         run: npm test
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: web/dist
 
@@ -60,4 +74,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
