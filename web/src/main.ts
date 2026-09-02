@@ -336,10 +336,52 @@ function bindMapHover(asset: FieldAsset): void {
 
 /* ------------------------------------------------------------------ boot */
 
+/** The schema `FieldAsset` is written against; `prepare_data.py` stamps it. */
+const SCHEMA_VERSION = 1;
+
+/**
+ * Which baked asset to load. Defaults to `data/field.json`; `?data=<url>` points
+ * the page at another one, which is how a freshly prepared prior gets tried out
+ * without a rebuild. Only same-origin paths are accepted.
+ */
+function assetUrl(): string {
+  const requested = new URLSearchParams(location.search).get("data");
+  const base = `${import.meta.env.BASE_URL}data/field.json`;
+  if (!requested) return base;
+  const resolved = new URL(requested, `${location.origin}${import.meta.env.BASE_URL}`);
+  if (resolved.origin !== location.origin) {
+    console.warn(`ignoring cross-origin ?data=${requested}`);
+    return base;
+  }
+  return resolved.pathname + resolved.search;
+}
+
+function describePrior(asset: FieldAsset): void {
+  const node = el("provenance");
+  const prior = asset.prior;
+  if (!prior) {
+    node.textContent = "";
+    return;
+  }
+  const tag = prior.placeholder ? '<span class="tag">placeholder</span>' : "";
+  node.innerHTML =
+    `<b>Prior field</b>${tag}<br />${prior.label} · ` +
+    `${prior.range[0].toFixed(1)}–${prior.range[1].toFixed(1)} ${prior.units} ` +
+    `from ${prior.points.toLocaleString()} points`;
+  node.title = `Source: ${prior.source}`;
+}
+
 async function start(): Promise<void> {
-  const response = await fetch(`${import.meta.env.BASE_URL}data/field.json`);
-  if (!response.ok) throw new Error(`could not load the field asset (${response.status})`);
+  const url = assetUrl();
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`could not load ${url} (${response.status})`);
   const asset = (await response.json()) as FieldAsset;
+  if (asset.schemaVersion !== undefined && asset.schemaVersion !== SCHEMA_VERSION) {
+    throw new Error(
+      `${url} is schema v${asset.schemaVersion}, this page expects v${SCHEMA_VERSION}. ` +
+      "Re-run web/tools/prepare_data.py.",
+    );
+  }
 
   map = new MapView(el<HTMLCanvasElement>("map"), asset, theme, THRESHOLD);
   chartIbv = new Chart(el<HTMLCanvasElement>("chart-ibv"), tooltip, theme);
@@ -347,6 +389,7 @@ async function start(): Promise<void> {
   chartVar = new Chart(el<HTMLCanvasElement>("chart-var"), tooltip, theme);
 
   buildLayerTabs();
+  describePrior(asset);
   bindControls();
   bindMapHover(asset);
   refreshTheme();

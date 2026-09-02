@@ -65,16 +65,59 @@ Cholesky factorisation (~0.3 s, once per parameter set), and an O(N²) reward-fi
 sweep per step. A mission step costs roughly 100 ms on a laptop, so the page stays
 responsive while it runs.
 
-### Regenerating the field asset
+### The field asset, and swapping in your own prior
 
 `public/data/field.json` (~33 kB) holds the operational-area polygons, the 1076-cell
-hexagonal grid, and the SINMOD prior mean sampled onto it. Rebuild it from the
-repository's own data with:
+hexagonal grid, and the prior mean sampled onto it. Rebuild it with:
 
 ```sh
 pip install numpy scipy shapely
 python3 web/tools/prepare_data.py
 ```
+
+**The prior that ships is placeholder data** — the time-averaged SINMOD field in
+`Publication/prior/sinmod.csv`. The page says so, next to the field controls, and
+keeps saying so until an asset built from real data replaces it. Swapping it is a
+data change, not a code change:
+
+```sh
+python3 web/tools/prepare_data.py \
+    --prior path/to/your_field.csv \
+    --label "Nidelva survey, 2024-06-14" \
+    --real
+```
+
+A prior file is a CSV with a header naming its coordinate columns and one value
+column. Both coordinate conventions are accepted:
+
+```
+x,y,salinity          # x north, y east, metres in the WGS frame (origin 63.42690974, 10.3969373)
+lat,lon,salinity      # decimal degrees
+```
+
+Names are matched case-insensitively (`x`/`north`/`northing`, `y`/`east`/`easting`,
+`lat`/`latitude`, `lon`/`longitude`); the value column is whatever is left over and
+may be called anything. Rows with non-numeric or missing values are dropped, and
+the script warns if any grid cell ends up more than two grid spacings from the
+nearest prior point — that is the signal your file does not cover the whole
+operational area.
+
+To try a prior without overwriting the one in place, write it beside the default
+and point the page at it with `?data=`:
+
+```sh
+python3 web/tools/prepare_data.py --prior new.csv --real \
+    --output web/public/data/field-2024.json
+# then open  …/RRTCV/?data=data/field-2024.json
+```
+
+Only same-origin paths are honoured, and the page refuses an asset whose
+`schemaVersion` is not the one it was built against, so a stale file fails loudly
+instead of rendering nonsense.
+
+Time-varying priors are not supported yet. The asset carries a single `muPrior`
+vector, which is what the static (non-AR(1)) update path needs; see the next
+section.
 
 ## What differs from the Python
 
@@ -84,9 +127,12 @@ departures, all forced by what a browser can be given:
 - **Static prior, not AR(1).** The Python reads a time-varying SINMOD netCDF and
   propagates the field with an AR(1) process between assimilations
   (`assimilate_temporal_data`). The netCDF is not in this repository, so the port
-  uses the time-averaged SINMOD field in `Publication/prior/sinmod.csv` as a fixed
-  prior mean and takes the static update path (`assimilate_data`), which is the
-  `Config.temporal_truth = False` variant the code already supports.
+  takes the static update path (`assimilate_data`) against a single fixed prior
+  mean — the `Config.temporal_truth = False` variant the code already supports —
+  and the prior it ships is placeholder data (see above). Restoring the temporal
+  path means giving the asset a stack of prior frames with timestamps and adding
+  the AR(1) propagation to `GRF.update`; nothing else in the port assumes the
+  prior is static.
 - **EIBV by the `fast_eibv` formula.** `GRF.get_ei_field` has three EIBV paths. The
   port implements the default one — `Phi2(mur, -mur; -v / sigma_prior^2)` with
   `mur = (threshold - mu) / sigma_post` — which is what the published simulations

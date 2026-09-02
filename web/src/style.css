@@ -178,6 +178,24 @@ h1, h2 { margin: 0; font-weight: 600; }
   line-height: 1.45;
 }
 
+.provenance { padding-top: 10px; border-top: 1px dashed var(--gridline); }
+
+.provenance b { color: var(--text-secondary); font-weight: 600; }
+
+/* A prior the asset flags as stand-in data says so, so nobody reads a
+   placeholder field as a survey result. */
+.provenance .tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 5px;
+  border: 1px solid var(--axis);
+  border-radius: 4px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
 .transport { display: flex; gap: 8px; }
 
 .btn {

@@ -1,8 +1,30 @@
 /** Shared shapes between the simulation worker and the UI. */
 
-/** The baked field asset, `web/public/data/field.json`. */
+/** Provenance of the prior mean field baked into an asset. */
+export interface PriorMetadata {
+  /** Human-readable name, shown in the page. */
+  label: string;
+  /** Where the values came from, as passed to `prepare_data.py --source`. */
+  source: string;
+  units: string;
+  /** True while the asset ships stand-in data rather than a real survey. */
+  placeholder: boolean;
+  points: number;
+  range: [number, number];
+}
+
+/**
+ * The baked field asset, `web/public/data/field.json`.
+ *
+ * Regenerate it - or generate an alternative one to point the page at with
+ * `?data=` - with `web/tools/prepare_data.py`.
+ */
 export interface FieldAsset {
+  /** Bumped when the shape of this file changes; see `SCHEMA_VERSION`. */
+  schemaVersion?: number;
   generatedBy: string;
+  generatedAt?: string;
+  prior?: PriorMetadata;
   wgsOrigin: [number, number];
   neighbourDistance: number;
   waypointDistance: number;

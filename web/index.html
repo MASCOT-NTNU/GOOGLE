@@ -94,6 +94,7 @@
               <input id="in-range" type="range" min="200" max="1200" step="50" value="700" />
             </label>
             <p class="hint">Changing any of these restarts the mission.</p>
+            <p class="hint provenance" id="provenance"></p>
           </section>
         </aside>
 
@@ -172,8 +173,9 @@
         <p>
           Ported from the Python in
           <a href="https://github.com/MASCOT-NTNU/RRTCV" target="_blank" rel="noopener">MASCOT-NTNU/RRTCV</a>.
-          The prior mean is a baked SINMOD field; see <code>web/README.md</code> for what differs
-          from the paper's simulation.
+          The prior mean is baked into a data asset that can be swapped without touching code —
+          see <code>web/README.md</code> for that and for what differs from the paper's
+          simulation.
         </p>
       </footer>
     </div>
