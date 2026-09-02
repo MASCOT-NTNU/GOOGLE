@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RRTCV — adaptive AUV sampling, live in the browser</title>
+    <meta
+      name="description"
+      content="Interactive port of the RRT*-enhanced long-horizon path planner for AUV adaptive sampling with a cost valley (Ge, Eidsvik & Olaisen, 2025)."
+    />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M7 24 L14 14 L19 19 L25 8' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="masthead">
+        <div class="masthead__title">
+          <h1>RRT* adaptive sampling over a cost valley</h1>
+          <p>
+            A Gaussian random field prior over the Trondheim fjord, an EIBV/IVR cost valley, and an
+            RRT* planner — running live in this page.
+            <a href="https://doi.org/10.1016/j.knosys.2025.113261" target="_blank" rel="noopener">Ge, Eidsvik &amp; Olaisen (2025)</a>
+          </p>
+        </div>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch colour theme">
+          <span data-theme-label>Dark</span>
+        </button>
+      </header>
+
+      <div class="layout">
+        <aside class="panel panel--controls" aria-label="Simulation controls">
+          <section class="control-group">
+            <h2>Mission</h2>
+            <div class="transport">
+              <button id="btn-run" class="btn btn--primary" type="button">Run</button>
+              <button id="btn-step" class="btn" type="button">Step</button>
+              <button id="btn-reset" class="btn" type="button">Reset</button>
+            </div>
+            <p class="status" id="status" role="status">Loading…</p>
+          </section>
+
+          <section class="control-group">
+            <h2>Weighting</h2>
+            <p class="hint">
+              How the cost valley trades exploitation (EIBV — resolve the boundary) against
+              exploration (IVR — shrink variance).
+            </p>
+            <div class="segmented" role="group" aria-label="Weight preset">
+              <button type="button" data-preset="eibv">EIBV</button>
+              <button type="button" data-preset="equal" class="is-active">Equal</button>
+              <button type="button" data-preset="ivr">IVR</button>
+            </div>
+            <label class="slider">
+              <span>EIBV weight <output id="out-eibv">1.00</output></span>
+              <input id="in-eibv" type="range" min="0" max="2" step="0.05" value="1" />
+            </label>
+            <label class="slider">
+              <span>IVR weight <output id="out-ivr">1.00</output></span>
+              <input id="in-ivr" type="range" min="0" max="2" step="0.05" value="1" />
+            </label>
+          </section>
+
+          <section class="control-group">
+            <h2>Planner</h2>
+            <label class="slider">
+              <span>RRT* iterations <output id="out-iter">1200</output></span>
+              <input id="in-iter" type="range" min="200" max="2500" step="100" value="1200" />
+            </label>
+            <label class="slider">
+              <span>Step interval <output id="out-speed">400 ms</output></span>
+              <input id="in-speed" type="range" min="0" max="1500" step="50" value="400" />
+            </label>
+          </section>
+
+          <section class="control-group">
+            <h2>Field</h2>
+            <label class="field">
+              <span>Random seed</span>
+              <span class="field__row">
+                <input id="in-seed" type="number" min="0" max="99999" step="1" value="42" />
+                <button id="btn-shuffle" class="btn btn--small" type="button">Shuffle</button>
+              </span>
+            </label>
+            <label class="slider">
+              <span>Marginal σ <output id="out-sigma">1.00</output></span>
+              <input id="in-sigma" type="range" min="0.2" max="2" step="0.1" value="1" />
+            </label>
+            <label class="slider">
+              <span>Nugget <output id="out-nugget">0.25</output></span>
+              <input id="in-nugget" type="range" min="0.01" max="1" step="0.01" value="0.25" />
+            </label>
+            <label class="slider">
+              <span>Lateral range <output id="out-range">700 m</output></span>
+              <input id="in-range" type="range" min="200" max="1200" step="50" value="700" />
+            </label>
+            <p class="hint">Changing any of these restarts the mission.</p>
+          </section>
+        </aside>
+
+        <main class="panel panel--stage">
+          <div class="tabs" role="tablist" aria-label="Field layer" id="layer-tabs"></div>
+          <p class="layer-caption" id="layer-caption"></p>
+          <div class="stage">
+            <canvas id="map" aria-label="Map of the operational area"></canvas>
+            <div class="readout" id="readout" hidden></div>
+          </div>
+          <div class="stage-footer">
+            <div class="colorbar">
+              <canvas id="colorbar" aria-hidden="true"></canvas>
+              <div class="colorbar__ticks">
+                <span id="cb-min"></span>
+                <span id="cb-mid"></span>
+                <span id="cb-max"></span>
+              </div>
+            </div>
+            <ul class="legend" id="legend">
+              <li><span class="key key--line key--s1"></span>Track flown, AUV now</li>
+              <li><span class="key key--dash key--s2"></span>RRT* trajectory, next waypoint</li>
+              <li><span class="key key--line key--s3"></span>RRT* tree</li>
+              <li><span class="key key--target"></span>Cost-valley minimum</li>
+            </ul>
+            <div class="overlay-toggles">
+              <label><input type="checkbox" id="ov-tree" checked /> Tree</label>
+              <label><input type="checkbox" id="ov-path" checked /> Planned</label>
+              <label><input type="checkbox" id="ov-traj" checked /> Track</label>
+            </div>
+          </div>
+        </main>
+
+        <aside class="panel panel--metrics" aria-label="Mission metrics">
+          <div class="metrics-head">
+            <h2>Metrics</h2>
+            <button id="btn-table" class="btn btn--small" type="button" aria-pressed="false">Table</button>
+          </div>
+          <figure class="chart">
+            <figcaption>
+              <span class="chart__label">Integrated Bernoulli variance</span>
+              <span class="chart__value" id="val-ibv">—</span>
+            </figcaption>
+            <canvas id="chart-ibv"></canvas>
+            <p class="hint">How much of the field is still ambiguous about the salinity threshold.</p>
+          </figure>
+          <figure class="chart">
+            <figcaption>
+              <span class="chart__label">RMSE vs truth</span>
+              <span class="chart__value" id="val-rmse">—</span>
+            </figcaption>
+            <canvas id="chart-rmse"></canvas>
+            <p class="hint">Error of the conditional mean against the simulated truth.</p>
+          </figure>
+          <figure class="chart">
+            <figcaption>
+              <span class="chart__label">Total variance</span>
+              <span class="chart__value" id="val-var">—</span>
+            </figcaption>
+            <canvas id="chart-var"></canvas>
+            <p class="hint">Summed marginal variance left in the field.</p>
+          </figure>
+          <div class="table-view" id="table-view" hidden>
+            <table>
+              <caption>Metrics per step</caption>
+              <thead>
+                <tr><th scope="col">Step</th><th scope="col">IBV</th><th scope="col">RMSE</th><th scope="col">Variance</th></tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="colophon">
+        <p>
+          Ported from the Python in
+          <a href="https://github.com/MASCOT-NTNU/RRTCV" target="_blank" rel="noopener">MASCOT-NTNU/RRTCV</a>.
+          The prior mean is a baked SINMOD field; see <code>web/README.md</code> for what differs
+          from the paper's simulation.
+        </p>
+      </footer>
+    </div>
+
+    <div class="tooltip" id="tooltip" hidden></div>
+    <div class="boot" id="boot"><div class="boot__inner"><span class="spinner"></span><p id="boot-label">Loading the field…</p></div></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

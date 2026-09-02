@@ -10,6 +10,13 @@ Affiliation: Department of Mathematical Sciences, Norwegian University of Scienc
 
 This study presents an adaptive sampling method using autonomous underwater vehicles (AUVs) for long-horizon path planning. It introduces a flexible cost valley concept combined with a non-myopic RRT* planner, optimizing oceanographic sampling while ensuring real-time computations on AUVs.
 
+## Interactive simulator
+
+The simulation study runs live in the browser at
+**https://mascot-ntnu.github.io/RRTCV/** — the GRF prior over the Trondheim fjord,
+the EIBV/IVR cost valley, and the RRT\* planner, all client-side. Source and a
+note on what differs from the Python are in [`web/`](web/README.md).
+
 ## Key Features
 - **Adaptive Sampling with Multiple Objectives**: Combines variance reduction and classification error minimization.
 - **Non-Myopic Path Planning**: Uses an RRT* strategy instead of traditional greedy (myopic) methods.

@@ -1,0 +1,20 @@
+{
+  "name": "rrtcv-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Browser port of the RRTCV adaptive-sampling simulation (GRF prior, cost valley, RRT* planner).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "check": "tsc --noEmit",
+    "test": "tsx test/bvn_check.ts && tsx test/run.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
