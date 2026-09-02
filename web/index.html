@@ -12,39 +12,29 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div class="app" id="app">
+    <div class="app">
       <header class="masthead">
-        <div class="masthead__title">
-          <h1>RRT* adaptive sampling over a cost valley</h1>
-          <p>
-            A Gaussian random field prior over the Trondheim fjord, an EIBV/IVR cost valley, and an
-            RRT* planner — running live in this page.
-            <a href="https://doi.org/10.1016/j.knosys.2025.113261" target="_blank" rel="noopener">Ge, Eidsvik &amp; Olaisen (2025)</a>
-          </p>
+        <h1>RRT<span>*</span> adaptive sampling over a cost valley</h1>
+        <p class="masthead__sub">
+          GRF prior · EIBV/IVR cost valley · RRT* planner —
+          <a href="https://doi.org/10.1016/j.knosys.2025.113261" target="_blank" rel="noopener">Ge, Eidsvik &amp; Olaisen (2025)</a>
+        </p>
+        <div class="masthead__transport">
+          <button id="btn-run" class="btn btn--primary" type="button">Run</button>
+          <button id="btn-step" class="btn" type="button">Step</button>
+          <button id="btn-reset" class="btn" type="button">Reset</button>
         </div>
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch colour theme">
+        <p class="status" id="status">Loading…</p>
+        <button class="btn btn--ghost" id="btn-table" type="button" aria-pressed="false">Data</button>
+        <button class="btn btn--ghost" id="theme-toggle" type="button" aria-label="Switch colour theme">
           <span data-theme-label>Dark</span>
         </button>
       </header>
 
       <div class="layout">
-        <aside class="panel panel--controls" aria-label="Simulation controls">
-          <section class="control-group">
-            <h2>Mission</h2>
-            <div class="transport">
-              <button id="btn-run" class="btn btn--primary" type="button">Run</button>
-              <button id="btn-step" class="btn" type="button">Step</button>
-              <button id="btn-reset" class="btn" type="button">Reset</button>
-            </div>
-            <p class="status" id="status" role="status">Loading…</p>
-          </section>
-
-          <section class="control-group">
+        <aside class="panel controls" aria-label="Simulation controls">
+          <section>
             <h2>Weighting</h2>
-            <p class="hint">
-              How the cost valley trades exploitation (EIBV — resolve the boundary) against
-              exploration (IVR — shrink variance).
-            </p>
             <div class="segmented" role="group" aria-label="Weight preset">
               <button type="button" data-preset="eibv">EIBV</button>
               <button type="button" data-preset="equal" class="is-active">Equal</button>
@@ -60,7 +50,7 @@
             </label>
           </section>
 
-          <section class="control-group">
+          <section>
             <h2>Planner</h2>
             <label class="slider">
               <span>RRT* iterations <output id="out-iter">1200</output></span>
@@ -70,12 +60,17 @@
               <span>Step interval <output id="out-speed">400 ms</output></span>
               <input id="in-speed" type="range" min="0" max="1500" step="50" value="400" />
             </label>
+            <div class="overlay-toggles">
+              <label><input type="checkbox" id="ov-tree" checked /> Tree</label>
+              <label><input type="checkbox" id="ov-path" checked /> Plan</label>
+              <label><input type="checkbox" id="ov-traj" checked /> Track</label>
+            </div>
           </section>
 
-          <section class="control-group">
+          <section>
             <h2>Field</h2>
             <label class="field">
-              <span>Random seed</span>
+              <span>Seed</span>
               <span class="field__row">
                 <input id="in-seed" type="number" min="0" max="99999" step="1" value="42" />
                 <button id="btn-shuffle" class="btn btn--small" type="button">Shuffle</button>
@@ -93,94 +88,76 @@
               <span>Lateral range <output id="out-range">700 m</output></span>
               <input id="in-range" type="range" min="200" max="1200" step="50" value="700" />
             </label>
-            <p class="hint">Changing any of these restarts the mission.</p>
-            <p class="hint provenance" id="provenance"></p>
           </section>
+
+          <section class="metrics" aria-label="Mission metrics">
+            <h2>Metrics</h2>
+            <div class="tile">
+              <span class="tile__label">Integrated Bernoulli variance</span>
+              <span class="tile__value" id="val-ibv">—</span>
+              <canvas id="spark-ibv"></canvas>
+            </div>
+            <div class="tile">
+              <span class="tile__label">RMSE vs truth</span>
+              <span class="tile__value" id="val-rmse">—</span>
+              <canvas id="spark-rmse"></canvas>
+            </div>
+            <div class="tile">
+              <span class="tile__label">Total variance</span>
+              <span class="tile__value" id="val-var">—</span>
+              <canvas id="spark-var"></canvas>
+            </div>
+          </section>
+
+          <p class="provenance" id="provenance"></p>
         </aside>
 
-        <main class="panel panel--stage">
-          <div class="tabs" role="tablist" aria-label="Field layer" id="layer-tabs"></div>
-          <p class="layer-caption" id="layer-caption"></p>
-          <div class="stage">
-            <canvas id="map" aria-label="Map of the operational area"></canvas>
-            <div class="readout" id="readout" hidden></div>
-          </div>
-          <div class="stage-footer">
+        <main class="stage">
+          <section class="panel stage__valley">
+            <header class="panel__head">
+              <h2>Cost valley</h2>
+              <span class="panel__hint">drag to orbit</span>
+            </header>
+            <canvas id="valley3d" aria-label="Cost valley as a 3D surface"></canvas>
+          </section>
+
+          <section class="panel stage__map">
+            <header class="panel__head">
+              <h2 id="map-title">Planner · cost valley</h2>
+              <ul class="legend">
+                <li><span class="key key--line key--s1"></span>Track</li>
+                <li><span class="key key--dash key--s2"></span>Plan</li>
+                <li><span class="key key--line key--s3"></span>Tree</li>
+                <li><span class="key key--target"></span>Target</li>
+              </ul>
+            </header>
+            <div class="map-wrap">
+              <canvas id="map" aria-label="Map of the operational area"></canvas>
+              <div class="readout" id="readout" hidden></div>
+            </div>
             <div class="colorbar">
               <canvas id="colorbar" aria-hidden="true"></canvas>
               <div class="colorbar__ticks">
-                <span id="cb-min"></span>
-                <span id="cb-mid"></span>
-                <span id="cb-max"></span>
+                <span id="cb-min"></span><span id="cb-mid"></span><span id="cb-max"></span>
               </div>
             </div>
-            <ul class="legend" id="legend">
-              <li><span class="key key--line key--s1"></span>Track flown, AUV now</li>
-              <li><span class="key key--dash key--s2"></span>RRT* trajectory, next waypoint</li>
-              <li><span class="key key--line key--s3"></span>RRT* tree</li>
-              <li><span class="key key--target"></span>Cost-valley minimum</li>
-            </ul>
-            <div class="overlay-toggles">
-              <label><input type="checkbox" id="ov-tree" checked /> Tree</label>
-              <label><input type="checkbox" id="ov-path" checked /> Planned</label>
-              <label><input type="checkbox" id="ov-traj" checked /> Track</label>
-            </div>
-          </div>
+          </section>
         </main>
 
-        <aside class="panel panel--metrics" aria-label="Mission metrics">
-          <div class="metrics-head">
-            <h2>Metrics</h2>
-            <button id="btn-table" class="btn btn--small" type="button" aria-pressed="false">Table</button>
-          </div>
-          <figure class="chart">
-            <figcaption>
-              <span class="chart__label">Integrated Bernoulli variance</span>
-              <span class="chart__value" id="val-ibv">—</span>
-            </figcaption>
-            <canvas id="chart-ibv"></canvas>
-            <p class="hint">How much of the field is still ambiguous about the salinity threshold.</p>
-          </figure>
-          <figure class="chart">
-            <figcaption>
-              <span class="chart__label">RMSE vs truth</span>
-              <span class="chart__value" id="val-rmse">—</span>
-            </figcaption>
-            <canvas id="chart-rmse"></canvas>
-            <p class="hint">Error of the conditional mean against the simulated truth.</p>
-          </figure>
-          <figure class="chart">
-            <figcaption>
-              <span class="chart__label">Total variance</span>
-              <span class="chart__value" id="val-var">—</span>
-            </figcaption>
-            <canvas id="chart-var"></canvas>
-            <p class="hint">Summed marginal variance left in the field.</p>
-          </figure>
-          <div class="table-view" id="table-view" hidden>
-            <table>
-              <caption>Metrics per step</caption>
-              <thead>
-                <tr><th scope="col">Step</th><th scope="col">IBV</th><th scope="col">RMSE</th><th scope="col">Variance</th></tr>
-              </thead>
-              <tbody id="table-body"></tbody>
-            </table>
-          </div>
-        </aside>
+        <aside class="fields" id="fields" aria-label="Field panels"></aside>
       </div>
-
-      <footer class="colophon">
-        <p>
-          Ported from the Python in
-          <a href="https://github.com/MASCOT-NTNU/RRTCV" target="_blank" rel="noopener">MASCOT-NTNU/RRTCV</a>.
-          The prior mean is baked into a data asset that can be swapped without touching code —
-          see <code>web/README.md</code> for that and for what differs from the paper's
-          simulation.
-        </p>
-      </footer>
     </div>
 
-    <div class="tooltip" id="tooltip" hidden></div>
+    <div class="popover" id="table-view" hidden>
+      <table>
+        <caption>Metrics per step</caption>
+        <thead>
+          <tr><th scope="col">Step</th><th scope="col">IBV</th><th scope="col">RMSE</th><th scope="col">Variance</th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
     <div class="boot" id="boot"><div class="boot__inner"><span class="spinner"></span><p id="boot-label">Loading the field…</p></div></div>
 
     <script type="module" src="/src/main.ts"></script>

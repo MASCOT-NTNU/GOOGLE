@@ -41,6 +41,42 @@ Other scripts:
 `npm run build` bakes the GitHub Pages base path `/RRTCV/` into the asset URLs.
 Override it for another host with `BASE_PATH=/ npm run build`.
 
+## The page
+
+Everything is on one screen and the page never scrolls: the cost valley as a 3D
+surface you can orbit, the planner's own view of the operational area with the
+RRT* tree and the flown track on it, all six fields side by side, and the mission
+metrics. Clicking any of the six panels puts that field under the planner
+overlays, which is the only way to see the tree against something other than the
+valley.
+
+Field panels are interpolated onto a raster rather than drawn a cell at a time.
+That is not only prettier: with a lateral range of 700 m the GRF carries no
+structure at the scale of an 80 m cell edge, so the blocks the old renderer drew
+were an artefact of the discretisation rather than anything in the model.
+
+### Colour
+
+Ramps are ColorBrewer schemes chosen per quantity, the way the paper's figures
+are read — all four are colourblind-safe:
+
+| Panel | Ramp | Notes |
+|---|---|---|
+| Conditional mean, Simulated truth | **BrBG** | Diverging about the classification threshold. Both share the ramp *and* the value range, so they compare cell for cell. |
+| Standard deviation | **RdBu reversed** | Blue low, red high. |
+| Cost valley (2D and 3D) | **RdBu reversed** | Same direction as the standard deviation: red is always "more of what this panel measures". |
+| EIBV reward | **YlGn** | |
+| IVR reward | **YlGnBu** | A neighbour of YlGn, so the two reward fields read as a pair without being confused for each other. |
+
+### The 3D surface
+
+`src/ui/surface3d.ts` draws the height field straight onto a 2D canvas: the
+surface is single-valued, so a painter's-algorithm pass over depth-sorted quads
+is exact and needs no 3D library. Relief comes from Lambert shading on each
+quad's normal, the view refits its scale to the projected silhouette every frame
+so the valley fills the panel at any orbit angle, and the lattice is decimated
+while you drag and restored on release.
+
 ## How it is put together
 
 ```
@@ -57,12 +93,20 @@ web/
 │   ├── normal.ts              normal / bivariate-normal CDFs        <- prior/cdf.npz
 │   ├── linalg.ts              Cholesky and SPD solves
 │   └── worker.ts              runs all of the above off the main thread
-└── src/ui/                    canvas rendering, charts, controls
+└── src/ui/
+    ├── interpolator.ts        grid -> regular lattice, weights cached once
+    ├── fieldRaster.ts         painting an interpolated field, clipped to the area
+    ├── fieldPanel.ts          one small multiple
+    ├── mapView.ts             the planner's view, with tree/track/waypoints
+    ├── surface3d.ts           the cost valley in 3D
+    ├── colormap.ts            the ColorBrewer ramps
+    ├── layers.ts              what each panel shows and how it is scaled
+    └── chart.ts, legend.ts, theme.ts
 ```
 
-The heavy numerics live in a Web Worker: a 1076 × 1076 covariance matrix, its
-Cholesky factorisation (~0.3 s, once per parameter set), and an O(N²) reward-field
-sweep per step. A mission step costs roughly 100 ms on a laptop, so the page stays
+The heavy numerics live in a Web Worker: a 1690 × 1690 covariance matrix, its
+Cholesky factorisation (~1.2 s, once per parameter set), and an O(N²) reward-field
+sweep per step. A mission step costs roughly 160 ms on a laptop, so the page stays
 responsive while it runs.
 
 ### The field asset, and swapping in your own prior
@@ -74,6 +118,12 @@ hexagonal grid, and the prior mean sampled onto it. Rebuild it with:
 pip install numpy scipy shapely
 python3 web/tools/prepare_data.py
 ```
+
+The grid defaults to 80 m spacing (1 690 cells). `--resolution` changes it, and
+the cost climbs fast — 100 m is 1 076 cells and a 0.3 s start-up, 80 m is 1 690
+and 1.2 s, 70 m is 2 203 and 2.7 s, 60 m is 3 009 and 6.8 s. There is little
+point going finer than about 80 m: the kernel's lateral range is 700 m, so the
+field has nothing to resolve at that scale.
 
 **The prior that ships is placeholder data** — the time-averaged SINMOD field in
 `Publication/prior/sinmod.csv`. The page says so, next to the field controls, and

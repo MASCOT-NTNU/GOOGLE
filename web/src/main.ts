@@ -1,12 +1,18 @@
 /**
  * Page wiring: load the baked field, start the simulation worker, and keep the
- * canvases, metrics and controls in sync with the snapshots it sends back.
+ * 3D valley, the planner map, the six field panels and the metric tiles in sync
+ * with the snapshots it sends back.
  *
  * No numerics live here - the main thread only paints and forwards intent.
  */
-import { Chart } from "./ui/chart.js";
+import { RAMPS } from "./ui/colormap.js";
+import { FieldPanel } from "./ui/fieldPanel.js";
+import { FieldRaster } from "./ui/fieldRaster.js";
+import { extentsOf, LAYERS, LAYER_BY_ID, type Extent, type Layer, type LayerId } from "./ui/layers.js";
 import { renderColorbar } from "./ui/legend.js";
-import { LAYERS, MapView, type Layer, type MapOverlays } from "./ui/mapView.js";
+import { MapView, type MapOverlays } from "./ui/mapView.js";
+import { Sparkline } from "./ui/chart.js";
+import { Surface3D } from "./ui/surface3d.js";
 import { readTheme, type Theme } from "./ui/theme.js";
 import { DEFAULT_GRF_PARAMETERS } from "./sim/grf.js";
 import type { FieldAsset, SimSettings, SimSnapshot, WorkerRequest, WorkerResponse } from "./sim/types.js";
@@ -17,6 +23,8 @@ const el = <T extends HTMLElement>(id: string): T => {
   return node as T;
 };
 
+/** The schema `FieldAsset` is written against; `prepare_data.py` stamps it. */
+const SCHEMA_VERSION = 1;
 const THRESHOLD = DEFAULT_GRF_PARAMETERS.threshold;
 
 const settings: SimSettings = {
@@ -31,7 +39,8 @@ const settings: SimSettings = {
 
 let theme: Theme = readTheme();
 let snapshot: SimSnapshot | null = null;
-let activeLayer: Layer = LAYERS[0];
+let extents = new Map<string, Extent>();
+let mapLayer: Layer = LAYER_BY_ID.get("cost")!;
 let running = false;
 let busy = false;
 let stepIntervalMs = 400;
@@ -42,92 +51,138 @@ const overlays: MapOverlays = { tree: true, plannedPath: true, trajectory: true 
 const boot = el("boot");
 const bootLabel = el("boot-label");
 const status = el("status");
-const tooltip = el("tooltip");
 const readout = el("readout");
-
-/* ---------------------------------------------------------------- worker */
 
 const worker = new Worker(new URL("./sim/worker.ts", import.meta.url), { type: "module" });
 const send = (message: WorkerRequest) => worker.postMessage(message);
 
+let map: MapView;
+let valley: Surface3D;
+const panels: FieldPanel[] = [];
+const panelButtons = new Map<LayerId, HTMLElement>();
+const panelScales = new Map<LayerId, HTMLElement>();
+let sparkIbv: Sparkline;
+let sparkRmse: Sparkline;
+let sparkVar: Sparkline;
+
 /* ------------------------------------------------------------------ view */
 
-let map: MapView;
-let chartIbv: Chart;
-let chartRmse: Chart;
-let chartVar: Chart;
-
-const fixed = (digits: number) => (v: number) =>
-  Math.abs(v) >= 1000 ? v.toFixed(0) : v.toFixed(digits);
-
-function buildLayerTabs(): void {
-  const tabs = el("layer-tabs");
-  tabs.innerHTML = "";
-  for (const layer of LAYERS) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.role = "tab";
-    button.textContent = layer.label;
-    button.setAttribute("aria-selected", String(layer.id === activeLayer.id));
-    button.addEventListener("click", () => {
-      activeLayer = layer;
-      for (const other of tabs.querySelectorAll("button")) {
-        other.setAttribute("aria-selected", String(other === button));
-      }
-      el("layer-caption").textContent = layer.description;
-      render();
-    });
-    tabs.appendChild(button);
-  }
-  el("layer-caption").textContent = activeLayer.description;
+function extentFor(layer: Layer): Extent {
+  return extents.get(layer.scaleKey) ?? { min: 0, max: 1 };
 }
 
-function render(): void {
-  if (!snapshot || !map) return;
-  const values = snapshot[activeLayer.id] as Float64Array;
-  const extent = map.extentOf(values);
-  map.draw(snapshot, activeLayer, overlays, extent);
-  renderColorbar(el("colorbar"), map, activeLayer, extent, THRESHOLD);
+function formatValue(v: number): string {
+  const abs = Math.abs(v);
+  if (abs >= 100) return v.toFixed(0);
+  if (abs >= 1) return v.toFixed(2);
+  return v.toFixed(3);
+}
 
-  const unit = activeLayer.unit ? ` ${activeLayer.unit}` : "";
-  el("cb-min").textContent = `${extent.min.toFixed(2)}${unit}`;
-  el("cb-max").textContent = `${extent.max.toFixed(2)}${unit}`;
-  el("cb-mid").textContent = activeLayer.diverging
+function buildFieldPanels(raster: FieldRaster): void {
+  const container = el("fields");
+  container.innerHTML = "";
+  for (const layer of LAYERS) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "field-panel";
+    card.setAttribute("aria-pressed", String(layer.id === mapLayer.id));
+    card.title = layer.caption;
+
+    const heading = document.createElement("h3");
+    heading.textContent = layer.label;
+    const canvas = document.createElement("canvas");
+    const scale = document.createElement("div");
+    scale.className = "field-panel__scale";
+    scale.innerHTML = "<span></span><span></span>";
+
+    card.append(heading, canvas, scale);
+    container.appendChild(card);
+
+    // Clicking a panel puts that field under the planner overlays, which is the
+    // only way to see the tree and the track against anything but the valley.
+    card.addEventListener("click", () => {
+      mapLayer = layer;
+      for (const [id, node] of panelButtons) node.setAttribute("aria-pressed", String(id === layer.id));
+      el("map-title").textContent = `Planner · ${layer.label.toLowerCase()}`;
+      el("map-title").title = layer.caption;
+      renderMap();
+    });
+
+    panels.push(new FieldPanel(canvas, raster, layer, theme, THRESHOLD));
+    panelButtons.set(layer.id, card);
+    panelScales.set(layer.id, scale);
+  }
+}
+
+function renderMap(): void {
+  if (!snapshot) return;
+  const extent = extentFor(mapLayer);
+  map.draw(snapshot, mapLayer, overlays, extent);
+  renderColorbar(el("colorbar"), mapLayer, extent, THRESHOLD, theme.ink);
+  const unit = mapLayer.unit ? ` ${mapLayer.unit}` : "";
+  el("cb-min").textContent = `${formatValue(extent.min)}${unit}`;
+  el("cb-max").textContent = `${formatValue(extent.max)}${unit}`;
+  el("cb-mid").textContent = mapLayer.diverging
     ? `threshold ${THRESHOLD.toFixed(2)}`
-    : `${((extent.min + extent.max) / 2).toFixed(2)}${unit}`;
+    : formatValue((extent.min + extent.max) / 2) + unit;
+}
+
+function renderAll(): void {
+  if (!snapshot) return;
+  extents = extentsOf(snapshot);
+  renderMap();
+  for (const panel of panels) {
+    const extent = extentFor(panel.layer);
+    panel.draw(snapshot, extent);
+    const scale = panelScales.get(panel.layer.id);
+    if (scale) {
+      scale.children[0].textContent = formatValue(extent.min);
+      scale.children[1].textContent = formatValue(extent.max);
+    }
+  }
+  const costLayer = LAYER_BY_ID.get("cost")!;
+  valley.update(
+    snapshot.cost,
+    extentFor(costLayer),
+    [
+      ...(overlays.plannedPath ? [{ points: snapshot.plannedPath, color: theme.series2, dash: [7, 5] }] : []),
+      ...(overlays.trajectory ? [{ points: snapshot.trajectory, color: theme.series1, dash: [] }] : []),
+    ],
+    snapshot.target,
+  );
+  renderMetrics();
 }
 
 function renderMetrics(): void {
   if (!snapshot) return;
   const metrics = snapshot.metrics;
-  chartIbv.update({
-    label: "IBV", caption: "Integrated Bernoulli variance",
-    values: metrics.map((m) => m.ibv), format: fixed(1),
-  });
-  chartRmse.update({
-    label: "RMSE", caption: "RMSE vs truth",
-    values: metrics.map((m) => m.rmse), format: fixed(3),
-  });
-  chartVar.update({
-    label: "Total variance", caption: "Total variance",
-    values: metrics.map((m) => m.variance), format: fixed(0),
-  });
+  sparkIbv.update(metrics.map((m) => m.ibv));
+  sparkRmse.update(metrics.map((m) => m.rmse));
+  sparkVar.update(metrics.map((m) => m.variance));
 
   const last = metrics[metrics.length - 1];
   el("val-ibv").textContent = last ? last.ibv.toFixed(1) : "—";
   el("val-rmse").textContent = last ? last.rmse.toFixed(3) : "—";
   el("val-var").textContent = last ? last.variance.toFixed(0) : "—";
 
-  const body = el("table-body");
-  body.innerHTML = metrics
+  el("table-body").innerHTML = metrics
     .map((m) =>
       `<tr><td>${m.step}</td><td>${m.ibv.toFixed(1)}</td>` +
       `<td>${m.rmse.toFixed(3)}</td><td>${m.variance.toFixed(0)}</td></tr>`)
     .join("");
 }
 
-function setStatus(text: string): void {
-  status.textContent = text;
+function describePrior(asset: FieldAsset): void {
+  const node = el("provenance");
+  const prior = asset.prior;
+  if (!prior) {
+    node.textContent = "";
+    return;
+  }
+  const tag = prior.placeholder ? '<span class="tag">placeholder</span>' : "";
+  node.innerHTML = `<b>Prior</b>${tag} ${prior.label} · ` +
+    `${asset.grid.length.toLocaleString()} cells at ${asset.neighbourDistance} m`;
+  node.title = `Source: ${prior.source}`;
 }
 
 /* ------------------------------------------------------------ transport */
@@ -145,8 +200,7 @@ function scheduleNext(): void {
 
 function setRunning(next: boolean): void {
   running = next;
-  const button = el<HTMLButtonElement>("btn-run");
-  button.textContent = next ? "Pause" : "Run";
+  el<HTMLButtonElement>("btn-run").textContent = next ? "Pause" : "Run";
   if (!next && pendingStep !== null) {
     clearTimeout(pendingStep);
     pendingStep = null;
@@ -175,9 +229,7 @@ function bindSlider(
 ): void {
   const input = el<HTMLInputElement>(inputId);
   const output = el(outputId);
-  const sync = () => {
-    output.textContent = format(Number(input.value));
-  };
+  const sync = () => { output.textContent = format(Number(input.value)); };
   input.addEventListener("input", () => {
     sync();
     onChange(Number(input.value));
@@ -187,20 +239,16 @@ function bindSlider(
 }
 
 function applyWeights(): void {
-  el<HTMLInputElement>("in-eibv").value = settings.weightEibv.toFixed(2);
-  el<HTMLInputElement>("in-ivr").value = settings.weightIvr.toFixed(2);
+  el<HTMLInputElement>("in-eibv").value = String(settings.weightEibv);
+  el<HTMLInputElement>("in-ivr").value = String(settings.weightIvr);
   el("out-eibv").textContent = settings.weightEibv.toFixed(2);
   el("out-ivr").textContent = settings.weightIvr.toFixed(2);
-  syncPresetButtons();
-  send({ type: "weights", weightEibv: settings.weightEibv, weightIvr: settings.weightIvr });
-}
-
-function syncPresetButtons(): void {
   const { weightEibv: e, weightIvr: i } = settings;
   const active = e === 2 && i === 0 ? "eibv" : e === 0 && i === 2 ? "ivr" : e === i ? "equal" : "";
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
     button.classList.toggle("is-active", button.dataset.preset === active);
   }
+  send({ type: "weights", weightEibv: settings.weightEibv, weightIvr: settings.weightIvr });
 }
 
 function bindControls(): void {
@@ -215,8 +263,8 @@ function bindControls(): void {
 
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
     button.addEventListener("click", () => {
-      const preset = button.dataset.preset;
       // The three weight sets the paper compares.
+      const preset = button.dataset.preset;
       settings.weightEibv = preset === "eibv" ? 2 : preset === "ivr" ? 0 : 1;
       settings.weightIvr = preset === "ivr" ? 2 : preset === "eibv" ? 0 : 1;
       applyWeights();
@@ -231,22 +279,14 @@ function bindControls(): void {
     settings.weightIvr = v;
     applyWeights();
   });
-  bindSlider("in-iter", "out-iter", (v) => String(v), (v) => {
+  bindSlider("in-iter", "out-iter", String, (v) => {
     settings.rrtIterations = v;
     send({ type: "iterations", value: v });
   });
-  bindSlider("in-speed", "out-speed", (v) => `${v} ms`, (v) => {
-    stepIntervalMs = v;
-  });
-  bindSlider("in-sigma", "out-sigma", (v) => v.toFixed(2), (v) => {
-    settings.sigma = v;
-  }, restart);
-  bindSlider("in-nugget", "out-nugget", (v) => v.toFixed(2), (v) => {
-    settings.nugget = v;
-  }, restart);
-  bindSlider("in-range", "out-range", (v) => `${v} m`, (v) => {
-    settings.lateralRange = v;
-  }, restart);
+  bindSlider("in-speed", "out-speed", (v) => `${v} ms`, (v) => { stepIntervalMs = v; });
+  bindSlider("in-sigma", "out-sigma", (v) => v.toFixed(2), (v) => { settings.sigma = v; }, restart);
+  bindSlider("in-nugget", "out-nugget", (v) => v.toFixed(2), (v) => { settings.nugget = v; }, restart);
+  bindSlider("in-range", "out-range", (v) => `${v} m`, (v) => { settings.lateralRange = v; }, restart);
 
   const seed = el<HTMLInputElement>("in-seed");
   seed.addEventListener("change", () => {
@@ -263,7 +303,7 @@ function bindControls(): void {
     const input = el<HTMLInputElement>(id);
     input.addEventListener("change", () => {
       overlays[key] = input.checked;
-      render();
+      renderAll();
     });
   };
   bindOverlay("ov-tree", "tree");
@@ -277,10 +317,8 @@ function bindControls(): void {
     tableButton.setAttribute("aria-pressed", String(!view.hidden));
   });
 
-  const themeButton = el<HTMLButtonElement>("theme-toggle");
-  themeButton.addEventListener("click", () => {
-    const next = theme.dark ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
+  el<HTMLButtonElement>("theme-toggle").addEventListener("click", () => {
+    document.documentElement.dataset.theme = theme.dark ? "light" : "dark";
     refreshTheme();
   });
 }
@@ -289,61 +327,16 @@ function refreshTheme(): void {
   theme = readTheme();
   document.querySelector("[data-theme-label]")!.textContent = theme.dark ? "Light" : "Dark";
   map?.setTheme(theme);
-  chartIbv?.setTheme(theme);
-  chartRmse?.setTheme(theme);
-  chartVar?.setTheme(theme);
-  render();
-  renderMetrics();
-}
-
-/* ------------------------------------------------------------- map hover */
-
-function bindMapHover(asset: FieldAsset): void {
-  const canvas = el<HTMLCanvasElement>("map");
-  canvas.addEventListener("pointermove", (event) => {
-    if (!snapshot) return;
-    const [x, y] = map.worldAt(event.clientX, event.clientY);
-    let best = -1;
-    let bestDist = Infinity;
-    for (let i = 0; i < asset.grid.length; i++) {
-      const dx = asset.grid[i][0] - x;
-      const dy = asset.grid[i][1] - y;
-      const d = dx * dx + dy * dy;
-      if (d < bestDist) {
-        bestDist = d;
-        best = i;
-      }
-    }
-    if (best < 0 || Math.sqrt(bestDist) > asset.neighbourDistance) {
-      readout.hidden = true;
-      return;
-    }
-    readout.hidden = false;
-    readout.innerHTML =
-      `<b>Cell ${best}</b><dl>` +
-      `<dt>Mean</dt><dd>${snapshot.mu[best].toFixed(2)} psu</dd>` +
-      `<dt>Truth</dt><dd>${snapshot.truth[best].toFixed(2)} psu</dd>` +
-      `<dt>Std dev</dt><dd>${snapshot.sd[best].toFixed(3)}</dd>` +
-      `<dt>EIBV</dt><dd>${snapshot.eibv[best].toFixed(3)}</dd>` +
-      `<dt>IVR</dt><dd>${snapshot.ivr[best].toFixed(3)}</dd>` +
-      `<dt>Cost</dt><dd>${snapshot.cost[best].toFixed(3)}</dd>` +
-      `</dl>`;
-  });
-  canvas.addEventListener("pointerleave", () => {
-    readout.hidden = true;
-  });
+  valley?.setTheme(theme);
+  for (const panel of panels) panel.setTheme(theme);
+  sparkIbv?.setTheme(theme);
+  sparkRmse?.setTheme(theme);
+  sparkVar?.setTheme(theme);
+  renderAll();
 }
 
 /* ------------------------------------------------------------------ boot */
 
-/** The schema `FieldAsset` is written against; `prepare_data.py` stamps it. */
-const SCHEMA_VERSION = 1;
-
-/**
- * Which baked asset to load. Defaults to `data/field.json`; `?data=<url>` points
- * the page at another one, which is how a freshly prepared prior gets tried out
- * without a rebuild. Only same-origin paths are accepted.
- */
 function assetUrl(): string {
   const requested = new URLSearchParams(location.search).get("data");
   const base = `${import.meta.env.BASE_URL}data/field.json`;
@@ -354,21 +347,6 @@ function assetUrl(): string {
     return base;
   }
   return resolved.pathname + resolved.search;
-}
-
-function describePrior(asset: FieldAsset): void {
-  const node = el("provenance");
-  const prior = asset.prior;
-  if (!prior) {
-    node.textContent = "";
-    return;
-  }
-  const tag = prior.placeholder ? '<span class="tag">placeholder</span>' : "";
-  node.innerHTML =
-    `<b>Prior field</b>${tag}<br />${prior.label} · ` +
-    `${prior.range[0].toFixed(1)}–${prior.range[1].toFixed(1)} ${prior.units} ` +
-    `from ${prior.points.toLocaleString()} points`;
-  node.title = `Source: ${prior.source}`;
 }
 
 async function start(): Promise<void> {
@@ -383,23 +361,46 @@ async function start(): Promise<void> {
     );
   }
 
-  map = new MapView(el<HTMLCanvasElement>("map"), asset, theme, THRESHOLD);
-  chartIbv = new Chart(el<HTMLCanvasElement>("chart-ibv"), tooltip, theme);
-  chartRmse = new Chart(el<HTMLCanvasElement>("chart-rmse"), tooltip, theme);
-  chartVar = new Chart(el<HTMLCanvasElement>("chart-var"), tooltip, theme);
+  const gridX = new Float64Array(asset.grid.length);
+  const gridY = new Float64Array(asset.grid.length);
+  for (let i = 0; i < asset.grid.length; i++) {
+    gridX[i] = asset.grid[i][0];
+    gridY[i] = asset.grid[i][1];
+  }
 
-  buildLayerTabs();
+  // Two rasters: a dense one for the big map, a light one shared by the six
+  // thumbnails, where the extra lattice nodes would not survive the downscale.
+  const mapRaster = new FieldRaster(
+    gridX, gridY, asset.polygonBorder, asset.polygonObstacle, asset.neighbourDistance, 4,
+  );
+  const panelRaster = new FieldRaster(
+    gridX, gridY, asset.polygonBorder, asset.polygonObstacle, asset.neighbourDistance, 2.5,
+  );
+
+  map = new MapView(el<HTMLCanvasElement>("map"), asset, mapRaster, theme, THRESHOLD);
+  valley = new Surface3D(
+    el<HTMLCanvasElement>("valley3d"), gridX, gridY, mapRaster.bbox,
+    asset.neighbourDistance, asset.polygonBorder, asset.polygonObstacle,
+    theme, RAMPS.RdBuReversed,
+  );
+  sparkIbv = new Sparkline(el<HTMLCanvasElement>("spark-ibv"), theme);
+  sparkRmse = new Sparkline(el<HTMLCanvasElement>("spark-rmse"), theme);
+  sparkVar = new Sparkline(el<HTMLCanvasElement>("spark-var"), theme);
+
+  buildFieldPanels(panelRaster);
   describePrior(asset);
   bindControls();
-  bindMapHover(asset);
+  bindMapHover();
   refreshTheme();
 
   const resize = () => {
     map.resize();
-    chartIbv.resize();
-    chartRmse.resize();
-    chartVar.resize();
-    render();
+    valley.resize();
+    for (const panel of panels) panel.resize();
+    sparkIbv.resize();
+    sparkRmse.resize();
+    sparkVar.resize();
+    renderAll();
   };
   window.addEventListener("resize", resize);
   new ResizeObserver(resize).observe(el("map").parentElement!);
@@ -411,25 +412,21 @@ async function start(): Promise<void> {
         bootLabel.textContent = `${message.label}…`;
         break;
       case "ready":
-        setStatus(`${message.n} grid cells · field built in ${(message.buildMs / 1000).toFixed(1)} s`);
         break;
       case "snapshot": {
         snapshot = message.snapshot;
         busy = false;
         boot.hidden = true;
         resize();
-        renderMetrics();
         const last = snapshot.metrics[snapshot.metrics.length - 1];
-        setStatus(
-          snapshot.step === 0
-            ? "Ready. Press Run to start the mission."
-            : `Step ${snapshot.step} · ${last ? `${(last.elapsed * 1000).toFixed(0)} ms/step` : ""}`,
-        );
+        status.textContent = snapshot.step === 0
+          ? "Ready — press Run"
+          : `Step ${snapshot.step} · ${last ? `${(last.elapsed * 1000).toFixed(0)} ms` : ""}`;
         scheduleNext();
         break;
       }
       case "error":
-        setStatus(`Error: ${message.message}`);
+        status.textContent = `Error: ${message.message}`;
         boot.hidden = true;
         busy = false;
         setRunning(false);
@@ -438,6 +435,25 @@ async function start(): Promise<void> {
   };
 
   send({ type: "init", asset, settings: { ...settings } });
+}
+
+function bindMapHover(): void {
+  const canvas = el<HTMLCanvasElement>("map");
+  canvas.addEventListener("pointermove", (event) => {
+    if (!snapshot) return;
+    const [x, y] = map.worldAt(event.clientX, event.clientY);
+    const cell = map.nearestCell(x, y);
+    if (cell < 0) {
+      readout.hidden = true;
+      return;
+    }
+    readout.hidden = false;
+    readout.innerHTML = "<dl>" + LAYERS.map((layer) => {
+      const value = (snapshot![layer.id] as Float64Array)[cell];
+      return `<dt>${layer.label}</dt><dd>${formatValue(value)}</dd>`;
+    }).join("") + "</dl>";
+  });
+  canvas.addEventListener("pointerleave", () => { readout.hidden = true; });
 }
 
 start().catch((error: unknown) => {

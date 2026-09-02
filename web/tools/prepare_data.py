@@ -75,7 +75,7 @@ LATITUDE_ORIGIN = 63.42690974
 LONGITUDE_ORIGIN = 10.3969373
 
 # Mirrors src/common/Config.py
-NEIGHBOUR_DISTANCE = 100.0   # GRF grid resolution, Field(neighbour_distance=100)
+NEIGHBOUR_DISTANCE = 80.0    # GRF grid resolution; the Python uses Field(neighbour_distance=100)
 WAYPOINT_DISTANCE = 240.0    # distance between AUV waypoints, drives the RRT* step size
 WGS_LOC_START = (63.44038447, 10.35675578)  # close to TBS
 WGS_LOC_END = (63.440618, 10.355851)        # home location used in the field experiment
@@ -217,6 +217,12 @@ def main() -> None:
     parser.add_argument("--placeholder", dest="placeholder", action="store_true",
                         help="Mark the prior as placeholder data (the default for the "
                              "bundled SINMOD average).")
+    parser.add_argument("--resolution", type=float, default=NEIGHBOUR_DISTANCE,
+                        help="Spacing of the GRF grid in metres. Cost grows fast: 100 m is "
+                             "1076 cells and a 0.3 s start-up, 80 m is 1690 and 1.2 s, 60 m is "
+                             "3009 and 6.8 s. Below ~80 m there is little to resolve anyway - "
+                             "the kernel's lateral range is 700 m. "
+                             f"Default: {NEIGHBOUR_DISTANCE:.0f}")
     parser.add_argument("--output", default=DEFAULT_OUTPUT,
                         help=f"Where to write the asset. Default: "
                              f"{os.path.relpath(DEFAULT_OUTPUT, REPO_ROOT)}")
@@ -231,7 +237,7 @@ def main() -> None:
 
     polygon_border = read_polygon(BORDER_CSV)
     polygon_obstacle = read_polygon(OBSTACLE_CSV)
-    grid = construct_grid(polygon_border, polygon_obstacle, NEIGHBOUR_DISTANCE)
+    grid = construct_grid(polygon_border, polygon_obstacle, args.resolution)
 
     prior = read_prior(args.prior)
     mu_prior, worst_distance = sample_prior(grid, prior)
@@ -244,7 +250,7 @@ def main() -> None:
         "generatedBy": "web/tools/prepare_data.py",
         "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "wgsOrigin": [LATITUDE_ORIGIN, LONGITUDE_ORIGIN],
-        "neighbourDistance": NEIGHBOUR_DISTANCE,
+        "neighbourDistance": args.resolution,
         "waypointDistance": WAYPOINT_DISTANCE,
         "locStart": [round(float(x_start), 3), round(float(y_start), 3)],
         "locEnd": [round(float(x_end), 3), round(float(y_end), 3)],
@@ -266,12 +272,12 @@ def main() -> None:
     with open(args.output, "w") as f:
         json.dump(payload, f, separators=(",", ":"))
 
-    print("grid cells:      ", len(grid))
+    print("grid cells:      ", len(grid), "at {:.0f} m spacing".format(args.resolution))
     print("border vertices: ", len(polygon_border))
     print("prior:           ", label, "(placeholder)" if placeholder else "(real data)")
     print("prior points:    ", prior.shape[0])
     print("prior range:      {:.2f} - {:.2f} {}".format(mu_prior.min(), mu_prior.max(), args.units))
-    if worst_distance > 2 * NEIGHBOUR_DISTANCE:
+    if worst_distance > 2 * args.resolution:
         print("WARNING:          a grid cell is {:.0f} m from the nearest prior point; "
               "the prior may not cover the whole operational area".format(worst_distance))
     print("written:         ", args.output,
